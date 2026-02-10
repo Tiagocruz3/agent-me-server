@@ -207,12 +207,6 @@ export function renderChat(props: ChatProps) {
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
   const chatItems = buildChatItems(props);
-  const quickPrompts = [
-    "Explain quantum computing in simple terms",
-    "Write a creative story about a robot",
-    "Help me debug my code",
-    "What are some healthy recipes?",
-  ];
   const thread = html`
     <div
       class="chat-thread"
@@ -240,19 +234,7 @@ export function renderChat(props: ChatProps) {
                     <div class="chat-welcome__status-sub">Connected via claw</div>
                   </div>
                 </div>
-                <div class="chat-welcome__prompts">
-                  ${quickPrompts.map(
-                    (prompt) => html`
-                      <button
-                        class="chat-welcome__prompt"
-                        type="button"
-                        @click=${() => props.onDraftChange(prompt)}
-                      >
-                        ${prompt}
-                      </button>
-                    `,
-                  )}
-                </div>
+
               </div>
             `
           : nothing
