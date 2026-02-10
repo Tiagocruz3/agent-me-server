@@ -172,6 +172,13 @@ export function renderOverview(props: OverviewProps) {
             </div>
             <div class="form-grid" style="margin-top: 14px;">
               <label class="field">
+                <span>OpenAI Auth Mode</span>
+                <select class="onboard-openai-auth-mode">
+                  <option value="api-key" selected>API Key (recommended for Pi/server)</option>
+                  <option value="browser-sign-in">Browser Sign-In (easier setup)</option>
+                </select>
+              </label>
+              <label class="field">
                 <span>OpenAI API Key</span>
                 <input class="onboard-env-openai" type="password" placeholder="sk-..." />
               </label>
@@ -190,6 +197,13 @@ export function renderOverview(props: OverviewProps) {
                 class="btn"
                 @click=${(e: Event) => {
                   const root = (e.currentTarget as HTMLElement).closest("section");
+                  const mode =
+                    (root?.querySelector(".onboard-openai-auth-mode") as HTMLSelectElement | null)?.value ??
+                    "api-key";
+                  if (mode === "browser-sign-in") {
+                    window.open("https://docs.agentme.ai/start/wizard", "_blank", "noopener,noreferrer");
+                    return;
+                  }
                   const openai =
                     (root?.querySelector(".onboard-env-openai") as HTMLInputElement | null)?.value?.trim() ?? "";
                   const telegram =
@@ -206,7 +220,7 @@ export function renderOverview(props: OverviewProps) {
                   }
                 }}
               >
-                Save to workspace .env
+                Save / Continue OpenAI setup
               </button>
               <button class="btn" @click=${() => props.onNavigateTab?.("channels")}>Open Channels</button>
               <button class="btn" @click=${() => props.onNavigateTab?.("config")}>Open Config</button>
