@@ -1,16 +1,16 @@
 {
-  "name": "@openclaw/memory-core",
+  "name": "@agentme/memory-core",
   "version": "2026.2.9",
   "private": true,
-  "description": "OpenClaw core memory search plugin",
+  "description": "AgentMe core memory search plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "agentme": "workspace:*"
   },
   "peerDependencies": {
-    "openclaw": ">=2026.1.26"
+    "agentme": ">=2026.1.26"
   },
-  "openclaw": {
+  "agentme": {
     "extensions": [
       "./index.ts"
     ]

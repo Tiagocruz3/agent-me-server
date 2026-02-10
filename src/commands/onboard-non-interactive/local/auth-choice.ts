@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { AgentMeConfig } from "../../../config/config.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import type { AuthChoice, OnboardOptions } from "../../onboard-types.js";
 import { upsertAuthProfile } from "../../../agents/auth-profiles.js";
@@ -48,12 +48,12 @@ import { applyOpenAIConfig } from "../../openai-model-default.js";
 import { resolveNonInteractiveApiKey } from "../api-keys.js";
 
 export async function applyNonInteractiveAuthChoice(params: {
-  nextConfig: OpenClawConfig;
+  nextConfig: AgentMeConfig;
   authChoice: AuthChoice;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: OpenClawConfig;
-}): Promise<OpenClawConfig | null> {
+  baseConfig: AgentMeConfig;
+}): Promise<AgentMeConfig | null> {
   const { authChoice, opts, runtime, baseConfig } = params;
   let nextConfig = params.nextConfig;
 

@@ -21,7 +21,7 @@ const LEGACY_STATE_DIRS: string[] = [];
 
 function resolveDefaultDbPath(): string {
   const home = homedir();
-  const preferred = join(home, ".openclaw", "memory", "lancedb");
+  const preferred = join(home, ".agentme", "memory", "lancedb");
   try {
     if (fs.existsSync(preferred)) {
       return preferred;
@@ -124,7 +124,7 @@ export const memoryConfigSchema = {
     },
     dbPath: {
       label: "Database Path",
-      placeholder: "~/.openclaw/memory/lancedb",
+      placeholder: "~/.agentme/memory/lancedb",
       advanced: true,
     },
     autoCapture: {

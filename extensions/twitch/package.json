@@ -1,8 +1,8 @@
 {
-  "name": "@openclaw/twitch",
+  "name": "@agentme/twitch",
   "version": "2026.2.9",
   "private": true,
-  "description": "OpenClaw Twitch channel plugin",
+  "description": "AgentMe Twitch channel plugin",
   "type": "module",
   "dependencies": {
     "@twurple/api": "^8.0.3",
@@ -11,9 +11,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "agentme": "workspace:*"
   },
-  "openclaw": {
+  "agentme": {
     "extensions": [
       "./index.ts"
     ]

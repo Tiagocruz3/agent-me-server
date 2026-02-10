@@ -1,4 +1,4 @@
-# fastlane setup (OpenClaw iOS)
+# fastlane setup (AgentMe iOS)
 
 Install:
 

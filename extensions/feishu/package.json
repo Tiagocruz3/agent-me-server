@@ -1,7 +1,7 @@
 {
-  "name": "@openclaw/feishu",
+  "name": "@agentme/feishu",
   "version": "2026.2.9",
-  "description": "OpenClaw Feishu/Lark channel plugin (community maintained by @m1heng)",
+  "description": "AgentMe Feishu/Lark channel plugin (community maintained by @m1heng)",
   "type": "module",
   "dependencies": {
     "@larksuiteoapi/node-sdk": "^1.58.0",
@@ -9,9 +9,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "agentme": "workspace:*"
   },
-  "openclaw": {
+  "agentme": {
     "extensions": [
       "./index.ts"
     ],
@@ -29,7 +29,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@openclaw/feishu",
+      "npmSpec": "@agentme/feishu",
       "localPath": "extensions/feishu",
       "defaultChoice": "npm"
     }

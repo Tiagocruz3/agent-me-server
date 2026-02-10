@@ -1,12 +1,12 @@
 import CoreLocation
 import Foundation
-import OpenClawKit
+import AgentMeKit
 import UIKit
 
 protocol CameraServicing: Sendable {
     func listDevices() async -> [CameraController.CameraDeviceInfo]
-    func snap(params: OpenClawCameraSnapParams) async throws -> (format: String, base64: String, width: Int, height: Int)
-    func clip(params: OpenClawCameraClipParams) async throws -> (format: String, base64: String, durationMs: Int, hasAudio: Bool)
+    func snap(params: AgentMeCameraSnapParams) async throws -> (format: String, base64: String, width: Int, height: Int)
+    func clip(params: AgentMeCameraClipParams) async throws -> (format: String, base64: String, durationMs: Int, hasAudio: Bool)
 }
 
 protocol ScreenRecordingServicing: Sendable {
@@ -22,41 +22,41 @@ protocol ScreenRecordingServicing: Sendable {
 protocol LocationServicing: Sendable {
     func authorizationStatus() -> CLAuthorizationStatus
     func accuracyAuthorization() -> CLAccuracyAuthorization
-    func ensureAuthorization(mode: OpenClawLocationMode) async -> CLAuthorizationStatus
+    func ensureAuthorization(mode: AgentMeLocationMode) async -> CLAuthorizationStatus
     func currentLocation(
-        params: OpenClawLocationGetParams,
-        desiredAccuracy: OpenClawLocationAccuracy,
+        params: AgentMeLocationGetParams,
+        desiredAccuracy: AgentMeLocationAccuracy,
         maxAgeMs: Int?,
         timeoutMs: Int?) async throws -> CLLocation
 }
 
 protocol DeviceStatusServicing: Sendable {
-    func status() async throws -> OpenClawDeviceStatusPayload
-    func info() -> OpenClawDeviceInfoPayload
+    func status() async throws -> AgentMeDeviceStatusPayload
+    func info() -> AgentMeDeviceInfoPayload
 }
 
 protocol PhotosServicing: Sendable {
-    func latest(params: OpenClawPhotosLatestParams) async throws -> OpenClawPhotosLatestPayload
+    func latest(params: AgentMePhotosLatestParams) async throws -> AgentMePhotosLatestPayload
 }
 
 protocol ContactsServicing: Sendable {
-    func search(params: OpenClawContactsSearchParams) async throws -> OpenClawContactsSearchPayload
-    func add(params: OpenClawContactsAddParams) async throws -> OpenClawContactsAddPayload
+    func search(params: AgentMeContactsSearchParams) async throws -> AgentMeContactsSearchPayload
+    func add(params: AgentMeContactsAddParams) async throws -> AgentMeContactsAddPayload
 }
 
 protocol CalendarServicing: Sendable {
-    func events(params: OpenClawCalendarEventsParams) async throws -> OpenClawCalendarEventsPayload
-    func add(params: OpenClawCalendarAddParams) async throws -> OpenClawCalendarAddPayload
+    func events(params: AgentMeCalendarEventsParams) async throws -> AgentMeCalendarEventsPayload
+    func add(params: AgentMeCalendarAddParams) async throws -> AgentMeCalendarAddPayload
 }
 
 protocol RemindersServicing: Sendable {
-    func list(params: OpenClawRemindersListParams) async throws -> OpenClawRemindersListPayload
-    func add(params: OpenClawRemindersAddParams) async throws -> OpenClawRemindersAddPayload
+    func list(params: AgentMeRemindersListParams) async throws -> AgentMeRemindersListPayload
+    func add(params: AgentMeRemindersAddParams) async throws -> AgentMeRemindersAddPayload
 }
 
 protocol MotionServicing: Sendable {
-    func activities(params: OpenClawMotionActivityParams) async throws -> OpenClawMotionActivityPayload
-    func pedometer(params: OpenClawPedometerParams) async throws -> OpenClawPedometerPayload
+    func activities(params: AgentMeMotionActivityParams) async throws -> AgentMeMotionActivityPayload
+    func pedometer(params: AgentMePedometerParams) async throws -> AgentMePedometerPayload
 }
 
 extension CameraController: CameraServicing {}

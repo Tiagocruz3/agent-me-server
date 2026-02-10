@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { AgentMeConfig } from "../../config/config.js";
 import {
   applyCrossContextDecoration,
   buildCrossContextDecoration,
@@ -13,13 +13,13 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as OpenClawConfig;
+} as AgentMeConfig;
 
 const discordConfig = {
   channels: {
     discord: {},
   },
-} as OpenClawConfig;
+} as AgentMeConfig;
 
 describe("outbound policy", () => {
   it("blocks cross-provider sends by default", () => {
@@ -40,7 +40,7 @@ describe("outbound policy", () => {
       tools: {
         message: { crossContext: { allowAcrossProviders: true } },
       },
-    } as OpenClawConfig;
+    } as AgentMeConfig;
 
     expect(() =>
       enforceCrossContextPolicy({
@@ -57,7 +57,7 @@ describe("outbound policy", () => {
     const cfg = {
       ...slackConfig,
       tools: { message: { crossContext: { allowWithinProvider: false } } },
-    } as OpenClawConfig;
+    } as AgentMeConfig;
 
     expect(() =>
       enforceCrossContextPolicy({

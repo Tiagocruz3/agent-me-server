@@ -4,7 +4,7 @@ import CoreLocation
 import CoreMotion
 import EventKit
 import Foundation
-import OpenClawKit
+import AgentMeKit
 import Network
 import Observation
 import Photos
@@ -426,7 +426,7 @@ final class GatewayConnectionController {
         if manualClientId?.isEmpty == false {
             return manualClientId!
         }
-        return "openclaw-ios"
+        return "agentme-ios"
     }
 
     private func resolveManualPort(host: String, port: Int, useTLS: Bool) -> Int? {
@@ -456,29 +456,29 @@ final class GatewayConnectionController {
     }
 
     private func currentCaps() -> [String] {
-        var caps = [OpenClawCapability.canvas.rawValue, OpenClawCapability.screen.rawValue]
+        var caps = [AgentMeCapability.canvas.rawValue, AgentMeCapability.screen.rawValue]
 
         // Default-on: if the key doesn't exist yet, treat it as enabled.
         let cameraEnabled =
             UserDefaults.standard.object(forKey: "camera.enabled") == nil
                 ? true
                 : UserDefaults.standard.bool(forKey: "camera.enabled")
-        if cameraEnabled { caps.append(OpenClawCapability.camera.rawValue) }
+        if cameraEnabled { caps.append(AgentMeCapability.camera.rawValue) }
 
         let voiceWakeEnabled = UserDefaults.standard.bool(forKey: VoiceWakePreferences.enabledKey)
-        if voiceWakeEnabled { caps.append(OpenClawCapability.voiceWake.rawValue) }
+        if voiceWakeEnabled { caps.append(AgentMeCapability.voiceWake.rawValue) }
 
         let locationModeRaw = UserDefaults.standard.string(forKey: "location.enabledMode") ?? "off"
-        let locationMode = OpenClawLocationMode(rawValue: locationModeRaw) ?? .off
-        if locationMode != .off { caps.append(OpenClawCapability.location.rawValue) }
+        let locationMode = AgentMeLocationMode(rawValue: locationModeRaw) ?? .off
+        if locationMode != .off { caps.append(AgentMeCapability.location.rawValue) }
 
-        caps.append(OpenClawCapability.device.rawValue)
-        caps.append(OpenClawCapability.photos.rawValue)
-        caps.append(OpenClawCapability.contacts.rawValue)
-        caps.append(OpenClawCapability.calendar.rawValue)
-        caps.append(OpenClawCapability.reminders.rawValue)
+        caps.append(AgentMeCapability.device.rawValue)
+        caps.append(AgentMeCapability.photos.rawValue)
+        caps.append(AgentMeCapability.contacts.rawValue)
+        caps.append(AgentMeCapability.calendar.rawValue)
+        caps.append(AgentMeCapability.reminders.rawValue)
         if Self.motionAvailable() {
-            caps.append(OpenClawCapability.motion.rawValue)
+            caps.append(AgentMeCapability.motion.rawValue)
         }
 
         return caps
@@ -486,54 +486,54 @@ final class GatewayConnectionController {
 
     private func currentCommands() -> [String] {
         var commands: [String] = [
-            OpenClawCanvasCommand.present.rawValue,
-            OpenClawCanvasCommand.hide.rawValue,
-            OpenClawCanvasCommand.navigate.rawValue,
-            OpenClawCanvasCommand.evalJS.rawValue,
-            OpenClawCanvasCommand.snapshot.rawValue,
-            OpenClawCanvasA2UICommand.push.rawValue,
-            OpenClawCanvasA2UICommand.pushJSONL.rawValue,
-            OpenClawCanvasA2UICommand.reset.rawValue,
-            OpenClawScreenCommand.record.rawValue,
-            OpenClawSystemCommand.notify.rawValue,
-            OpenClawChatCommand.push.rawValue,
-            OpenClawTalkCommand.pttStart.rawValue,
-            OpenClawTalkCommand.pttStop.rawValue,
-            OpenClawTalkCommand.pttCancel.rawValue,
-            OpenClawTalkCommand.pttOnce.rawValue,
+            AgentMeCanvasCommand.present.rawValue,
+            AgentMeCanvasCommand.hide.rawValue,
+            AgentMeCanvasCommand.navigate.rawValue,
+            AgentMeCanvasCommand.evalJS.rawValue,
+            AgentMeCanvasCommand.snapshot.rawValue,
+            AgentMeCanvasA2UICommand.push.rawValue,
+            AgentMeCanvasA2UICommand.pushJSONL.rawValue,
+            AgentMeCanvasA2UICommand.reset.rawValue,
+            AgentMeScreenCommand.record.rawValue,
+            AgentMeSystemCommand.notify.rawValue,
+            AgentMeChatCommand.push.rawValue,
+            AgentMeTalkCommand.pttStart.rawValue,
+            AgentMeTalkCommand.pttStop.rawValue,
+            AgentMeTalkCommand.pttCancel.rawValue,
+            AgentMeTalkCommand.pttOnce.rawValue,
         ]
 
         let caps = Set(self.currentCaps())
-        if caps.contains(OpenClawCapability.camera.rawValue) {
-            commands.append(OpenClawCameraCommand.list.rawValue)
-            commands.append(OpenClawCameraCommand.snap.rawValue)
-            commands.append(OpenClawCameraCommand.clip.rawValue)
+        if caps.contains(AgentMeCapability.camera.rawValue) {
+            commands.append(AgentMeCameraCommand.list.rawValue)
+            commands.append(AgentMeCameraCommand.snap.rawValue)
+            commands.append(AgentMeCameraCommand.clip.rawValue)
         }
-        if caps.contains(OpenClawCapability.location.rawValue) {
-            commands.append(OpenClawLocationCommand.get.rawValue)
+        if caps.contains(AgentMeCapability.location.rawValue) {
+            commands.append(AgentMeLocationCommand.get.rawValue)
         }
-        if caps.contains(OpenClawCapability.device.rawValue) {
-            commands.append(OpenClawDeviceCommand.status.rawValue)
-            commands.append(OpenClawDeviceCommand.info.rawValue)
+        if caps.contains(AgentMeCapability.device.rawValue) {
+            commands.append(AgentMeDeviceCommand.status.rawValue)
+            commands.append(AgentMeDeviceCommand.info.rawValue)
         }
-        if caps.contains(OpenClawCapability.photos.rawValue) {
-            commands.append(OpenClawPhotosCommand.latest.rawValue)
+        if caps.contains(AgentMeCapability.photos.rawValue) {
+            commands.append(AgentMePhotosCommand.latest.rawValue)
         }
-        if caps.contains(OpenClawCapability.contacts.rawValue) {
-            commands.append(OpenClawContactsCommand.search.rawValue)
-            commands.append(OpenClawContactsCommand.add.rawValue)
+        if caps.contains(AgentMeCapability.contacts.rawValue) {
+            commands.append(AgentMeContactsCommand.search.rawValue)
+            commands.append(AgentMeContactsCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.calendar.rawValue) {
-            commands.append(OpenClawCalendarCommand.events.rawValue)
-            commands.append(OpenClawCalendarCommand.add.rawValue)
+        if caps.contains(AgentMeCapability.calendar.rawValue) {
+            commands.append(AgentMeCalendarCommand.events.rawValue)
+            commands.append(AgentMeCalendarCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.reminders.rawValue) {
-            commands.append(OpenClawRemindersCommand.list.rawValue)
-            commands.append(OpenClawRemindersCommand.add.rawValue)
+        if caps.contains(AgentMeCapability.reminders.rawValue) {
+            commands.append(AgentMeRemindersCommand.list.rawValue)
+            commands.append(AgentMeRemindersCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.motion.rawValue) {
-            commands.append(OpenClawMotionCommand.activity.rawValue)
-            commands.append(OpenClawMotionCommand.pedometer.rawValue)
+        if caps.contains(AgentMeCapability.motion.rawValue) {
+            commands.append(AgentMeMotionCommand.activity.rawValue)
+            commands.append(AgentMeMotionCommand.pedometer.rawValue)
         }
 
         return commands

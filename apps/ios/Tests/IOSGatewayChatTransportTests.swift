@@ -1,6 +1,6 @@
-import OpenClawKit
+import AgentMeKit
 import Testing
-@testable import OpenClaw
+@testable import AgentMe
 
 @Suite struct IOSGatewayChatTransportTests {
     @Test func requestsFailFastWhenGatewayNotConnected() async {

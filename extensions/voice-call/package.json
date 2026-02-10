@@ -1,7 +1,7 @@
 {
-  "name": "@openclaw/voice-call",
+  "name": "@agentme/voice-call",
   "version": "2026.2.9",
-  "description": "OpenClaw voice-call plugin",
+  "description": "AgentMe voice-call plugin",
   "type": "module",
   "dependencies": {
     "@sinclair/typebox": "0.34.48",
@@ -9,9 +9,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "agentme": "workspace:*"
   },
-  "openclaw": {
+  "agentme": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { AgentMeConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { resolveGatewayPort } from "../config/config.js";
 import { findTailscaleBinary } from "../infra/tailscale.js";
@@ -10,10 +10,10 @@ import { guardCancel, normalizeGatewayTokenInput, randomToken } from "./onboard-
 type GatewayAuthChoice = "token" | "password";
 
 export async function promptGatewayConfig(
-  cfg: OpenClawConfig,
+  cfg: AgentMeConfig,
   runtime: RuntimeEnv,
 ): Promise<{
-  config: OpenClawConfig;
+  config: AgentMeConfig;
   port: number;
   token?: string;
 }> {
@@ -144,7 +144,7 @@ export async function promptGatewayConfig(
   let tailscaleResetOnExit = false;
   if (tailscaleMode !== "off") {
     note(
-      ["Docs:", "https://docs.openclaw.ai/gateway/tailscale", "https://docs.openclaw.ai/web"].join(
+      ["Docs:", "https://docs.agentme.ai/gateway/tailscale", "https://docs.agentme.ai/web"].join(
         "\n",
       ),
       "Tailscale",

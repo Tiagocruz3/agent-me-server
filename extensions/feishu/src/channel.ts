@@ -1,5 +1,5 @@
-import type { ChannelMeta, ChannelPlugin, ClawdbotConfig } from "openclaw/plugin-sdk";
-import { DEFAULT_ACCOUNT_ID, PAIRING_APPROVED_MESSAGE } from "openclaw/plugin-sdk";
+import type { ChannelMeta, ChannelPlugin, ClawdbotConfig } from "agentme/plugin-sdk";
+import { DEFAULT_ACCOUNT_ID, PAIRING_APPROVED_MESSAGE } from "agentme/plugin-sdk";
 import type { ResolvedFeishuAccount, FeishuConfig } from "./types.js";
 import {
   resolveFeishuAccount,

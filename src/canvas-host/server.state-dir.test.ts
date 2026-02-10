@@ -21,8 +21,8 @@ describe("canvas host state dir defaults", () => {
     restoreStateDirEnv(envSnapshot);
   });
 
-  it("uses OPENCLAW_STATE_DIR for the default canvas root", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-canvas-state-"));
+  it("uses AGENTME_STATE_DIR for the default canvas root", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "agentme-canvas-state-"));
     const stateDir = path.join(tempRoot, "state");
     setStateDirEnv(stateDir);
     vi.resetModules();
@@ -39,7 +39,7 @@ describe("canvas host state dir defaults", () => {
       expect(actualRoot).toBe(expectedRoot);
       const indexPath = path.join(expectedRoot, "index.html");
       const indexContents = await fs.readFile(indexPath, "utf8");
-      expect(indexContents).toContain("OpenClaw Canvas");
+      expect(indexContents).toContain("AgentMe Canvas");
     } finally {
       await handler.close();
       await fs.rm(tempRoot, { recursive: true, force: true });

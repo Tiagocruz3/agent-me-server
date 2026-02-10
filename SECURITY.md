@@ -1,21 +1,21 @@
 # Security Policy
 
-If you believe you've found a security issue in OpenClaw, please report it privately.
+If you believe you've found a security issue in AgentMe, please report it privately.
 
 ## Reporting
 
 Report vulnerabilities directly to the repository where the issue lives:
 
-- **Core CLI and gateway** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **macOS desktop app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
-- **iOS app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
-- **Android app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
-- **ClawHub** — [openclaw/clawhub](https://github.com/openclaw/clawhub)
-- **Trust and threat model** — [openclaw/trust](https://github.com/openclaw/trust)
+- **Core CLI and gateway** — [agentme/agentme](https://github.com/agentme/agentme)
+- **macOS desktop app** — [agentme/agentme](https://github.com/agentme/agentme) (apps/macos)
+- **iOS app** — [agentme/agentme](https://github.com/agentme/agentme) (apps/ios)
+- **Android app** — [agentme/agentme](https://github.com/agentme/agentme) (apps/android)
+- **ClawHub** — [agentme/clawhub](https://github.com/agentme/clawhub)
+- **Trust and threat model** — [agentme/trust](https://github.com/agentme/trust)
 
-For issues that don't fit a specific repo, or if you're unsure, email **security@openclaw.ai** and we'll route it.
+For issues that don't fit a specific repo, or if you're unsure, email **security@agentme.ai** and we'll route it.
 
-For full reporting instructions see our [Trust page](https://trust.openclaw.ai).
+For full reporting instructions see our [Trust page](https://trust.agentme.ai).
 
 ### Required in Reports
 
@@ -32,34 +32,34 @@ Reports without reproduction steps, demonstrated impact, and remediation advice 
 
 ## Security & Trust
 
-**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) is Security & Trust at OpenClaw. Jamieson is the founder of [Dvuln](https://dvuln.com) and brings extensive experience in offensive security, penetration testing, and security program development.
+**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) is Security & Trust at AgentMe. Jamieson is the founder of [Dvuln](https://dvuln.com) and brings extensive experience in offensive security, penetration testing, and security program development.
 
 ## Bug Bounties
 
-OpenClaw is a labor of love. There is no bug bounty program and no budget for paid reports. Please still disclose responsibly so we can fix issues quickly.
+AgentMe is a labor of love. There is no bug bounty program and no budget for paid reports. Please still disclose responsibly so we can fix issues quickly.
 The best way to help the project right now is by sending PRs.
 
 ## Out of Scope
 
 - Public Internet Exposure
-- Using OpenClaw in ways that the docs recommend not to
+- Using AgentMe in ways that the docs recommend not to
 - Prompt injection attacks
 
 ## Operational Guidance
 
-For threat model + hardening guidance (including `openclaw security audit --deep` and `--fix`), see:
+For threat model + hardening guidance (including `agentme security audit --deep` and `--fix`), see:
 
-- `https://docs.openclaw.ai/gateway/security`
+- `https://docs.agentme.ai/gateway/security`
 
 ### Web Interface Safety
 
-OpenClaw's web interface is intended for local use only. Do **not** bind it to the public internet; it is not hardened for public exposure.
+AgentMe's web interface is intended for local use only. Do **not** bind it to the public internet; it is not hardened for public exposure.
 
 ## Runtime Requirements
 
 ### Node.js Version
 
-OpenClaw requires **Node.js 22.12.0 or later** (LTS). This version includes important security patches:
+AgentMe requires **Node.js 22.12.0 or later** (LTS). This version includes important security patches:
 
 - CVE-2025-59466: async_hooks DoS vulnerability
 - CVE-2026-21636: Permission model bypass vulnerability
@@ -72,7 +72,7 @@ node --version  # Should be v22.12.0 or later
 
 ### Docker Security
 
-When running OpenClaw in Docker:
+When running AgentMe in Docker:
 
 1. The official image runs as a non-root user (`node`) for reduced attack surface
 2. Use `--read-only` flag when possible for additional filesystem protection
@@ -82,8 +82,8 @@ Example secure Docker run:
 
 ```bash
 docker run --read-only --cap-drop=ALL \
-  -v openclaw-data:/app/data \
-  openclaw/openclaw:latest
+  -v agentme-data:/app/data \
+  agentme/agentme:latest
 ```
 
 ## Security Scanning

@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/discord",
+  "name": "@agentme/discord",
   "version": "2026.2.9",
-  "description": "OpenClaw Discord channel plugin",
+  "description": "AgentMe Discord channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "agentme": "workspace:*"
   },
-  "openclaw": {
+  "agentme": {
     "extensions": [
       "./index.ts"
     ]
