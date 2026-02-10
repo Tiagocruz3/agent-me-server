@@ -237,7 +237,19 @@ export function renderApp(state: AppViewState) {
                 onConnect: () => state.connect(),
                 onRefresh: () => state.loadOverview(),
                 onboarding: state.onboarding,
-                onNavigateTab: (tab) => state.setTab(tab),
+                onNavigateTab: (tab: "channels" | "config" | "chat") => state.setTab(tab),
+                onSaveLocalEnv: async (entries: Array<{ key: string; value: string }>) => {
+                  if (!state.client || !state.connected) {
+                    state.lastError = "Connect to gateway before saving .env";
+                    return;
+                  }
+                  try {
+                    await state.client.request("wizard.saveLocalEnv", { entries });
+                    state.lastError = null;
+                  } catch (err) {
+                    state.lastError = String(err);
+                  }
+                },
               })
             : nothing
         }

@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
 import type { GatewayRequestHandlers } from "./types.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
+import { loadConfig } from "../../config/config.js";
+import { upsertWorkspaceEnvVar } from "../../infra/env-file.js";
 import { defaultRuntime } from "../../runtime.js";
 import { WizardSession } from "../../wizard/session.js";
 import {
@@ -82,6 +85,55 @@ export const wizardHandlers: GatewayRequestHandlers = {
       context.purgeWizardSession(sessionId);
     }
     respond(true, result, undefined);
+  },
+  "wizard.saveLocalEnv": ({ params, respond }) => {
+    const entriesRaw = (params as { entries?: unknown }).entries;
+    if (!Array.isArray(entriesRaw) || entriesRaw.length === 0) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "entries[] required"));
+      return;
+    }
+    const entries = entriesRaw
+      .map((entry) => {
+        const key = (entry as { key?: unknown }).key;
+        const value = (entry as { value?: unknown }).value;
+        if (typeof key !== "string" || typeof value !== "string") {
+          return null;
+        }
+        const trimmedKey = key.trim();
+        if (!trimmedKey) {
+          return null;
+        }
+        return { key: trimmedKey, value: value.trim() };
+      })
+      .filter((entry): entry is { key: string; value: string } => Boolean(entry));
+
+    if (!entries.length) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "no valid env entries"));
+      return;
+    }
+
+    const cfg = loadConfig();
+    const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
+    const results: Array<{ key: string; path: string; updated: boolean; created: boolean }> = [];
+    for (const entry of entries) {
+      const write = upsertWorkspaceEnvVar({
+        workspaceDir,
+        key: entry.key,
+        value: entry.value,
+      });
+      results.push({ key: entry.key, ...write });
+    }
+
+    respond(
+      true,
+      {
+        ok: true,
+        workspaceDir,
+        path: `${workspaceDir}/.env`,
+        results,
+      },
+      undefined,
+    );
   },
   "wizard.cancel": ({ params, respond, context }) => {
     if (!validateWizardCancelParams(params)) {

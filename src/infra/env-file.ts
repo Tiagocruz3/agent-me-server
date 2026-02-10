@@ -2,14 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { escapeRegExp, resolveConfigDir } from "../utils.js";
 
-export function upsertSharedEnvVar(params: {
+function upsertEnvVarAtPath(params: {
+  filepath: string;
   key: string;
   value: string;
-  env?: NodeJS.ProcessEnv;
 }): { path: string; updated: boolean; created: boolean } {
-  const env = params.env ?? process.env;
-  const dir = resolveConfigDir(env);
-  const filepath = path.join(dir, ".env");
+  const filepath = params.filepath;
   const key = params.key.trim();
   const value = params.value;
 
@@ -42,6 +40,7 @@ export function upsertSharedEnvVar(params: {
     updated = true;
   }
 
+  const dir = path.dirname(filepath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   }
@@ -51,4 +50,25 @@ export function upsertSharedEnvVar(params: {
   fs.chmodSync(filepath, 0o600);
 
   return { path: filepath, updated, created: !raw };
+}
+
+export function upsertSharedEnvVar(params: {
+  key: string;
+  value: string;
+  env?: NodeJS.ProcessEnv;
+}): { path: string; updated: boolean; created: boolean } {
+  const env = params.env ?? process.env;
+  const dir = resolveConfigDir(env);
+  const filepath = path.join(dir, ".env");
+  return upsertEnvVarAtPath({ filepath, key: params.key, value: params.value });
+}
+
+export function upsertWorkspaceEnvVar(params: {
+  workspaceDir: string;
+  key: string;
+  value: string;
+}): { path: string; updated: boolean; created: boolean } {
+  const workspaceDir = params.workspaceDir.trim();
+  const filepath = path.join(workspaceDir, ".env");
+  return upsertEnvVarAtPath({ filepath, key: params.key, value: params.value });
 }

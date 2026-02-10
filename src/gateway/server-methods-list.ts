@@ -27,6 +27,7 @@ const BASE_METHODS = [
   "exec.approval.resolve",
   "wizard.start",
   "wizard.next",
+  "wizard.saveLocalEnv",
   "wizard.cancel",
   "wizard.status",
   "talk.mode",

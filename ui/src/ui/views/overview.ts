@@ -22,6 +22,7 @@ export type OverviewProps = {
   onRefresh: () => void;
   onboarding?: boolean;
   onNavigateTab?: (tab: "channels" | "config" | "chat") => void;
+  onSaveLocalEnv?: (entries: Array<{ key: string; value: string }>) => void | Promise<void>;
 };
 
 export function renderOverview(props: OverviewProps) {
@@ -169,8 +170,44 @@ export function renderOverview(props: OverviewProps) {
                 `,
               )}
             </div>
+            <div class="form-grid" style="margin-top: 14px;">
+              <label class="field">
+                <span>OpenAI API Key</span>
+                <input class="onboard-env-openai" type="password" placeholder="sk-..." />
+              </label>
+              <label class="field">
+                <span>Telegram Bot Token</span>
+                <input class="onboard-env-telegram" type="password" placeholder="123456:ABC..." />
+              </label>
+              <label class="field">
+                <span>Owner Telegram ID</span>
+                <input class="onboard-env-owner" placeholder="7847610860" />
+              </label>
+            </div>
             <div class="row" style="margin-top: 14px;">
               <button class="btn" @click=${() => props.onConnect()}>Connect</button>
+              <button
+                class="btn"
+                @click=${(e: Event) => {
+                  const root = (e.currentTarget as HTMLElement).closest("section");
+                  const openai =
+                    (root?.querySelector(".onboard-env-openai") as HTMLInputElement | null)?.value?.trim() ?? "";
+                  const telegram =
+                    (root?.querySelector(".onboard-env-telegram") as HTMLInputElement | null)?.value?.trim() ?? "";
+                  const owner =
+                    (root?.querySelector(".onboard-env-owner") as HTMLInputElement | null)?.value?.trim() ?? "";
+                  const entries = [
+                    openai ? { key: "OPENAI_API_KEY", value: openai } : null,
+                    telegram ? { key: "TELEGRAM_BOT_TOKEN", value: telegram } : null,
+                    owner ? { key: "AGENTME_OWNER_IDS", value: owner } : null,
+                  ].filter((entry): entry is { key: string; value: string } => Boolean(entry));
+                  if (entries.length) {
+                    void props.onSaveLocalEnv?.(entries);
+                  }
+                }}
+              >
+                Save to workspace .env
+              </button>
               <button class="btn" @click=${() => props.onNavigateTab?.("channels")}>Open Channels</button>
               <button class="btn" @click=${() => props.onNavigateTab?.("config")}>Open Config</button>
               <button class="btn" @click=${() => props.onNavigateTab?.("chat")}>Open Chat</button>
