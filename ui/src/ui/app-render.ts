@@ -236,6 +236,8 @@ export function renderApp(state: AppViewState) {
                 },
                 onConnect: () => state.connect(),
                 onRefresh: () => state.loadOverview(),
+                onboarding: state.onboarding,
+                onNavigateTab: (tab) => state.setTab(tab),
               })
             : nothing
         }

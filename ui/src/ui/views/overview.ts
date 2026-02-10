@@ -20,6 +20,8 @@ export type OverviewProps = {
   onSessionKeyChange: (next: string) => void;
   onConnect: () => void;
   onRefresh: () => void;
+  onboarding?: boolean;
+  onNavigateTab?: (tab: "channels" | "config" | "chat") => void;
 };
 
 export function renderOverview(props: OverviewProps) {
@@ -76,6 +78,35 @@ export function renderOverview(props: OverviewProps) {
       </div>
     `;
   })();
+  const onboardingSteps = (() => {
+    const hasGatewayUrl = Boolean(props.settings.gatewayUrl.trim());
+    const hasAuth = Boolean(props.settings.token.trim() || props.password.trim());
+    const connected = props.connected;
+    const hasSessionKey = Boolean(props.settings.sessionKey.trim());
+    return [
+      {
+        label: "Gateway URL",
+        done: hasGatewayUrl,
+        hint: hasGatewayUrl ? "Configured" : "Set your gateway WebSocket URL",
+      },
+      {
+        label: "Auth",
+        done: hasAuth,
+        hint: hasAuth ? "Token/password added" : "Add gateway token or password",
+      },
+      {
+        label: "Connect",
+        done: connected,
+        hint: connected ? "Connection healthy" : "Press Connect and verify status",
+      },
+      {
+        label: "Default session",
+        done: hasSessionKey,
+        hint: hasSessionKey ? "Session key ready" : "Set the default session key",
+      },
+    ];
+  })();
+
   const insecureContextHint = (() => {
     if (props.connected || !props.lastError) {
       return null;
@@ -120,6 +151,34 @@ export function renderOverview(props: OverviewProps) {
   })();
 
   return html`
+    ${props.onboarding
+      ? html`
+          <section class="card" style="margin-bottom: 18px; border-color: var(--accent);">
+            <div class="card-title">Agent Me Onboarding Wizard</div>
+            <div class="card-sub">GUI-first setup. No terminal required.</div>
+            <div class="note-grid" style="margin-top: 14px;">
+              ${onboardingSteps.map(
+                (step) => html`
+                  <div>
+                    <div class="note-title">
+                      <span class="statusDot ${step.done ? "ok" : ""}"></span>
+                      ${step.label}
+                    </div>
+                    <div class="muted">${step.hint}</div>
+                  </div>
+                `,
+              )}
+            </div>
+            <div class="row" style="margin-top: 14px;">
+              <button class="btn" @click=${() => props.onConnect()}>Connect</button>
+              <button class="btn" @click=${() => props.onNavigateTab?.("channels")}>Open Channels</button>
+              <button class="btn" @click=${() => props.onNavigateTab?.("config")}>Open Config</button>
+              <button class="btn" @click=${() => props.onNavigateTab?.("chat")}>Open Chat</button>
+            </div>
+          </section>
+        `
+      : ""}
+
     <section class="grid grid-cols-2">
       <div class="card">
         <div class="card-title">Gateway Access</div>
