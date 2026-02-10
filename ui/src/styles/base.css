@@ -1,58 +1,58 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
-  /* Background - Warmer dark with depth */
-  --bg: #12141a;
-  --bg-accent: #14161d;
-  --bg-elevated: #1a1d25;
-  --bg-hover: #262a35;
-  --bg-muted: #262a35;
+  /* Background - Agent Me dark charcoal */
+  --bg: #1f2126;
+  --bg-accent: #22252b;
+  --bg-elevated: #262a31;
+  --bg-hover: #2d323a;
+  --bg-muted: #2d323a;
 
-  /* Card / Surface - More contrast between levels */
-  --card: #181b22;
-  --card-foreground: #f4f4f5;
-  --card-highlight: rgba(255, 255, 255, 0.05);
-  --popover: #181b22;
-  --popover-foreground: #f4f4f5;
+  /* Card / Surface */
+  --card: #252a31;
+  --card-foreground: #f3f4f6;
+  --card-highlight: rgba(255, 255, 255, 0.04);
+  --popover: #252a31;
+  --popover-foreground: #f3f4f6;
 
   /* Panel */
-  --panel: #12141a;
-  --panel-strong: #1a1d25;
-  --panel-hover: #262a35;
-  --chrome: rgba(18, 20, 26, 0.95);
-  --chrome-strong: rgba(18, 20, 26, 0.98);
+  --panel: #1f2126;
+  --panel-strong: #252a31;
+  --panel-hover: #2d323a;
+  --chrome: rgba(31, 33, 38, 0.95);
+  --chrome-strong: rgba(31, 33, 38, 0.98);
 
   /* Text - Slightly warmer */
-  --text: #e4e4e7;
-  --text-strong: #fafafa;
-  --chat-text: #e4e4e7;
-  --muted: #71717a;
-  --muted-strong: #52525b;
-  --muted-foreground: #71717a;
+  --text: #f3f4f6;
+  --text-strong: #ffffff;
+  --chat-text: #f3f4f6;
+  --muted: #a3aab5;
+  --muted-strong: #8b94a2;
+  --muted-foreground: #a3aab5;
 
-  /* Border - Subtle but defined */
-  --border: #27272a;
-  --border-strong: #3f3f46;
-  --border-hover: #52525b;
-  --input: #27272a;
-  --ring: #10b981;
+  /* Border */
+  --border: #343a44;
+  --border-strong: #48505d;
+  --border-hover: #5a6474;
+  --input: #343a44;
+  --ring: #19c37d;
 
-  /* Accent - Agent Me chat emerald */
-  --accent: #10b981;
-  --accent-hover: #059669;
-  --accent-muted: #10b981;
-  --accent-subtle: rgba(16, 185, 129, 0.15);
-  --accent-foreground: #04110a;
-  --accent-glow: rgba(16, 185, 129, 0.28);
-  --primary: #10b981;
-  --primary-foreground: #04110a;
+  /* Accent - Agent Me emerald */
+  --accent: #19c37d;
+  --accent-hover: #13a66b;
+  --accent-muted: #19c37d;
+  --accent-subtle: rgba(25, 195, 125, 0.16);
+  --accent-foreground: #03140d;
+  --accent-glow: rgba(25, 195, 125, 0.30);
+  --primary: #19c37d;
+  --primary-foreground: #03140d;
 
-  /* Secondary accent for highlights */
-  --secondary: #1e2028;
+  /* Secondary accent for action button */
+  --secondary: #252a31;
   --secondary-foreground: #f4f4f5;
-  --accent-2: #34d399;
-  --accent-2-muted: rgba(52, 211, 153, 0.7);
-  --accent-2-subtle: rgba(52, 211, 153, 0.15);
+  --accent-2: #6d5efc;
+  --accent-2-muted: rgba(109, 94, 252, 0.72);
+  --accent-2-subtle: rgba(109, 94, 252, 0.16);
 
   /* Semantic - More saturated */
   --ok: #22c55e;
@@ -69,7 +69,7 @@
   --info: #3b82f6;
 
   /* Focus - With glow */
-  --focus: rgba(16, 185, 129, 0.25);
+  --focus: rgba(25, 195, 125, 0.25);
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring);
   --focus-glow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ring), 0 0 20px var(--accent-glow);
 
