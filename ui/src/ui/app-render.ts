@@ -137,7 +137,14 @@ export function renderApp(state: AppViewState) {
               <img src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"} alt="Agent Me" />
             </div>
             <div class="brand-text">
-              <div class="brand-title">AGENT ME</div>
+              <div class="brand-title">
+                <img
+                  class="brand-title-icon"
+                  src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"}
+                  alt="Agent Me icon"
+                />
+                <span>AGENT ME</span>
+              </div>
               <div class="brand-sub">Control Dashboard</div>
             </div>
           </div>
