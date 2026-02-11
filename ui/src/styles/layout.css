@@ -94,15 +94,16 @@
 }
 
 .topbar-app-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
   display: block;
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg-elev) 85%, transparent);
-  background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
+  padding: 1px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, white 16%, transparent);
+  background: color-mix(in srgb, white 92%, transparent);
 }
 
 .topbar .nav-collapse-toggle {
