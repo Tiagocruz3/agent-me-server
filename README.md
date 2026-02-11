@@ -141,6 +141,31 @@ Recent hardening work removed the high-risk findings in our active deployment ba
 
 > Note: Agentic systems still require careful operational security (least privilege, isolated hosts, vetted skills, secret hygiene). This section summarizes hardening progress, not a guarantee against all prompt-injection or supply-chain risk.
 
+## Memory system improvements (Agent Me)
+
+This fork now includes a markdown-native memory management workflow and UI:
+
+- **Dynamic memory filing scripts (MVP v1)**
+  - `scripts/memory_router.py`: classifies incoming notes and files them into structured markdown categories (`decisions`, `todos`, `projects`, `people`, `topics`, and `daily` logs).
+  - `scripts/memory_find.py`: searches markdown memory content with lightweight scoring and recency bias.
+  - `docs/memory-system.md`: usage docs and folder layout.
+
+- **Memory File Manager in Control UI (modal via sidebar)**
+  - New **Memory** tab under **Settings**.
+  - Gateway-backed file operations for markdown memory:
+    - `memory.list`
+    - `memory.get`
+    - `memory.set`
+  - Safe-path constraints: memory root only, `.md` files only, traversal blocked.
+
+- **Current capability summary**
+  - Browse memory files
+  - Open/edit markdown notes
+  - Save updates through Gateway RPC
+  - Refresh file index from UI
+
+This provides a local-first, structured memory layer for Agent Me while keeping markdown portability and human-readable auditability.
+
 ## Highlights
 
 - **[Local-first Gateway](https://docs.agentme.ai/gateway)** — single control plane for sessions, channels, tools, and events.
