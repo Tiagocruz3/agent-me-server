@@ -134,7 +134,7 @@ export function renderApp(state: AppViewState) {
           </button>
           <div class="brand">
             <div class="brand-logo">
-              <img src=${basePath ? `${basePath}/favicon.svg` : "/favicon.svg"} alt="Agent Me" />
+              <img src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"} alt="Agent Me" />
             </div>
             <div class="brand-text">
               <div class="brand-title">AGENT ME</div>
