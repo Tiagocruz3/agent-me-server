@@ -90,20 +90,20 @@
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .topbar-app-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   object-fit: cover;
   flex-shrink: 0;
   display: block;
   padding: 1px;
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, white 16%, transparent);
-  background: color-mix(in srgb, white 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, white 18%, transparent);
+  background: color-mix(in srgb, white 94%, transparent);
 }
 
 .topbar .nav-collapse-toggle {
