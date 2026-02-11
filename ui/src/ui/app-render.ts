@@ -1194,6 +1194,7 @@ export function renderApp(state: AppViewState) {
                 activePath: state.memoryActivePath,
                 content: state.memoryContent,
                 dirty: state.memoryDirty,
+                filterQuery: state.memoryFilterQuery,
                 onRefresh: () => {
                   void state.loadMemoryFiles();
                 },
@@ -1206,6 +1207,38 @@ export function renderApp(state: AppViewState) {
                 },
                 onSave: () => {
                   void state.saveMemoryFile();
+                },
+                onChangeFilter: (value) => {
+                  state.memoryFilterQuery = value;
+                },
+                onCreate: () => {
+                  const name = window.prompt("New memory file path (e.g. topics/new-note.md)", "topics/new-note.md");
+                  if (!name) return;
+                  void state.createMemoryFile(name);
+                },
+                onRename: () => {
+                  if (!state.memoryActivePath) return;
+                  const next = window.prompt("Rename file to:", state.memoryActivePath);
+                  if (!next || next === state.memoryActivePath) return;
+                  void state.renameMemoryFile(state.memoryActivePath, next);
+                },
+                onDelete: () => {
+                  if (!state.memoryActivePath) return;
+                  const ok = window.confirm(`Delete ${state.memoryActivePath}?`);
+                  if (!ok) return;
+                  void state.deleteMemoryFile(state.memoryActivePath);
+                },
+                onTemplate: (kind) => {
+                  const date = new Date().toISOString().slice(0, 10);
+                  const title = kind.charAt(0).toUpperCase() + kind.slice(1);
+                  const template = `# ${title}: ${date}
+
+- Context:
+- Notes:
+- Next steps:
+`;
+                  state.memoryContent = template;
+                  state.memoryDirty = true;
                 },
               })
             : nothing

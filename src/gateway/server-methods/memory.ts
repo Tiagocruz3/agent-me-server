@@ -1,4 +1,13 @@
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { join, relative, resolve } from "node:path";
 import type { GatewayRequestHandlers } from "./types.js";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
@@ -94,6 +103,59 @@ export const memoryHandlers: GatewayRequestHandlers = {
       writeFileSync(abs, content, "utf8");
       const size = statSync(abs).size;
       respond(true, { ok: true, path, bytes: size }, undefined);
+    } catch (err) {
+      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+    }
+  },
+  "memory.rename": ({ params, respond }) => {
+    const from = (params as { from?: unknown }).from;
+    const to = (params as { to?: unknown }).to;
+    if (typeof from !== "string" || typeof to !== "string") {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "from/to required"));
+      return;
+    }
+    try {
+      const { memoryRoot } = resolveMemoryRoot();
+      const fromAbs = safePath(memoryRoot, from);
+      const toAbs = safePath(memoryRoot, to);
+      if (!fromAbs || !toAbs) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "invalid path"));
+        return;
+      }
+      if (!existsSync(fromAbs)) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "source file not found"));
+        return;
+      }
+      if (existsSync(toAbs)) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "target file already exists"));
+        return;
+      }
+      mkdirSync(resolve(toAbs, ".."), { recursive: true });
+      renameSync(fromAbs, toAbs);
+      respond(true, { ok: true, from, to }, undefined);
+    } catch (err) {
+      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+    }
+  },
+  "memory.delete": ({ params, respond }) => {
+    const path = (params as { path?: unknown }).path;
+    if (typeof path !== "string") {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "path required"));
+      return;
+    }
+    try {
+      const { memoryRoot } = resolveMemoryRoot();
+      const abs = safePath(memoryRoot, path);
+      if (!abs) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "invalid path"));
+        return;
+      }
+      if (!existsSync(abs)) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "file not found"));
+        return;
+      }
+      unlinkSync(abs);
+      respond(true, { ok: true, path }, undefined);
     } catch (err) {
       respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
     }

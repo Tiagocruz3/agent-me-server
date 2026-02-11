@@ -33,6 +33,8 @@ const BASE_METHODS = [
   "memory.list",
   "memory.get",
   "memory.set",
+  "memory.rename",
+  "memory.delete",
   "talk.mode",
   "models.list",
   "agents.list",

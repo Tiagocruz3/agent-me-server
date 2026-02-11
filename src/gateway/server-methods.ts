@@ -92,6 +92,8 @@ const WRITE_METHODS = new Set([
   "chat.abort",
   "browser.request",
   "memory.set",
+  "memory.rename",
+  "memory.delete",
 ]);
 
 function authorizeGatewayMethod(method: string, client: GatewayRequestOptions["client"]) {

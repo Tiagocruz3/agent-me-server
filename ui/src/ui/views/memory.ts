@@ -9,13 +9,24 @@ type MemoryViewProps = {
   activePath: string | null;
   content: string;
   dirty: boolean;
+  filterQuery: string;
   onRefresh: () => void;
   onSelect: (path: string) => void;
   onChangeContent: (value: string) => void;
   onSave: () => void;
+  onChangeFilter: (value: string) => void;
+  onCreate: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+  onTemplate: (kind: "decision" | "todo" | "project" | "person") => void;
 };
 
 export function renderMemory(props: MemoryViewProps) {
+  const q = props.filterQuery.trim().toLowerCase();
+  const filtered = q
+    ? props.files.filter((file) => file.toLowerCase().includes(q))
+    : props.files;
+
   return html`
     <section class="card">
       <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
@@ -25,6 +36,13 @@ export function renderMemory(props: MemoryViewProps) {
         </div>
         <div class="row">
           <button class="btn" @click=${props.onRefresh} ?disabled=${props.loading}>Refresh</button>
+          <button class="btn" @click=${props.onCreate} ?disabled=${props.saving}>New</button>
+          <button class="btn" @click=${props.onRename} ?disabled=${!props.activePath || props.saving}>
+            Rename
+          </button>
+          <button class="btn danger" @click=${props.onDelete} ?disabled=${!props.activePath || props.saving}>
+            Delete
+          </button>
           <button
             class="btn primary"
             @click=${props.onSave}
@@ -35,14 +53,28 @@ export function renderMemory(props: MemoryViewProps) {
         </div>
       </div>
 
+      <div class="row" style="margin-bottom: 12px; gap: 8px;">
+        <input
+          class="input"
+          style="max-width: 320px;"
+          placeholder="Filter files…"
+          .value=${props.filterQuery}
+          @input=${(event: Event) => props.onChangeFilter((event.target as HTMLInputElement).value)}
+        />
+        <button class="btn secondary" @click=${() => props.onTemplate("decision")}>Decision</button>
+        <button class="btn secondary" @click=${() => props.onTemplate("todo")}>Todo</button>
+        <button class="btn secondary" @click=${() => props.onTemplate("project")}>Project</button>
+        <button class="btn secondary" @click=${() => props.onTemplate("person")}>Person</button>
+      </div>
+
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
       ${!props.connected ? html`<div class="callout">Connect to gateway to use memory manager.</div>` : nothing}
 
       <div class="grid" style="grid-template-columns: 280px minmax(0,1fr); gap: 12px; min-height: 520px;">
         <div class="card" style="padding: 8px; overflow: auto;">
-          ${props.files.length === 0
+          ${filtered.length === 0
             ? html`<div class="muted" style="padding: 10px;">No memory files found.</div>`
-            : props.files.map(
+            : filtered.map(
                 (file) => html`
                   <button
                     class="btn ${props.activePath === file ? "primary" : "secondary"}"

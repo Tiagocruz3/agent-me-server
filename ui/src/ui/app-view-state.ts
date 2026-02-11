@@ -226,6 +226,7 @@ export type AppViewState = {
   memoryActivePath: string | null;
   memoryContent: string;
   memoryDirty: boolean;
+  memoryFilterQuery: string;
   client: GatewayBrowserClient | null;
   refreshSessionsAfterChat: Set<string>;
   connect: () => void;
@@ -238,6 +239,9 @@ export type AppViewState = {
   loadMemoryFiles: () => Promise<void>;
   openMemoryFile: (path: string) => Promise<void>;
   saveMemoryFile: () => Promise<void>;
+  createMemoryFile: (path: string, template?: string) => Promise<void>;
+  renameMemoryFile: (from: string, to: string) => Promise<void>;
+  deleteMemoryFile: (path: string) => Promise<void>;
   handleWhatsAppStart: (force: boolean) => Promise<void>;
   handleWhatsAppWait: () => Promise<void>;
   handleWhatsAppLogout: () => Promise<void>;

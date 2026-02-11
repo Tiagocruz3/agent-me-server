@@ -78,7 +78,14 @@ import {
 } from "./app-tool-stream.ts";
 import { resolveInjectedAssistantIdentity } from "./assistant-identity.ts";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
-import { loadMemoryFiles, loadMemoryFile, saveMemoryFile } from "./controllers/memory.ts";
+import {
+  createMemoryFile,
+  deleteMemoryFile,
+  loadMemoryFile,
+  loadMemoryFiles,
+  renameMemoryFile,
+  saveMemoryFile,
+} from "./controllers/memory.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
 
@@ -332,6 +339,7 @@ export class AgentMeApp extends LitElement {
   @state() memoryActivePath: string | null = null;
   @state() memoryContent = "";
   @state() memoryDirty = false;
+  @state() memoryFilterQuery = "";
 
   client: GatewayBrowserClient | null = null;
   private chatScrollFrame: number | null = null;
@@ -584,6 +592,18 @@ export class AgentMeApp extends LitElement {
 
   async saveMemoryFile() {
     await saveMemoryFile(this);
+  }
+
+  async createMemoryFile(path: string, template = "") {
+    await createMemoryFile(this, path, template);
+  }
+
+  async renameMemoryFile(from: string, to: string) {
+    await renameMemoryFile(this, from, to);
+  }
+
+  async deleteMemoryFile(path: string) {
+    await deleteMemoryFile(this, path);
   }
 
   render() {
