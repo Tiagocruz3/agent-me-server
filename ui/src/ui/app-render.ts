@@ -72,6 +72,7 @@ import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderInstances } from "./views/instances.ts";
 import { renderLogs } from "./views/logs.ts";
+import { renderMemory } from "./views/memory.ts";
 import { renderNodes } from "./views/nodes.ts";
 import { renderOverview } from "./views/overview.ts";
 import { renderSessions } from "./views/sessions.ts";
@@ -1178,6 +1179,34 @@ export function renderApp(state: AppViewState) {
                 onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
                 assistantName: state.assistantName,
                 assistantAvatar: state.assistantAvatar,
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "memory"
+            ? renderMemory({
+                connected: state.connected,
+                loading: state.memoryLoading,
+                saving: state.memorySaving,
+                error: state.memoryError,
+                files: state.memoryFiles,
+                activePath: state.memoryActivePath,
+                content: state.memoryContent,
+                dirty: state.memoryDirty,
+                onRefresh: () => {
+                  void state.loadMemoryFiles();
+                },
+                onSelect: (path) => {
+                  void state.openMemoryFile(path);
+                },
+                onChangeContent: (value) => {
+                  state.memoryContent = value;
+                  state.memoryDirty = true;
+                },
+                onSave: () => {
+                  void state.saveMemoryFile();
+                },
               })
             : nothing
         }

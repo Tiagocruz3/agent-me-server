@@ -219,6 +219,13 @@ export type AppViewState = {
   logsLimit: number;
   logsMaxBytes: number;
   logsAtBottom: boolean;
+  memoryLoading: boolean;
+  memorySaving: boolean;
+  memoryError: string | null;
+  memoryFiles: string[];
+  memoryActivePath: string | null;
+  memoryContent: string;
+  memoryDirty: boolean;
   client: GatewayBrowserClient | null;
   refreshSessionsAfterChat: Set<string>;
   connect: () => void;
@@ -228,6 +235,9 @@ export type AppViewState = {
   loadOverview: () => Promise<void>;
   loadAssistantIdentity: () => Promise<void>;
   loadCron: () => Promise<void>;
+  loadMemoryFiles: () => Promise<void>;
+  openMemoryFile: (path: string) => Promise<void>;
+  saveMemoryFile: () => Promise<void>;
   handleWhatsAppStart: (force: boolean) => Promise<void>;
   handleWhatsAppWait: () => Promise<void>;
   handleWhatsAppLogout: () => Promise<void>;

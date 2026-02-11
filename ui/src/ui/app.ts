@@ -78,6 +78,7 @@ import {
 } from "./app-tool-stream.ts";
 import { resolveInjectedAssistantIdentity } from "./assistant-identity.ts";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
+import { loadMemoryFiles, loadMemoryFile, saveMemoryFile } from "./controllers/memory.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
 
@@ -324,6 +325,14 @@ export class AgentMeApp extends LitElement {
   @state() logsMaxBytes = 250_000;
   @state() logsAtBottom = true;
 
+  @state() memoryLoading = false;
+  @state() memorySaving = false;
+  @state() memoryError: string | null = null;
+  @state() memoryFiles: string[] = [];
+  @state() memoryActivePath: string | null = null;
+  @state() memoryContent = "";
+  @state() memoryDirty = false;
+
   client: GatewayBrowserClient | null = null;
   private chatScrollFrame: number | null = null;
   private chatScrollTimeout: number | null = null;
@@ -563,6 +572,18 @@ export class AgentMeApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  async loadMemoryFiles() {
+    await loadMemoryFiles(this);
+  }
+
+  async openMemoryFile(path: string) {
+    await loadMemoryFile(this, path);
+  }
+
+  async saveMemoryFile() {
+    await saveMemoryFile(this);
   }
 
   render() {
