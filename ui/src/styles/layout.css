@@ -537,6 +537,18 @@
   flex-shrink: 0;
 }
 
+.content-modal-backdrop {
+  position: fixed;
+  inset: var(--shell-topbar-height) 0 0 0;
+  z-index: 110;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: color-mix(in srgb, black 62%, transparent);
+  backdrop-filter: blur(2px);
+  cursor: default;
+}
+
 .content--modalized {
   position: fixed;
   top: calc(var(--shell-topbar-height) + 10px);
@@ -551,6 +563,12 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   overflow-y: auto;
   overflow-x: hidden;
+  animation: modal-rise 180ms var(--ease-out);
+}
+
+.content--modalized:focus {
+  outline: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: -1px;
 }
 
 .content-modal-close {
@@ -683,5 +701,17 @@
     bottom: 10px;
     border-radius: 14px;
     padding: 14px;
+  }
+}
+
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

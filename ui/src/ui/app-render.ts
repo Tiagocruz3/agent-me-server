@@ -199,7 +199,27 @@ export function renderApp(state: AppViewState) {
           </div>
         </div>
       </aside>
-      <main class="content ${isChat ? "content--chat" : ""} ${isModalTab ? "content--modalized" : ""}">
+      ${
+        isModalTab
+          ? html`<button
+              class="content-modal-backdrop"
+              @click=${() => state.setTab("chat")}
+              aria-label="Close modal"
+            ></button>`
+          : nothing
+      }
+      <main
+        class="content ${isChat ? "content--chat" : ""} ${isModalTab ? "content--modalized" : ""}"
+        role=${isModalTab ? "dialog" : "main"}
+        aria-modal=${isModalTab ? "true" : "false"}
+        tabindex=${isModalTab ? "-1" : "0"}
+        @keydown=${(event: KeyboardEvent) => {
+          if (isModalTab && event.key === "Escape") {
+            event.preventDefault();
+            state.setTab("chat");
+          }
+        }}
+      >
         <section class="content-header">
           <div>
             ${state.tab === "usage" ? nothing : html`<div class="page-title">${titleForTab(state.tab)}</div>`}
