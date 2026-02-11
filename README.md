@@ -118,6 +118,29 @@ Default behavior on Telegram/WhatsApp/Signal/iMessage/Microsoft Teams/Discord/Go
 
 Run `agentme doctor` to surface risky/misconfigured DM policies.
 
+## Fork security hardening summary (Agent Me)
+
+To address the most common OpenClaw-class deployment complaints (unauthenticated dashboards, reverse-proxy trust gaps, loose local secrets handling), this fork ships and documents a stricter hardening workflow:
+
+- **Built-in security audit tooling**: `agentme security audit --deep` and `agentme security audit --fix` to detect and remediate risky configs quickly.
+- **Gateway auth enforcement guidance**: token/password auth is expected for gateway control; unauthenticated loopback/proxy patterns are flagged as critical.
+- **Reverse-proxy trust checks**: missing `gateway.trustedProxies` is flagged to prevent spoofed local-client detection when behind proxies.
+- **Filesystem hardening checks**: state/config permission drift (for example `~/.agentme`) is audited and can be auto-tightened.
+- **Control UI dangerous-mode detection**: insecure auth/device-auth bypass flags are treated as critical findings.
+- **Safer channel defaults**: DM pairing/allowlist workflow is emphasized to reduce unsolicited command execution risk.
+- **Exposure-aware guidance**: Tailscale Serve/Funnel and internet-facing modes are explicitly called out with stricter auth expectations.
+
+### Security issues addressed in current Agent Me hardening pass
+
+Recent hardening work removed the high-risk findings in our active deployment baseline:
+
+- Fixed **gateway auth missing on loopback** (`gateway.loopback_no_auth`).
+- Fixed **missing trusted proxies config** (`gateway.trusted_proxies_missing`) for loopback/proxy safety.
+- Fixed **state directory over-permission** (`fs.state_dir.perms_readable`) by tightening local state perms.
+- Reduced deep audit from **1 critical / 3 warn** to **0 critical / 0 warn** on the aligned runtime profile.
+
+> Note: Agentic systems still require careful operational security (least privilege, isolated hosts, vetted skills, secret hygiene). This section summarizes hardening progress, not a guarantee against all prompt-injection or supply-chain risk.
+
 ## Highlights
 
 - **[Local-first Gateway](https://docs.agentme.ai/gateway)** — single control plane for sessions, channels, tools, and events.
