@@ -227,14 +227,6 @@ export function renderChat(props: ChatProps) {
               <div class="chat-welcome">
                 <div class="chat-welcome__icon">🤖</div>
                 <h2 class="chat-welcome__title">How can I help you today?</h2>
-                <div class="chat-welcome__status">
-                  <div class="chat-welcome__status-avatar">🤖</div>
-                  <div>
-                    <div class="chat-welcome__status-name">EMC2</div>
-                    <div class="chat-welcome__status-sub">Connected via claw</div>
-                  </div>
-                </div>
-
               </div>
             `
           : nothing
