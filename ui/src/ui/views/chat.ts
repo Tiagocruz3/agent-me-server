@@ -283,9 +283,13 @@ export function renderChat(props: ChatProps) {
 
   return html`
     <section class="card chat">
-      ${props.disabledReason ? html`<div class="callout">${props.disabledReason}</div>` : nothing}
-
-      ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
+      ${
+        props.error
+          ? html`<div class="callout danger">${props.error}</div>`
+          : props.disabledReason
+            ? html`<div class="callout">${props.disabledReason}</div>`
+            : nothing
+      }
 
       ${
         props.focusMode
