@@ -367,9 +367,15 @@
 }
 
 .chat-welcome__icon {
-  font-size: 56px;
   text-align: center;
   margin-bottom: 10px;
+}
+
+.chat-welcome__icon-image {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  background: transparent;
 }
 
 .chat-welcome__title {
