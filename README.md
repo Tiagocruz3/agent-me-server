@@ -133,19 +133,19 @@ To address the most common OpenClaw-class deployment complaints (unauthenticated
 ### Security issues addressed in current Agent Me hardening pass
 
 Recent hardening work removed the high-risk findings in our active deployment baseline:
-### Security sprint follow-ups implemented
-
-- **UI gateway URL hardening**: querystring `gatewayUrl` auto-connect override removed; UI will not auto-apply arbitrary gateway endpoints from links.
-- **Trusted gateway endpoint enforcement (UI)**: Control UI blocks connections to non-local/non-same-host gateway URLs to reduce token exfiltration risk.
-- **Gateway config security invariants (validation)**: config validation now rejects insecure combinations (missing auth with Control UI, missing trusted proxies for Control UI, and dangerous control UI auth flags).
-- **Skills safe mode baseline**: `skills.install.safeMode` defaults to restrictive behavior (unless explicitly disabled) with `skills.install.allowlist` support for controlled installs.
-- **Basic exfil path guard**: command execution now blocks common sensitive-path read patterns by default (can be overridden with `AGENTME_EXFIL_GUARD=off` for controlled environments).
-
 
 - Fixed **gateway auth missing on loopback** (`gateway.loopback_no_auth`).
 - Fixed **missing trusted proxies config** (`gateway.trusted_proxies_missing`) for loopback/proxy safety.
 - Fixed **state directory over-permission** (`fs.state_dir.perms_readable`) by tightening local state perms.
 - Reduced deep audit from **1 critical / 3 warn** to **0 critical / 0 warn** on the aligned runtime profile.
+
+### Security sprint follow-ups implemented (latest)
+
+- **UI gateway URL hardening**: query/hash `gatewayUrl` auto-connect override removed and stripped from links in Control UI.
+- **Trusted gateway endpoint enforcement (UI)**: Control UI blocks connections to non-local/non-same-host gateway URLs to reduce token exfiltration risk.
+- **Gateway config security invariants (validation)**: config validation now rejects insecure combinations (missing auth with Control UI, missing trusted proxies for Control UI, dangerous control-ui bypass flags, and non-loopback bind without auth).
+- **Skills safe mode baseline**: `skills.install.safeMode` + `skills.install.allowlist` added and enforced for controlled skill installs.
+- **Basic exfil path guard**: command execution blocks common sensitive-path read patterns by default (override only via `AGENTME_EXFIL_GUARD=off` in controlled environments).
 
 > Note: Agentic systems still require careful operational security (least privilege, isolated hosts, vetted skills, secret hygiene). This section summarizes hardening progress, not a guarantee against all prompt-injection or supply-chain risk.
 
