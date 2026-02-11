@@ -120,6 +120,11 @@ export function renderApp(state: AppViewState) {
     <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""}">
       <header class="topbar">
         <div class="topbar-left">
+          <img
+            class="topbar-app-icon"
+            src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"}
+            alt="Agent Me"
+          />
           <button
             class="nav-collapse-toggle"
             @click=${() =>
@@ -133,18 +138,8 @@ export function renderApp(state: AppViewState) {
             <span class="nav-collapse-toggle__icon">${icons.menu}</span>
           </button>
           <div class="brand">
-            <div class="brand-logo">
-              <img src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"} alt="Agent Me" />
-            </div>
             <div class="brand-text">
-              <div class="brand-title">
-                <img
-                  class="brand-title-icon"
-                  src=${basePath ? `${basePath}/favicon-32.png` : "/favicon-32.png"}
-                  alt="Agent Me icon"
-                />
-                <span>AGENT ME</span>
-              </div>
+              <div class="brand-title">AGENT ME</div>
               <div class="brand-sub">Control Dashboard</div>
             </div>
           </div>
