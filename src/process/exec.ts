@@ -29,12 +29,41 @@ function resolveCommand(command: string): string {
   return command;
 }
 
+
+function matchesSensitivePathGuard(argv: string[]): string | null {
+  if ((process.env.AGENTME_EXFIL_GUARD ?? "on").toLowerCase() === "off") {
+    return null;
+  }
+  const joined = argv.join(" ").toLowerCase();
+  const readLike = /(cat|less|more|head|tail|grep|sed|awk|rg)/.test(joined);
+  if (!readLike) {
+    return null;
+  }
+  const sensitivePatterns = [
+    /\.ssh\/id_(rsa|ed25519|ecdsa)/,
+    /\/etc\/shadow/,
+    /\.env/,
+    /aws\/credentials/,
+    /\.gnupg\//,
+  ];
+  for (const pattern of sensitivePatterns) {
+    if (pattern.test(joined)) {
+      return `blocked potential sensitive-path read: ${pattern}`;
+    }
+  }
+  return null;
+}
+
 // Simple promise-wrapped execFile with optional verbosity logging.
 export async function runExec(
   command: string,
   args: string[],
   opts: number | { timeoutMs?: number; maxBuffer?: number } = 10_000,
 ): Promise<{ stdout: string; stderr: string }> {
+  const guard = matchesSensitivePathGuard([command, ...args]);
+  if (guard) {
+    throw new Error(guard);
+  }
   const options =
     typeof opts === "number"
       ? { timeout: opts, encoding: "utf8" as const }
@@ -85,6 +114,10 @@ export async function runCommandWithTimeout(
   const options: CommandOptions =
     typeof optionsOrTimeout === "number" ? { timeoutMs: optionsOrTimeout } : optionsOrTimeout;
   const { timeoutMs, cwd, input, env } = options;
+  const guard = matchesSensitivePathGuard(argv);
+  if (guard) {
+    throw new Error(guard);
+  }
   const { windowsVerbatimArguments } = options;
   const hasInput = input !== undefined;
 

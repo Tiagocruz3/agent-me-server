@@ -83,6 +83,58 @@ function validateIdentityAvatar(config: AgentMeConfig): ConfigValidationIssue[] 
   return issues;
 }
 
+
+function validateGatewaySecurity(config: AgentMeConfig): ConfigValidationIssue[] {
+  const issues: ConfigValidationIssue[] = [];
+  const gateway = config.gateway;
+  const bind = gateway?.bind ?? "loopback";
+  const controlUiEnabled = gateway?.controlUi?.enabled !== false;
+  const trustedProxies = Array.isArray(gateway?.trustedProxies) ? gateway.trustedProxies : [];
+  const authMode = gateway?.auth?.mode ?? "token";
+  const hasToken = typeof gateway?.auth?.token === "string" && gateway.auth.token.trim().length > 0;
+  const hasPassword =
+    typeof gateway?.auth?.password === "string" && gateway.auth.password.trim().length > 0;
+  const hasAuth = (authMode === "token" && hasToken) || (authMode === "password" && hasPassword);
+
+  if (bind !== "loopback" && !hasAuth) {
+    issues.push({
+      path: "gateway.auth",
+      message: "gateway auth is required when binding beyond loopback.",
+    });
+  }
+
+  if (bind === "loopback" && controlUiEnabled && !hasAuth) {
+    issues.push({
+      path: "gateway.auth",
+      message: "gateway auth is required when Control UI is enabled (even on loopback).",
+    });
+  }
+
+  if (bind === "loopback" && controlUiEnabled && trustedProxies.length === 0) {
+    issues.push({
+      path: "gateway.trustedProxies",
+      message:
+        "gateway.trustedProxies must be configured when Control UI is enabled to prevent proxy trust bypass.",
+    });
+  }
+
+  if (gateway?.controlUi?.allowInsecureAuth === true) {
+    issues.push({
+      path: "gateway.controlUi.allowInsecureAuth",
+      message: "allowInsecureAuth=true is not permitted in hardened mode.",
+    });
+  }
+
+  if (gateway?.controlUi?.dangerouslyDisableDeviceAuth === true) {
+    issues.push({
+      path: "gateway.controlUi.dangerouslyDisableDeviceAuth",
+      message: "dangerouslyDisableDeviceAuth=true is not permitted in hardened mode.",
+    });
+  }
+
+  return issues;
+}
+
 export function validateConfigObject(
   raw: unknown,
 ): { ok: true; config: AgentMeConfig } | { ok: false; issues: ConfigValidationIssue[] } {
@@ -121,6 +173,10 @@ export function validateConfigObject(
   const avatarIssues = validateIdentityAvatar(validated.data as AgentMeConfig);
   if (avatarIssues.length > 0) {
     return { ok: false, issues: avatarIssues };
+  }
+  const gatewayIssues = validateGatewaySecurity(validated.data as AgentMeConfig);
+  if (gatewayIssues.length > 0) {
+    return { ok: false, issues: gatewayIssues };
   }
   return {
     ok: true,

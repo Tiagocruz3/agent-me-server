@@ -115,12 +115,45 @@ function applySessionDefaults(host: GatewayHost, defaults?: SessionDefaultsSnaps
   }
 }
 
+
+function isTrustedGatewayUrl(rawUrl: string): boolean {
+  const value = (rawUrl || "").trim();
+  if (!value) {
+    return false;
+  }
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  const protocol = url.protocol.toLowerCase();
+  if (!(protocol === "ws:" || protocol === "wss:" || protocol === "http:" || protocol === "https:")) {
+    return false;
+  }
+  const host = url.hostname.toLowerCase();
+  const pageHost = window.location.hostname.toLowerCase();
+  const localHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  if (localHosts.has(host)) {
+    return true;
+  }
+  if (host === pageHost) {
+    return true;
+  }
+  return false;
+}
+
 export function connectGateway(host: GatewayHost) {
   host.lastError = null;
   host.hello = null;
   host.connected = false;
   host.execApprovalQueue = [];
   host.execApprovalError = null;
+
+  if (!isTrustedGatewayUrl(host.settings.gatewayUrl)) {
+    host.lastError = `blocked untrusted gateway URL: ${host.settings.gatewayUrl}`;
+    return;
+  }
 
   host.client?.stop();
   host.client = new GatewayBrowserClient({

@@ -142,6 +142,22 @@ export const skillsHandlers: GatewayRequestHandlers = {
       timeoutMs?: number;
     };
     const cfg = loadConfig();
+    const safeMode = cfg.skills?.install?.safeMode !== false;
+    const allowlist = Array.isArray(cfg.skills?.install?.allowlist)
+      ? cfg.skills?.install?.allowlist.map((entry) => String(entry).trim()).filter(Boolean)
+      : [];
+    if (safeMode && !allowlist.includes(p.name) && !allowlist.includes(p.installId)) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.UNAVAILABLE,
+          `skills.install blocked by safe mode; add "${p.name}" or "${p.installId}" to skills.install.allowlist or set skills.install.safeMode=false`,
+        ),
+      );
+      return;
+    }
+
     const workspaceDirRaw = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
     const result = await installSkill({
       workspaceDir: workspaceDirRaw,

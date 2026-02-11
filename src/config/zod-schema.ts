@@ -530,6 +530,8 @@ export const AgentMeSchema = z
             nodeManager: z
               .union([z.literal("npm"), z.literal("pnpm"), z.literal("yarn"), z.literal("bun")])
               .optional(),
+            safeMode: z.boolean().optional(),
+            allowlist: z.array(z.string()).optional(),
           })
           .strict()
           .optional(),

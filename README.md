@@ -133,6 +133,14 @@ To address the most common OpenClaw-class deployment complaints (unauthenticated
 ### Security issues addressed in current Agent Me hardening pass
 
 Recent hardening work removed the high-risk findings in our active deployment baseline:
+### Security sprint follow-ups implemented
+
+- **UI gateway URL hardening**: querystring `gatewayUrl` auto-connect override removed; UI will not auto-apply arbitrary gateway endpoints from links.
+- **Trusted gateway endpoint enforcement (UI)**: Control UI blocks connections to non-local/non-same-host gateway URLs to reduce token exfiltration risk.
+- **Gateway config security invariants (validation)**: config validation now rejects insecure combinations (missing auth with Control UI, missing trusted proxies for Control UI, and dangerous control UI auth flags).
+- **Skills safe mode baseline**: `skills.install.safeMode` defaults to restrictive behavior (unless explicitly disabled) with `skills.install.allowlist` support for controlled installs.
+- **Basic exfil path guard**: command execution now blocks common sensitive-path read patterns by default (can be overridden with `AGENTME_EXFIL_GUARD=off` for controlled environments).
+
 
 - Fixed **gateway auth missing on loopback** (`gateway.loopback_no_auth`).
 - Fixed **missing trusted proxies config** (`gateway.trusted_proxies_missing`) for loopback/proxy safety.
