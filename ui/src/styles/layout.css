@@ -537,6 +537,37 @@
   flex-shrink: 0;
 }
 
+.content--modalized {
+  position: fixed;
+  top: calc(var(--shell-topbar-height) + 10px);
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 120;
+  padding: 18px;
+  background: color-mix(in srgb, var(--card) 96%, black 4%);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.content-modal-close {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-modal-close svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ===========================================
    Grid Utilities
    =========================================== */
@@ -641,5 +672,16 @@
 
   .list-item {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1100px) {
+  .content--modalized {
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 14px;
+    padding: 14px;
   }
 }

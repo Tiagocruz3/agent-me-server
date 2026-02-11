@@ -103,6 +103,7 @@ export function renderApp(state: AppViewState) {
   const cronNext = state.cronStatus?.nextWakeAtMs ?? null;
   const chatDisabledReason = state.connected ? null : "Disconnected from gateway.";
   const isChat = state.tab === "chat";
+  const isModalTab = !isChat;
   const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding);
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
@@ -198,7 +199,7 @@ export function renderApp(state: AppViewState) {
           </div>
         </div>
       </aside>
-      <main class="content ${isChat ? "content--chat" : ""}">
+      <main class="content ${isChat ? "content--chat" : ""} ${isModalTab ? "content--modalized" : ""}">
         <section class="content-header">
           <div>
             ${state.tab === "usage" ? nothing : html`<div class="page-title">${titleForTab(state.tab)}</div>`}
@@ -207,6 +208,20 @@ export function renderApp(state: AppViewState) {
           <div class="page-meta">
             ${state.lastError ? html`<div class="pill danger">${state.lastError}</div>` : nothing}
             ${isChat ? renderChatControls(state) : nothing}
+            ${
+              isModalTab
+                ? html`
+                    <button
+                      class="btn secondary content-modal-close"
+                      @click=${() => state.setTab("chat")}
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      ${icons.x}
+                    </button>
+                  `
+                : nothing
+            }
           </div>
         </section>
 
