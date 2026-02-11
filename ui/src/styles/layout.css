@@ -94,11 +94,15 @@
 }
 
 .topbar-app-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
   object-fit: cover;
   flex-shrink: 0;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg-elev) 85%, transparent);
+  background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
 }
 
 .topbar .nav-collapse-toggle {
