@@ -68,7 +68,6 @@ function headerValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-
 function normalizeOrigin(value?: string): string {
   const raw = (value ?? "").trim();
   if (!raw || raw === "null") {

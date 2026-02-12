@@ -16,9 +16,7 @@ export type DiscordMessageEvent = import("./listeners.js").DiscordMessageEvent;
 
 export type DiscordMessagePreflightContext = {
   cfg: LoadedConfig;
-  discordConfig: NonNullable<
-    import("../../config/config.js").AgentMeConfig["channels"]
-  >["discord"];
+  discordConfig: NonNullable<import("../../config/config.js").AgentMeConfig["channels"]>["discord"];
   accountId: string;
   token: string;
   runtime: RuntimeEnv;

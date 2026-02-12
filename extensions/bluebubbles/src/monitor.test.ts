@@ -1,7 +1,7 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AgentMeConfig, PluginRuntime } from "agentme/plugin-sdk";
-import { EventEmitter } from "node:events";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { removeAckReactionAfterReply, shouldAckReaction } from "agentme/plugin-sdk";
+import { EventEmitter } from "node:events";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResolvedBlueBubblesAccount } from "./accounts.js";
 import {

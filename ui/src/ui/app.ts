@@ -385,7 +385,7 @@ export class AgentMeApp extends LitElement {
   }
 
   connect() {
-    connectGatewayInternal(this as unknown as Parameters<typeof connectGatewayInternal>[0]);
+    void connectGatewayInternal(this as unknown as Parameters<typeof connectGatewayInternal>[0]);
   }
 
   handleChatScroll(event: Event) {
@@ -548,6 +548,12 @@ export class AgentMeApp extends LitElement {
 
   handleGatewayUrlCancel() {
     this.pendingGatewayUrl = null;
+  }
+
+  async handleStartOpenAiBrowserSignIn() {
+    this.setTab("config");
+    this.lastError =
+      "OpenAI browser sign-in: run `agentme models auth login openai-codex` in your terminal on this host, then refresh. Native in-app OAuth handoff is being finalized.";
   }
 
   async handleGenerateBootstrapLink() {

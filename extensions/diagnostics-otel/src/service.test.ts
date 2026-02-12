@@ -193,14 +193,10 @@ describe("diagnostics-otel service", () => {
     });
 
     expect(telemetryState.counters.get("agentme.webhook.received")?.add).toHaveBeenCalled();
-    expect(
-      telemetryState.histograms.get("agentme.webhook.duration_ms")?.record,
-    ).toHaveBeenCalled();
+    expect(telemetryState.histograms.get("agentme.webhook.duration_ms")?.record).toHaveBeenCalled();
     expect(telemetryState.counters.get("agentme.message.queued")?.add).toHaveBeenCalled();
     expect(telemetryState.counters.get("agentme.message.processed")?.add).toHaveBeenCalled();
-    expect(
-      telemetryState.histograms.get("agentme.message.duration_ms")?.record,
-    ).toHaveBeenCalled();
+    expect(telemetryState.histograms.get("agentme.message.duration_ms")?.record).toHaveBeenCalled();
     expect(telemetryState.histograms.get("agentme.queue.wait_ms")?.record).toHaveBeenCalled();
     expect(telemetryState.counters.get("agentme.session.stuck")?.add).toHaveBeenCalled();
     expect(

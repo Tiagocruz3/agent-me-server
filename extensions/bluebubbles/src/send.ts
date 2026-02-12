@@ -1,6 +1,6 @@
 import type { AgentMeConfig } from "agentme/plugin-sdk";
-import crypto from "node:crypto";
 import { stripMarkdown } from "agentme/plugin-sdk";
+import crypto from "node:crypto";
 import { resolveBlueBubblesAccount } from "./accounts.js";
 import {
   extractHandleFromChatGuid,

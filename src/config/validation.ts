@@ -83,7 +83,6 @@ function validateIdentityAvatar(config: AgentMeConfig): ConfigValidationIssue[] 
   return issues;
 }
 
-
 function validateGatewaySecurity(config: AgentMeConfig): ConfigValidationIssue[] {
   const issues: ConfigValidationIssue[] = [];
   const gateway = config.gateway;

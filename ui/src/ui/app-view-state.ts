@@ -257,6 +257,7 @@ export type AppViewState = {
   handleGatewayUrlConfirm: () => void;
   handleGatewayUrlCancel: () => void;
   handleGenerateBootstrapLink: () => Promise<void>;
+  handleStartOpenAiBrowserSignIn: () => Promise<void>;
   handleConfigLoad: () => Promise<void>;
   handleConfigSave: () => Promise<void>;
   handleConfigApply: () => Promise<void>;

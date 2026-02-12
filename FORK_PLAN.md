@@ -1,11 +1,13 @@
 # AgentMe Fork Plan (Rebrand + Security + Clone Pipeline)
 
 ## Goal
+
 Create a branded AgentMe fork with stronger security defaults and a repeatable clone/deploy process where secrets are entered on first boot (never baked into images).
 
 ---
 
 ## Phase 0 — Repo Setup (Today)
+
 - [x] Clone upstream repo to Desktop (`~/Desktop/agentme`)
 - [ ] Create your fork on GitHub
 - [ ] Set git remotes:
@@ -19,6 +21,7 @@ Create a branded AgentMe fork with stronger security defaults and a repeatable c
 ---
 
 ## Phase 1 — Rebrand Foundation
+
 - [ ] Rename product strings (app name, labels, docs header)
 - [ ] Replace logo/icons/theme palette
 - [ ] Add custom default persona files/templates
@@ -29,6 +32,7 @@ Deliverable: visually rebranded build that still runs upstream features.
 ---
 
 ## Phase 2 — Security Baseline (High Priority)
+
 - [ ] Enforce no-secrets-in-repo policy
   - `.env.example` placeholders only
   - pre-commit secret scanning
@@ -43,6 +47,7 @@ Deliverable: hardened default posture for all new installs.
 ---
 
 ## Phase 3 — First-Boot Setup (Clone-safe)
+
 - [ ] Add first-boot wizard script
   - asks owner name/ID, Telegram token, OpenAI key, optional providers
 - [ ] Block full runtime until required secrets are entered
@@ -54,6 +59,7 @@ Deliverable: fresh machine can be provisioned safely without key leakage.
 ---
 
 ## Phase 4 — Clone/Deploy Kit
+
 - [ ] Create template backup package (no secrets)
 - [ ] Restore script for fresh host (Pi, Mac, VPS)
 - [ ] One-command installer for dependencies + service setup
@@ -64,6 +70,7 @@ Deliverable: repeatable "spin-up a clone" workflow.
 ---
 
 ## Phase 5 — Production Readiness
+
 - [ ] Regression tests for key flows (chat/audio/image/browser/exec)
 - [ ] Rate-limit + timeout checks
 - [ ] Security audit checklist pass
@@ -74,6 +81,7 @@ Deliverable: stable and marketable fork release.
 ---
 
 ## Immediate Next 3 Actions
+
 1. Create GitHub fork and connect remotes.
 2. Implement first security PR (`security/baseline`): secret scan + secure file perms + allowlist defaults.
 3. Implement first-boot wizard skeleton (`bootstrap/first-boot`).

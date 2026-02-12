@@ -374,8 +374,8 @@ agentme pairing list feishu
 
 ## Gateway management commands
 
-| Command                    | Description                   |
-| -------------------------- | ----------------------------- |
+| Command                   | Description                   |
+| ------------------------- | ----------------------------- |
 | `agentme gateway status`  | Show gateway status           |
 | `agentme gateway install` | Install/start gateway service |
 | `agentme gateway stop`    | Stop gateway service          |

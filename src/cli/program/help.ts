@@ -8,10 +8,7 @@ import { replaceCliName, resolveCliName } from "../cli-name.js";
 const CLI_NAME = resolveCliName();
 
 const EXAMPLES = [
-  [
-    "agentme channels login --verbose",
-    "Link personal WhatsApp Web and show QR + connection logs.",
-  ],
+  ["agentme channels login --verbose", "Link personal WhatsApp Web and show QR + connection logs."],
   [
     'agentme message send --target +15555550123 --message "Hi" --json',
     "Send via your web session and print JSON result.",

@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
 import { DEFAULT_ACCOUNT_ID } from "agentme/plugin-sdk";
+import { readFileSync } from "node:fs";
 import type { ZaloConfig } from "./types.js";
 
 export type ZaloTokenResolution = {

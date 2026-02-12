@@ -120,7 +120,7 @@ Run `agentme doctor` to surface risky/misconfigured DM policies.
 
 ## Fork security hardening summary (Agent Me)
 
-To address the most common OpenClaw-class deployment complaints (unauthenticated dashboards, reverse-proxy trust gaps, loose local secrets handling), this fork ships and documents a stricter hardening workflow:
+To address the most common legacy deployment complaints (unauthenticated dashboards, reverse-proxy trust gaps, loose local secrets handling), this fork ships and documents a stricter hardening workflow:
 
 - **Built-in security audit tooling**: `agentme security audit --deep` and `agentme security audit --fix` to detect and remediate risky configs quickly.
 - **Gateway auth enforcement guidance**: token/password auth is expected for gateway control; unauthenticated loopback/proxy patterns are flagged as critical.

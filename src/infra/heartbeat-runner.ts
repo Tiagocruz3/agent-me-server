@@ -225,10 +225,7 @@ export function isHeartbeatEnabledForAgent(cfg: AgentMeConfig, agentId?: string)
   return resolvedAgentId === resolveDefaultAgentId(cfg);
 }
 
-function resolveHeartbeatConfig(
-  cfg: AgentMeConfig,
-  agentId?: string,
-): HeartbeatConfig | undefined {
+function resolveHeartbeatConfig(cfg: AgentMeConfig, agentId?: string): HeartbeatConfig | undefined {
   const defaults = cfg.agents?.defaults?.heartbeat;
   if (!agentId) {
     return defaults;

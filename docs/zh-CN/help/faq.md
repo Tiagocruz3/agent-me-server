@@ -1149,9 +1149,9 @@ AgentMe 还会运行**静默的预压缩记忆刷新**，以提醒模型在自�
 
 所有内容位于 `$AGENTME_STATE_DIR`（默认：`~/.agentme`）下：
 
-| 路径                                                            | 用途                                                 |
-| --------------------------------------------------------------- | ---------------------------------------------------- |
-| `$AGENTME_STATE_DIR/agentme.json`                             | 主配置（JSON5）                                      |
+| 路径                                                           | 用途                                                 |
+| -------------------------------------------------------------- | ---------------------------------------------------- |
+| `$AGENTME_STATE_DIR/agentme.json`                              | 主配置（JSON5）                                      |
 | `$AGENTME_STATE_DIR/credentials/oauth.json`                    | 旧版 OAuth 导入（首次使用时复制到认证配置文件）      |
 | `$AGENTME_STATE_DIR/agents/<agentId>/agent/auth-profiles.json` | 认证配置文件（OAuth + API 密钥）                     |
 | `$AGENTME_STATE_DIR/agents/<agentId>/agent/auth.json`          | 运行时认证缓存（自动管理）                           |

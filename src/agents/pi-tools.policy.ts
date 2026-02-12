@@ -227,7 +227,6 @@ function resolveProviderToolPolicy(params: {
   return undefined;
 }
 
-
 function resolveChannelToolPolicy(params: {
   byChannel?: Record<string, ToolPolicyConfig>;
   messageProvider?: string;

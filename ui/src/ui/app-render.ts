@@ -277,6 +277,7 @@ export function renderApp(state: AppViewState) {
                 onGenerateBootstrapLink: () => state.handleGenerateBootstrapLink(),
                 onboarding: state.onboarding,
                 onNavigateTab: (tab: "channels" | "config" | "chat") => state.setTab(tab),
+                onStartOpenAiBrowserSignIn: () => state.handleStartOpenAiBrowserSignIn(),
                 onSaveLocalEnv: async (entries: Array<{ key: string; value: string }>) => {
                   if (!state.client || !state.connected) {
                     state.lastError = "Connect to gateway before saving .env";
@@ -1213,20 +1214,33 @@ export function renderApp(state: AppViewState) {
                   state.memoryFilterQuery = value;
                 },
                 onCreate: () => {
-                  const name = window.prompt("New memory file path (e.g. topics/new-note.md)", "topics/new-note.md");
-                  if (!name) return;
+                  const name = window.prompt(
+                    "New memory file path (e.g. topics/new-note.md)",
+                    "topics/new-note.md",
+                  );
+                  if (!name) {
+                    return;
+                  }
                   void state.createMemoryFile(name);
                 },
                 onRename: () => {
-                  if (!state.memoryActivePath) return;
+                  if (!state.memoryActivePath) {
+                    return;
+                  }
                   const next = window.prompt("Rename file to:", state.memoryActivePath);
-                  if (!next || next === state.memoryActivePath) return;
+                  if (!next || next === state.memoryActivePath) {
+                    return;
+                  }
                   void state.renameMemoryFile(state.memoryActivePath, next);
                 },
                 onDelete: () => {
-                  if (!state.memoryActivePath) return;
+                  if (!state.memoryActivePath) {
+                    return;
+                  }
                   const ok = window.confirm(`Delete ${state.memoryActivePath}?`);
-                  if (!ok) return;
+                  if (!ok) {
+                    return;
+                  }
                   void state.deleteMemoryFile(state.memoryActivePath);
                 },
                 onTemplate: (kind) => {

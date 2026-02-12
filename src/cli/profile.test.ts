@@ -96,9 +96,7 @@ describe("applyCliProfileEnv", () => {
 
     const resolvedHome = path.resolve("/srv/agentme-home");
     expect(env.AGENTME_STATE_DIR).toBe(path.join(resolvedHome, ".agentme-work"));
-    expect(env.AGENTME_CONFIG_PATH).toBe(
-      path.join(resolvedHome, ".agentme-work", "agentme.json"),
-    );
+    expect(env.AGENTME_CONFIG_PATH).toBe(path.join(resolvedHome, ".agentme-work", "agentme.json"));
   });
 });
 
@@ -150,9 +148,7 @@ describe("formatCliCommand", () => {
   });
 
   it("handles command with no args after agentme", () => {
-    expect(formatCliCommand("agentme", { AGENTME_PROFILE: "test" })).toBe(
-      "agentme --profile test",
-    );
+    expect(formatCliCommand("agentme", { AGENTME_PROFILE: "test" })).toBe("agentme --profile test");
   });
 
   it("handles pnpm wrapper", () => {

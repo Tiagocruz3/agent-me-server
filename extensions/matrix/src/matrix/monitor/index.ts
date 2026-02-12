@@ -1,5 +1,5 @@
-import { format } from "node:util";
 import { mergeAllowlist, summarizeMapping, type RuntimeEnv } from "agentme/plugin-sdk";
+import { format } from "node:util";
 import type { CoreConfig, ReplyToMode } from "../../types.js";
 import { resolveMatrixTargets } from "../../resolve-targets.js";
 import { getMatrixRuntime } from "../../runtime.js";

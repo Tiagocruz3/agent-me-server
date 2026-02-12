@@ -1,5 +1,5 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AgentMeConfig } from "agentme/plugin-sdk";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   createReplyPrefixOptions,
   logAckFailure,
@@ -372,10 +372,7 @@ type BlueBubblesDebouncer = {
  */
 const targetDebouncers = new Map<WebhookTarget, BlueBubblesDebouncer>();
 
-function resolveBlueBubblesDebounceMs(
-  config: AgentMeConfig,
-  core: BlueBubblesCoreRuntime,
-): number {
+function resolveBlueBubblesDebounceMs(config: AgentMeConfig, core: BlueBubblesCoreRuntime): number {
   const inbound = config.messages?.inbound;
   const hasExplicitDebounce =
     typeof inbound?.debounceMs === "number" || typeof inbound?.byChannel?.bluebubbles === "number";

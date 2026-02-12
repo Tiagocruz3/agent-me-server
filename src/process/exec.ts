@@ -29,7 +29,6 @@ function resolveCommand(command: string): string {
   return command;
 }
 
-
 function matchesSensitivePathGuard(argv: string[]): string | null {
   if ((process.env.AGENTME_EXFIL_GUARD ?? "on").toLowerCase() === "off") {
     return null;

@@ -116,7 +116,6 @@ function applySessionDefaults(host: GatewayHost, defaults?: SessionDefaultsSnaps
   }
 }
 
-
 function isTrustedGatewayUrl(rawUrl: string): boolean {
   const value = (rawUrl || "").trim();
   if (!value) {
@@ -129,7 +128,9 @@ function isTrustedGatewayUrl(rawUrl: string): boolean {
     return false;
   }
   const protocol = url.protocol.toLowerCase();
-  if (!(protocol === "ws:" || protocol === "wss:" || protocol === "http:" || protocol === "https:")) {
+  if (
+    !(protocol === "ws:" || protocol === "wss:" || protocol === "http:" || protocol === "https:")
+  ) {
     return false;
   }
   const host = url.hostname.toLowerCase();

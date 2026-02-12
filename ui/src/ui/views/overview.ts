@@ -24,6 +24,7 @@ export type OverviewProps = {
   onboarding?: boolean;
   onNavigateTab?: (tab: "channels" | "config" | "chat") => void;
   onSaveLocalEnv?: (entries: Array<{ key: string; value: string }>) => void | Promise<void>;
+  onStartOpenAiBrowserSignIn?: () => void | Promise<void>;
 };
 
 export function renderOverview(props: OverviewProps) {
@@ -153,8 +154,9 @@ export function renderOverview(props: OverviewProps) {
   })();
 
   return html`
-    ${props.onboarding
-      ? html`
+    ${
+      props.onboarding
+        ? html`
           <section class="card" style="margin-bottom: 18px; border-color: var(--accent);">
             <div class="card-title">Agent Me Onboarding Wizard</div>
             <div class="card-sub">GUI-first setup. No terminal required.</div>
@@ -199,18 +201,24 @@ export function renderOverview(props: OverviewProps) {
                 @click=${(e: Event) => {
                   const root = (e.currentTarget as HTMLElement).closest("section");
                   const mode =
-                    (root?.querySelector(".onboard-openai-auth-mode") as HTMLSelectElement | null)?.value ??
-                    "api-key";
+                    (root?.querySelector(".onboard-openai-auth-mode") as HTMLSelectElement | null)
+                      ?.value ?? "api-key";
                   if (mode === "browser-sign-in") {
-                    window.open("https://docs.agentme.ai/start/wizard", "_blank", "noopener,noreferrer");
+                    void props.onStartOpenAiBrowserSignIn?.();
                     return;
                   }
                   const openai =
-                    (root?.querySelector(".onboard-env-openai") as HTMLInputElement | null)?.value?.trim() ?? "";
+                    (
+                      root?.querySelector(".onboard-env-openai") as HTMLInputElement | null
+                    )?.value?.trim() ?? "";
                   const telegram =
-                    (root?.querySelector(".onboard-env-telegram") as HTMLInputElement | null)?.value?.trim() ?? "";
+                    (
+                      root?.querySelector(".onboard-env-telegram") as HTMLInputElement | null
+                    )?.value?.trim() ?? "";
                   const owner =
-                    (root?.querySelector(".onboard-env-owner") as HTMLInputElement | null)?.value?.trim() ?? "";
+                    (
+                      root?.querySelector(".onboard-env-owner") as HTMLInputElement | null
+                    )?.value?.trim() ?? "";
                   const entries = [
                     openai ? { key: "OPENAI_API_KEY", value: openai } : null,
                     telegram ? { key: "TELEGRAM_BOT_TOKEN", value: telegram } : null,
@@ -229,7 +237,8 @@ export function renderOverview(props: OverviewProps) {
             </div>
           </section>
         `
-      : ""}
+        : ""
+    }
 
     <section class="grid grid-cols-2">
       <div class="card">

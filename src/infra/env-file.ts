@@ -2,11 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { escapeRegExp, resolveConfigDir } from "../utils.js";
 
-function upsertEnvVarAtPath(params: {
-  filepath: string;
-  key: string;
-  value: string;
-}): { path: string; updated: boolean; created: boolean } {
+function upsertEnvVarAtPath(params: { filepath: string; key: string; value: string }): {
+  path: string;
+  updated: boolean;
+  created: boolean;
+} {
   const filepath = params.filepath;
   const key = params.key.trim();
   const value = params.value;

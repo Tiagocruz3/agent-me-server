@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
 import { DEFAULT_ACCOUNT_ID, isTruthyEnvValue, normalizeAccountId } from "agentme/plugin-sdk";
+import { readFileSync } from "node:fs";
 import type { CoreConfig, NextcloudTalkAccountConfig } from "./types.js";
 
 const debugAccounts = (...args: unknown[]) => {

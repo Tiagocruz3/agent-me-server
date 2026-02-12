@@ -16,8 +16,8 @@ import {
 } from "../commands/status.update.js";
 import { readConfigFileSnapshot, writeConfigFile } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
-import { formatDurationPrecise } from "../infra/format-time/format-duration.ts";
 import { resolveAgentMePackageRoot } from "../infra/agentme-root.js";
+import { formatDurationPrecise } from "../infra/format-time/format-duration.ts";
 import { trimLogTail } from "../infra/restart-sentinel.js";
 import { parseSemver } from "../infra/runtime-guard.js";
 import {

@@ -62,7 +62,7 @@ export const memoryHandlers: GatewayRequestHandlers = {
       files.sort((a, b) => a.localeCompare(b));
       respond(true, { files, root: memoryRoot }, undefined);
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));
     }
   },
   "memory.get": ({ params, respond }) => {
@@ -81,7 +81,7 @@ export const memoryHandlers: GatewayRequestHandlers = {
       const content = readFileSync(abs, "utf8");
       respond(true, { path, content }, undefined);
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));
     }
   },
   "memory.set": ({ params, respond }) => {
@@ -104,7 +104,7 @@ export const memoryHandlers: GatewayRequestHandlers = {
       const size = statSync(abs).size;
       respond(true, { ok: true, path, bytes: size }, undefined);
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));
     }
   },
   "memory.rename": ({ params, respond }) => {
@@ -127,14 +127,18 @@ export const memoryHandlers: GatewayRequestHandlers = {
         return;
       }
       if (existsSync(toAbs)) {
-        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "target file already exists"));
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, "target file already exists"),
+        );
         return;
       }
       mkdirSync(resolve(toAbs, ".."), { recursive: true });
       renameSync(fromAbs, toAbs);
       respond(true, { ok: true, from, to }, undefined);
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));
     }
   },
   "memory.delete": ({ params, respond }) => {
@@ -157,7 +161,7 @@ export const memoryHandlers: GatewayRequestHandlers = {
       unlinkSync(abs);
       respond(true, { ok: true, path }, undefined);
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.INTERNAL, String(err)));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));
     }
   },
 };

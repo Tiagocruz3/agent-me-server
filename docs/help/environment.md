@@ -76,10 +76,10 @@ See [Configuration: Env var substitution](/gateway/configuration#env-var-substit
 
 ## Path-related env vars
 
-| Variable               | Purpose                                                                                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Variable              | Purpose                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `AGENTME_HOME`        | Override the home directory used for all internal path resolution (`~/.agentme/`, agent dirs, sessions, credentials). Useful when running AgentMe as a dedicated service user. |
-| `AGENTME_STATE_DIR`   | Override the state directory (default `~/.agentme`).                                                                                                                            |
+| `AGENTME_STATE_DIR`   | Override the state directory (default `~/.agentme`).                                                                                                                           |
 | `AGENTME_CONFIG_PATH` | Override the config file path (default `~/.agentme/agentme.json`).                                                                                                             |
 
 ### `AGENTME_HOME`

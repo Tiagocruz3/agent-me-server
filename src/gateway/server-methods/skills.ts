@@ -144,7 +144,7 @@ export const skillsHandlers: GatewayRequestHandlers = {
     const cfg = loadConfig();
     const safeMode = cfg.skills?.install?.safeMode !== false;
     const allowlist = Array.isArray(cfg.skills?.install?.allowlist)
-      ? cfg.skills?.install?.allowlist.map((entry) => String(entry).trim()).filter(Boolean)
+      ? cfg.skills?.install?.allowlist.map((entry: string) => String(entry).trim()).filter(Boolean)
       : [];
     if (safeMode && !allowlist.includes(p.name) && !allowlist.includes(p.installId)) {
       respond(

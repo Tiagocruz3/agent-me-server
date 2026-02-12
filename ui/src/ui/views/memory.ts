@@ -23,9 +23,7 @@ type MemoryViewProps = {
 
 export function renderMemory(props: MemoryViewProps) {
   const q = props.filterQuery.trim().toLowerCase();
-  const filtered = q
-    ? props.files.filter((file) => file.toLowerCase().includes(q))
-    : props.files;
+  const filtered = q ? props.files.filter((file) => file.toLowerCase().includes(q)) : props.files;
 
   return html`
     <section class="card">
@@ -68,14 +66,23 @@ export function renderMemory(props: MemoryViewProps) {
       </div>
 
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
-      ${!props.connected ? html`<div class="callout">Connect to gateway to use memory manager.</div>` : nothing}
+      ${
+        !props.connected
+          ? html`
+              <div class="callout">Connect to gateway to use memory manager.</div>
+            `
+          : nothing
+      }
 
       <div class="grid" style="grid-template-columns: 280px minmax(0,1fr); gap: 12px; min-height: 520px;">
         <div class="card" style="padding: 8px; overflow: auto;">
-          ${filtered.length === 0
-            ? html`<div class="muted" style="padding: 10px;">No memory files found.</div>`
-            : filtered.map(
-                (file) => html`
+          ${
+            filtered.length === 0
+              ? html`
+                  <div class="muted" style="padding: 10px">No memory files found.</div>
+                `
+              : filtered.map(
+                  (file) => html`
                   <button
                     class="btn ${props.activePath === file ? "primary" : "secondary"}"
                     style="width: 100%; justify-content: flex-start; margin-bottom: 8px;"
@@ -84,7 +91,8 @@ export function renderMemory(props: MemoryViewProps) {
                     ${file}
                   </button>
                 `,
-              )}
+                )
+          }
         </div>
 
         <div class="card" style="padding: 0; overflow: hidden;">

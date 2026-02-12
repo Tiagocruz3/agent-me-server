@@ -421,8 +421,7 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.exec.safeBins":
     "Allow stdin-only safe binaries to run without explicit allowlist entries.",
   "tools.byChannel": "Channel-specific tool allow/deny policies (e.g., telegram, slack).",
-  "agents.list[].tools.byChannel":
-    "Agent-level channel-specific tool allow/deny policies.",
+  "agents.list[].tools.byChannel": "Agent-level channel-specific tool allow/deny policies.",
   "tools.message.allowCrossContextSend":
     "Legacy override: allow cross-context sends across all providers.",
   "tools.message.crossContext.allowWithinProvider":

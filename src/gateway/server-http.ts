@@ -1,6 +1,6 @@
 import type { TlsOptions } from "node:tls";
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { WebSocketServer } from "ws";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import {
   createServer as createHttpServer,
   type Server as HttpServer,
@@ -106,17 +106,17 @@ function signBootstrapPayload(payloadB64: string, secret: string): string {
   return createHmac("sha256", secret).update(payloadB64).digest("base64url");
 }
 
-function verifyBootstrapCode(code: string, secret: string):
-  | { ok: true; payload: { nonce: string; exp: number } }
-  | { ok: false; error: string } {
+function verifyBootstrapCode(
+  code: string,
+  secret: string,
+): { ok: true; payload: { nonce: string; exp: number } } | { ok: false; error: string } {
   const [payloadB64, sig] = code.split(".");
   if (!payloadB64 || !sig) {
     return { ok: false, error: "invalid bootstrap code format" };
   }
   const expected = signBootstrapPayload(payloadB64, secret);
   const validSig =
-    expected.length === sig.length &&
-    timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
+    expected.length === sig.length && timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
   if (!validSig) {
     return { ok: false, error: "invalid bootstrap code signature" };
   }
@@ -132,6 +132,33 @@ function verifyBootstrapCode(code: string, secret: string):
     return { ok: false, error: "invalid bootstrap code payload" };
   }
   return { ok: true, payload: { nonce, exp } };
+}
+
+function normalizeOrigin(value: string): string {
+  const raw = value.trim();
+  if (!raw || raw === "null") {
+    return "";
+  }
+  try {
+    return new URL(raw).origin.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function isAllowedOriginHeader(req: IncomingMessage, auth: ResolvedGatewayAuth): boolean {
+  const allowlist = (auth.allowedOrigins ?? [])
+    .map((entry) => normalizeOrigin(entry))
+    .filter(Boolean);
+  if (allowlist.length === 0) {
+    return true;
+  }
+  const originRaw = getHeader(req, "origin") ?? "";
+  const origin = normalizeOrigin(originRaw);
+  if (!origin) {
+    return false;
+  }
+  return allowlist.includes(origin);
 }
 
 function isCanvasPath(pathname: string): boolean {
@@ -389,6 +416,10 @@ export function createGatewayHttpServer(opts: {
           res.end("Method Not Allowed");
           return;
         }
+        if (!isAllowedOriginHeader(req, resolvedAuth)) {
+          sendJson(res, 403, { ok: false, error: "origin not allowed for bootstrap endpoint" });
+          return;
+        }
         const token = getBearerToken(req);
         const authResult = await authorizeGatewayConnect({
           auth: { ...resolvedAuth, allowTailscale: false },
@@ -398,6 +429,10 @@ export function createGatewayHttpServer(opts: {
         });
         if (!authResult.ok) {
           sendUnauthorized(res);
+          return;
+        }
+        if (!isAllowedOriginHeader(req, resolvedAuth)) {
+          sendJson(res, 403, { ok: false, error: "origin not allowed for bootstrap endpoint" });
           return;
         }
         const secret = resolveBootstrapSecret(resolvedAuth);
@@ -410,7 +445,10 @@ export function createGatewayHttpServer(opts: {
           body.ok && body.value && typeof body.value === "object"
             ? Number((body.value as Record<string, unknown>).ttlSec ?? 300)
             : 300;
-        const ttlMs = Math.min(BOOTSTRAP_MAX_TTL_MS, Math.max(30_000, Math.floor(ttlSecRaw * 1000)));
+        const ttlMs = Math.min(
+          BOOTSTRAP_MAX_TTL_MS,
+          Math.max(30_000, Math.floor(ttlSecRaw * 1000)),
+        );
         const nowMs = Date.now();
         cleanupBootstrapNonceStore(nowMs);
         const payload = { nonce: randomUUID(), exp: nowMs + ttlMs };

@@ -53,9 +53,7 @@ export function extractHookToken(req: IncomingMessage): string | undefined {
     }
   }
   const headerToken =
-    typeof req.headers["x-agentme-token"] === "string"
-      ? req.headers["x-agentme-token"].trim()
-      : "";
+    typeof req.headers["x-agentme-token"] === "string" ? req.headers["x-agentme-token"].trim() : "";
   if (headerToken) {
     return headerToken;
   }
