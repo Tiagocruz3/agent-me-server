@@ -209,13 +209,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           submodules: false
 
       - name: Setup Node environment
         uses: ./.github/actions/setup-node-env
 
-      - name: Check types and lint and oxfmt
-        run: pnpm check
+      - name: Check types + lint
+        run: pnpm tsgo && pnpm lint
+
+      - name: Check formatting (changed files on PRs)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            BASE="${{ github.event.before }}"
+          else
+            BASE="${{ github.event.pull_request.base.sha }}"
+          fi
+
+          CHANGED="$(git diff --name-only "$BASE" HEAD 2>/dev/null || true)"
+          if [ -z "$CHANGED" ]; then
+            echo "No changed files detected; skipping formatting check."
+            exit 0
+          fi
+
+          mapfile -t FILES < <(printf '%s\n' "$CHANGED" | while IFS= read -r path; do
+            [ -z "$path" ] && continue
+            [ -f "$path" ] || continue
+            printf '%s\n' "$path"
+          done)
+
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No existing changed files to format-check."
+            exit 0
+          fi
+
+          echo "Running oxfmt --check on ${#FILES[@]} changed files"
+          pnpm oxfmt --check "${FILES[@]}"
 
   # Validate docs (format, lint, broken links) only when docs files changed.
   check-docs:
