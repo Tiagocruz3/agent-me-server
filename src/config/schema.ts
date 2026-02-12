@@ -133,6 +133,7 @@ const FIELD_LABELS: Record<string, string> = {
   "gateway.remote.tlsFingerprint": "Remote Gateway TLS Fingerprint",
   "gateway.auth.token": "Gateway Token",
   "gateway.auth.password": "Gateway Password",
+  "gateway.auth.allowedOrigins": "Gateway Auth Allowed Origins",
   "tools.media.image.enabled": "Enable Image Understanding",
   "tools.media.image.maxBytes": "Image Understanding Max Bytes",
   "tools.media.image.maxChars": "Image Understanding Max Chars",
@@ -170,7 +171,9 @@ const FIELD_LABELS: Record<string, string> = {
   "agents.list[].tools.profile": "Agent Tool Profile",
   "agents.list[].tools.alsoAllow": "Agent Tool Allowlist Additions",
   "tools.byProvider": "Tool Policy by Provider",
+  "tools.byChannel": "Tool Policy by Channel",
   "agents.list[].tools.byProvider": "Agent Tool Policy by Provider",
+  "agents.list[].tools.byChannel": "Agent Tool Policy by Channel",
   "tools.exec.applyPatch.enabled": "Enable apply_patch",
   "tools.exec.applyPatch.allowModels": "apply_patch Model Allowlist",
   "tools.exec.notifyOnExit": "Exec Notify On Exit",
@@ -419,6 +422,8 @@ const FIELD_HELP: Record<string, string> = {
   "gateway.auth.token":
     "Required by default for gateway access (unless using Tailscale Serve identity); required for non-loopback binds.",
   "gateway.auth.password": "Required for Tailscale funnel.",
+  "gateway.auth.allowedOrigins":
+    "Optional browser Origin allowlist (exact origins) for shared token/password auth.",
   "gateway.controlUi.basePath":
     "Optional URL prefix where the Control UI is served (e.g. /agentme).",
   "gateway.controlUi.root":
@@ -462,6 +467,9 @@ const FIELD_HELP: Record<string, string> = {
   "tools.exec.pathPrepend": "Directories to prepend to PATH for exec runs (gateway/sandbox).",
   "tools.exec.safeBins":
     "Allow stdin-only safe binaries to run without explicit allowlist entries.",
+  "tools.byChannel": "Channel-specific tool allow/deny policies (e.g., telegram, slack).",
+  "agents.list[].tools.byChannel":
+    "Agent-level channel-specific tool allow/deny policies.",
   "tools.message.allowCrossContextSend":
     "Legacy override: allow cross-context sends across all providers.",
   "tools.message.crossContext.allowWithinProvider":

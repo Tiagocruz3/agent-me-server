@@ -173,6 +173,8 @@ export function createAgentMeCodingTools(options?: {
     globalProviderPolicy,
     agentPolicy,
     agentProviderPolicy,
+    globalChannelPolicy,
+    agentChannelPolicy,
     profile,
     providerProfile,
     profileAlsoAllow,
@@ -182,6 +184,7 @@ export function createAgentMeCodingTools(options?: {
     sessionKey: options?.sessionKey,
     modelProvider: options?.modelProvider,
     modelId: options?.modelId,
+    messageProvider: options?.messageProvider,
   });
   const groupPolicy = resolveGroupToolPolicy({
     config: options?.config,
@@ -224,6 +227,8 @@ export function createAgentMeCodingTools(options?: {
     globalProviderPolicy,
     agentPolicy,
     agentProviderPolicy,
+    globalChannelPolicy,
+    agentChannelPolicy,
     groupPolicy,
     sandbox?.tools,
     subagentPolicy,

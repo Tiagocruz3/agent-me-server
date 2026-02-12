@@ -87,6 +87,8 @@ export type GatewayAuthConfig = {
   password?: string;
   /** Allow Tailscale identity headers when serve mode is enabled. */
   allowTailscale?: boolean;
+  /** Optional browser Origin allowlist (exact origin values) for shared auth. */
+  allowedOrigins?: string[];
 };
 
 export type GatewayTailscaleMode = "off" | "serve" | "funnel";

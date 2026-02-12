@@ -146,6 +146,9 @@ Recent hardening work removed the high-risk findings in our active deployment ba
 - **Gateway config security invariants (validation)**: config validation now rejects insecure combinations (missing auth with Control UI, missing trusted proxies for Control UI, dangerous control-ui bypass flags, and non-loopback bind without auth).
 - **Skills safe mode baseline**: `skills.install.safeMode` + `skills.install.allowlist` added and enforced for controlled skill installs.
 - **Basic exfil path guard**: command execution blocks common sensitive-path read patterns by default (override only via `AGENTME_EXFIL_GUARD=off` in controlled environments).
+- **Origin-bound shared-auth option**: `gateway.auth.allowedOrigins` can restrict token/password auth use to approved browser origins.
+- **Channel-aware tool policy**: `tools.byChannel` and `agents[].tools.byChannel` allow per-channel tool restrictions (e.g. tighter policies in Telegram groups).
+- **CI security gate**: added workflow to run deep security audit and auth/policy regression tests on PRs/pushes.
 
 > Note: Agentic systems still require careful operational security (least privilege, isolated hosts, vetted skills, secret hygiene). This section summarizes hardening progress, not a guarantee against all prompt-injection or supply-chain risk.
 

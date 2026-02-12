@@ -98,4 +98,37 @@ describe("gateway auth", () => {
     expect(res.method).toBe("tailscale");
     expect(res.user).toBe("peter");
   });
+
+  it("enforces auth.allowedOrigins when configured", async () => {
+    const denied = await authorizeGatewayConnect({
+      auth: {
+        mode: "token",
+        token: "secret",
+        allowTailscale: false,
+        allowedOrigins: ["https://agentme.example"],
+      },
+      connectAuth: { token: "secret" },
+      req: {
+        socket: { remoteAddress: "127.0.0.1" },
+        headers: { origin: "https://evil.example" },
+      } as never,
+    });
+    expect(denied.ok).toBe(false);
+    expect(denied.reason).toBe("origin_not_allowed");
+
+    const allowed = await authorizeGatewayConnect({
+      auth: {
+        mode: "token",
+        token: "secret",
+        allowTailscale: false,
+        allowedOrigins: ["https://agentme.example"],
+      },
+      connectAuth: { token: "secret" },
+      req: {
+        socket: { remoteAddress: "127.0.0.1" },
+        headers: { origin: "https://agentme.example" },
+      } as never,
+    });
+    expect(allowed.ok).toBe(true);
+  });
 });

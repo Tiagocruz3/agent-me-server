@@ -15,6 +15,7 @@ export type ResolvedGatewayAuth = {
   token?: string;
   password?: string;
   allowTailscale: boolean;
+  allowedOrigins?: string[];
 };
 
 export type GatewayAuthResult = {
@@ -65,6 +66,31 @@ function getHostName(hostHeader?: string): string {
 
 function headerValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+
+function normalizeOrigin(value?: string): string {
+  const raw = (value ?? "").trim();
+  if (!raw || raw === "null") {
+    return "";
+  }
+  try {
+    return new URL(raw).origin.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function isAllowedBrowserOrigin(originRaw: string | undefined, allowlist?: string[]): boolean {
+  const allowed = (allowlist ?? []).map((entry) => normalizeOrigin(entry)).filter(Boolean);
+  if (allowed.length === 0) {
+    return true;
+  }
+  const origin = normalizeOrigin(originRaw);
+  if (!origin) {
+    return false;
+  }
+  return allowed.includes(origin);
 }
 
 function resolveTailscaleClientIp(req?: IncomingMessage): string | undefined {
@@ -199,11 +225,15 @@ export function resolveGatewayAuth(params: {
   const mode: ResolvedGatewayAuth["mode"] = authConfig.mode ?? (password ? "password" : "token");
   const allowTailscale =
     authConfig.allowTailscale ?? (params.tailscaleMode === "serve" && mode !== "password");
+  const allowedOrigins = Array.isArray(authConfig.allowedOrigins)
+    ? authConfig.allowedOrigins.map((entry) => entry.trim()).filter(Boolean)
+    : undefined;
   return {
     mode,
     token,
     password,
     allowTailscale,
+    allowedOrigins,
   };
 }
 
@@ -244,6 +274,10 @@ export async function authorizeGatewayConnect(params: {
         user: tailscaleCheck.user.login,
       };
     }
+  }
+
+  if (!isAllowedBrowserOrigin(headerValue(req?.headers?.origin), auth.allowedOrigins)) {
+    return { ok: false, reason: "origin_not_allowed" };
   }
 
   if (auth.mode === "token") {

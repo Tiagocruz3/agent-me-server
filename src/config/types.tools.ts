@@ -204,6 +204,8 @@ export type AgentToolsConfig = {
   deny?: string[];
   /** Optional tool policy overrides keyed by provider id or "provider/model". */
   byProvider?: Record<string, ToolPolicyConfig>;
+  /** Optional tool policy overrides keyed by message channel id (telegram, slack, etc). */
+  byChannel?: Record<string, ToolPolicyConfig>;
   /** Per-agent elevated exec gate (can only further restrict global tools.elevated). */
   elevated?: {
     /** Enable or disable elevated mode for this agent (default: true). */
@@ -332,6 +334,8 @@ export type ToolsConfig = {
   deny?: string[];
   /** Optional tool policy overrides keyed by provider id or "provider/model". */
   byProvider?: Record<string, ToolPolicyConfig>;
+  /** Optional tool policy overrides keyed by message channel id (telegram, slack, etc). */
+  byChannel?: Record<string, ToolPolicyConfig>;
   web?: {
     search?: {
       /** Enable web search tool (default: true when API key is present). */

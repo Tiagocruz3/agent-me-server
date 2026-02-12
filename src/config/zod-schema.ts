@@ -395,6 +395,7 @@ export const AgentMeSchema = z
             token: z.string().optional(),
             password: z.string().optional(),
             allowTailscale: z.boolean().optional(),
+            allowedOrigins: z.array(z.string()).optional(),
           })
           .strict()
           .optional(),

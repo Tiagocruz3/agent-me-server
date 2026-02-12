@@ -180,11 +180,13 @@ export async function handleToolsInvokeHttpRequest(
     globalProviderPolicy,
     agentPolicy,
     agentProviderPolicy,
+    globalChannelPolicy,
+    agentChannelPolicy,
     profile,
     providerProfile,
     profileAlsoAllow,
     providerProfileAlsoAllow,
-  } = resolveEffectiveToolPolicy({ config: cfg, sessionKey });
+  } = resolveEffectiveToolPolicy({ config: cfg, sessionKey, messageProvider });
   const profilePolicy = resolveToolProfilePolicy(profile);
   const providerProfilePolicy = resolveToolProfilePolicy(providerProfile);
 
@@ -269,6 +271,11 @@ export async function handleToolsInvokeHttpRequest(
     agentProviderPolicy,
     agentId ? `agents.${agentId}.tools.byProvider.allow` : "agent tools.byProvider.allow",
   );
+  const globalChannelExpanded = resolvePolicy(globalChannelPolicy, "tools.byChannel.allow");
+  const agentChannelExpanded = resolvePolicy(
+    agentChannelPolicy,
+    agentId ? `agents.${agentId}.tools.byChannel.allow` : "agent tools.byChannel.allow",
+  );
   const groupPolicyExpanded = resolvePolicy(groupPolicy, "group tools.allow");
   const subagentPolicyExpanded = expandPolicyWithPluginGroups(subagentPolicy, pluginGroups);
 
@@ -290,9 +297,15 @@ export async function handleToolsInvokeHttpRequest(
   const agentProviderFiltered = agentProviderExpanded
     ? filterToolsByPolicy(agentFiltered, agentProviderExpanded)
     : agentFiltered;
-  const groupFiltered = groupPolicyExpanded
-    ? filterToolsByPolicy(agentProviderFiltered, groupPolicyExpanded)
+  const globalChannelFiltered = globalChannelExpanded
+    ? filterToolsByPolicy(agentProviderFiltered, globalChannelExpanded)
     : agentProviderFiltered;
+  const agentChannelFiltered = agentChannelExpanded
+    ? filterToolsByPolicy(globalChannelFiltered, agentChannelExpanded)
+    : globalChannelFiltered;
+  const groupFiltered = groupPolicyExpanded
+    ? filterToolsByPolicy(agentChannelFiltered, groupPolicyExpanded)
+    : agentChannelFiltered;
   const subagentFiltered = subagentPolicyExpanded
     ? filterToolsByPolicy(groupFiltered, subagentPolicyExpanded)
     : groupFiltered;

@@ -227,11 +227,36 @@ function resolveProviderToolPolicy(params: {
   return undefined;
 }
 
+
+function resolveChannelToolPolicy(params: {
+  byChannel?: Record<string, ToolPolicyConfig>;
+  messageProvider?: string;
+}): ToolPolicyConfig | undefined {
+  const channel = normalizeMessageChannel(params.messageProvider);
+  if (!channel || !params.byChannel) {
+    return undefined;
+  }
+  const entries = Object.entries(params.byChannel);
+  if (entries.length === 0) {
+    return undefined;
+  }
+  const lookup = new Map<string, ToolPolicyConfig>();
+  for (const [key, value] of entries) {
+    const normalized = normalizeMessageChannel(key);
+    if (!normalized) {
+      continue;
+    }
+    lookup.set(normalized, value);
+  }
+  return lookup.get(channel);
+}
+
 export function resolveEffectiveToolPolicy(params: {
   config?: AgentMeConfig;
   sessionKey?: string;
   modelProvider?: string;
   modelId?: string;
+  messageProvider?: string;
 }) {
   const agentId = params.sessionKey ? resolveAgentIdFromSessionKey(params.sessionKey) : undefined;
   const agentConfig =
@@ -250,12 +275,22 @@ export function resolveEffectiveToolPolicy(params: {
     modelProvider: params.modelProvider,
     modelId: params.modelId,
   });
+  const channelPolicy = resolveChannelToolPolicy({
+    byChannel: globalTools?.byChannel,
+    messageProvider: params.messageProvider,
+  });
+  const agentChannelPolicy = resolveChannelToolPolicy({
+    byChannel: agentTools?.byChannel,
+    messageProvider: params.messageProvider,
+  });
   return {
     agentId,
     globalPolicy: pickToolPolicy(globalTools),
     globalProviderPolicy: pickToolPolicy(providerPolicy),
     agentPolicy: pickToolPolicy(agentTools),
     agentProviderPolicy: pickToolPolicy(agentProviderPolicy),
+    globalChannelPolicy: pickToolPolicy(channelPolicy),
+    agentChannelPolicy: pickToolPolicy(agentChannelPolicy),
     profile,
     providerProfile: agentProviderPolicy?.profile ?? providerPolicy?.profile,
     // alsoAllow is applied at the profile stage (to avoid being filtered out early).
