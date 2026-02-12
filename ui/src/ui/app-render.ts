@@ -274,6 +274,7 @@ export function renderApp(state: AppViewState) {
                 },
                 onConnect: () => state.connect(),
                 onRefresh: () => state.loadOverview(),
+                onGenerateBootstrapLink: () => state.handleGenerateBootstrapLink(),
                 onboarding: state.onboarding,
                 onNavigateTab: (tab: "channels" | "config" | "chat") => state.setTab(tab),
                 onSaveLocalEnv: async (entries: Array<{ key: string; value: string }>) => {

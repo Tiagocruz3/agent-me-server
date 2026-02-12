@@ -168,6 +168,7 @@ export class AgentMeApp extends LitElement {
   @state() execApprovalBusy = false;
   @state() execApprovalError: string | null = null;
   @state() pendingGatewayUrl: string | null = null;
+  @state() pendingBootstrapCode: string | null = null;
 
   @state() configLoading = false;
   @state() configRaw = "{\n}\n";
@@ -547,6 +548,57 @@ export class AgentMeApp extends LitElement {
 
   handleGatewayUrlCancel() {
     this.pendingGatewayUrl = null;
+  }
+
+  async handleGenerateBootstrapLink() {
+    const gatewayUrl = this.settings.gatewayUrl?.trim();
+    if (!gatewayUrl) {
+      this.lastError = "Set gateway URL first.";
+      return;
+    }
+    let httpOrigin = "";
+    try {
+      const url = new URL(gatewayUrl);
+      if (url.protocol === "ws:") {
+        url.protocol = "http:";
+      } else if (url.protocol === "wss:") {
+        url.protocol = "https:";
+      }
+      httpOrigin = url.origin;
+    } catch {
+      this.lastError = "Invalid gateway URL.";
+      return;
+    }
+
+    const secret = this.settings.token.trim() || this.password.trim();
+    if (!secret) {
+      this.lastError = "Add a token or password before generating bootstrap links.";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${httpOrigin}/api/bootstrap/create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${secret}`,
+        },
+        body: JSON.stringify({ ttlSec: 300 }),
+      });
+      const payload = (await res.json()) as { ok?: boolean; code?: string; error?: string };
+      if (!res.ok || !payload?.ok || !payload.code) {
+        this.lastError = payload?.error || `bootstrap create failed (${res.status})`;
+        return;
+      }
+      const linkUrl = new URL(window.location.href);
+      linkUrl.searchParams.set("bootstrap", payload.code);
+      linkUrl.searchParams.delete("token");
+      linkUrl.searchParams.delete("password");
+      await navigator.clipboard.writeText(linkUrl.toString());
+      this.lastError = "Bootstrap link copied to clipboard (single-use, short TTL).";
+    } catch (err) {
+      this.lastError = `bootstrap create failed: ${String(err)}`;
+    }
   }
 
   // Sidebar handlers for tool output viewing

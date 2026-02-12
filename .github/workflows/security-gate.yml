@@ -33,4 +33,4 @@ jobs:
         run: pnpm agentme security audit --deep
 
       - name: Security regression tests
-        run: pnpm vitest run src/gateway/auth.test.ts src/gateway/tools-invoke-http.test.ts
+        run: pnpm vitest run src/gateway/auth.test.ts src/gateway/tools-invoke-http.test.ts src/gateway/server-http.bootstrap.test.ts

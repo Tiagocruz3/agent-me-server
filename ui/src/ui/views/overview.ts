@@ -20,6 +20,7 @@ export type OverviewProps = {
   onSessionKeyChange: (next: string) => void;
   onConnect: () => void;
   onRefresh: () => void;
+  onGenerateBootstrapLink?: () => Promise<void> | void;
   onboarding?: boolean;
   onNavigateTab?: (tab: "channels" | "config" | "chat") => void;
   onSaveLocalEnv?: (entries: Array<{ key: string; value: string }>) => void | Promise<void>;
@@ -283,6 +284,9 @@ export function renderOverview(props: OverviewProps) {
         <div class="row" style="margin-top: 14px;">
           <button class="btn" @click=${() => props.onConnect()}>Connect</button>
           <button class="btn" @click=${() => props.onRefresh()}>Refresh</button>
+          <button class="btn" @click=${() => void props.onGenerateBootstrapLink?.()}>
+            Copy Bootstrap Link
+          </button>
           <span class="muted">Click Connect to apply connection changes.</span>
         </div>
       </div>
