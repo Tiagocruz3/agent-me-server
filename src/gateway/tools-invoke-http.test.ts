@@ -341,4 +341,95 @@ describe("POST /tools/invoke", () => {
 
     await server.close();
   });
+
+  it("applies global tools.byChannel policy for invoke channel hints", async () => {
+    testState.agentsConfig = {
+      list: [{ id: "main", tools: { allow: ["agents_list"] } }],
+      // oxlint-disable-next-line typescript/no-explicit-any
+    } as any;
+
+    const { writeConfigFile } = await import("../config/config.js");
+    await writeConfigFile({
+      tools: {
+        byChannel: {
+          telegram: { deny: ["agents_list"] },
+        },
+      },
+      // oxlint-disable-next-line typescript/no-explicit-any
+    } as any);
+
+    const port = await getFreePort();
+    const server = await startGatewayServer(port, { bind: "loopback" });
+    const token = resolveGatewayToken();
+
+    const blocked = await fetch(`http://127.0.0.1:${port}/tools/invoke`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+        "x-agentme-message-channel": "telegram",
+      },
+      body: JSON.stringify({ tool: "agents_list", action: "json", args: {}, sessionKey: "main" }),
+    });
+    expect(blocked.status).toBe(404);
+
+    const allowed = await fetch(`http://127.0.0.1:${port}/tools/invoke`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+        "x-agentme-message-channel": "discord",
+      },
+      body: JSON.stringify({ tool: "agents_list", action: "json", args: {}, sessionKey: "main" }),
+    });
+    expect(allowed.status).toBe(200);
+
+    await server.close();
+  });
+
+  it("agent and global tools.byChannel policies are combined (deny still wins)", async () => {
+    testState.agentsConfig = {
+      list: [
+        {
+          id: "main",
+          tools: {
+            allow: ["agents_list"],
+            byChannel: {
+              telegram: { allow: ["agents_list"] },
+            },
+          },
+        },
+      ],
+      // oxlint-disable-next-line typescript/no-explicit-any
+    } as any;
+
+    const { writeConfigFile } = await import("../config/config.js");
+    await writeConfigFile({
+      tools: {
+        byChannel: {
+          telegram: { deny: ["agents_list"] },
+        },
+      },
+      // oxlint-disable-next-line typescript/no-explicit-any
+    } as any);
+
+    const port = await getFreePort();
+    const server = await startGatewayServer(port, { bind: "loopback" });
+    const token = resolveGatewayToken();
+
+    const res = await fetch(`http://127.0.0.1:${port}/tools/invoke`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+        "x-agentme-message-channel": "telegram",
+      },
+      body: JSON.stringify({ tool: "agents_list", action: "json", args: {}, sessionKey: "main" }),
+    });
+
+    // Deny wins because policies are intersected across layers.
+    expect(res.status).toBe(404);
+
+    await server.close();
+  });
 });

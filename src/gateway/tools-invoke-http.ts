@@ -186,7 +186,11 @@ export async function handleToolsInvokeHttpRequest(
     providerProfile,
     profileAlsoAllow,
     providerProfileAlsoAllow,
-  } = resolveEffectiveToolPolicy({ config: cfg, sessionKey, messageProvider });
+  } = resolveEffectiveToolPolicy({
+    config: cfg,
+    sessionKey,
+    messageProvider: messageChannel ?? undefined,
+  });
   const profilePolicy = resolveToolProfilePolicy(profile);
   const providerProfilePolicy = resolveToolProfilePolicy(providerProfile);
 
@@ -225,6 +229,8 @@ export async function handleToolsInvokeHttpRequest(
       globalProviderPolicy,
       agentPolicy,
       agentProviderPolicy,
+      globalChannelPolicy,
+      agentChannelPolicy,
       groupPolicy,
       subagentPolicy,
     ]),

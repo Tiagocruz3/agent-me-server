@@ -130,5 +130,20 @@ describe("gateway auth", () => {
       } as never,
     });
     expect(allowed.ok).toBe(true);
+
+    const nonBrowserClient = await authorizeGatewayConnect({
+      auth: {
+        mode: "token",
+        token: "secret",
+        allowTailscale: false,
+        allowedOrigins: ["https://agentme.example"],
+      },
+      connectAuth: { token: "secret" },
+      req: {
+        socket: { remoteAddress: "127.0.0.1" },
+        headers: {},
+      } as never,
+    });
+    expect(nonBrowserClient.ok).toBe(true);
   });
 });

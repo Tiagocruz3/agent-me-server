@@ -276,7 +276,8 @@ export async function authorizeGatewayConnect(params: {
     }
   }
 
-  if (!isAllowedBrowserOrigin(headerValue(req?.headers?.origin), auth.allowedOrigins)) {
+  const requestOrigin = headerValue(req?.headers?.origin);
+  if (requestOrigin && !isAllowedBrowserOrigin(requestOrigin, auth.allowedOrigins)) {
     return { ok: false, reason: "origin_not_allowed" };
   }
 
