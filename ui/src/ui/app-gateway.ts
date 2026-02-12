@@ -54,6 +54,7 @@ type GatewayHost = {
   refreshSessionsAfterChat: Set<string>;
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
+  pendingBootstrapCode?: string | null;
 };
 
 type SessionDefaultsSnapshot = {
@@ -143,7 +144,60 @@ function isTrustedGatewayUrl(rawUrl: string): boolean {
   return false;
 }
 
-export function connectGateway(host: GatewayHost) {
+function resolveHttpBaseFromGatewayUrl(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol === "ws:") {
+      url.protocol = "http:";
+    } else if (url.protocol === "wss:") {
+      url.protocol = "https:";
+    }
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+async function exchangeBootstrapCode(host: GatewayHost): Promise<boolean> {
+  const code = host.pendingBootstrapCode?.trim();
+  if (!code) {
+    return true;
+  }
+  const base = resolveHttpBaseFromGatewayUrl(host.settings.gatewayUrl);
+  if (!base) {
+    host.lastError = "invalid gateway URL for bootstrap exchange";
+    return false;
+  }
+  try {
+    const response = await fetch(`${base}/api/bootstrap/exchange?code=${encodeURIComponent(code)}`);
+    const payload = (await response.json()) as {
+      ok?: boolean;
+      token?: string;
+      password?: string;
+      error?: string;
+    };
+    if (!response.ok || !payload?.ok) {
+      host.lastError = payload?.error || `bootstrap exchange failed (${response.status})`;
+      return false;
+    }
+    if (typeof payload.token === "string" && payload.token.trim()) {
+      applySettings(host as unknown as Parameters<typeof applySettings>[0], {
+        ...host.settings,
+        token: payload.token.trim(),
+      });
+    }
+    if (typeof payload.password === "string" && payload.password.trim()) {
+      host.password = payload.password.trim();
+    }
+    host.pendingBootstrapCode = null;
+    return true;
+  } catch (err) {
+    host.lastError = `bootstrap exchange failed: ${String(err)}`;
+    return false;
+  }
+}
+
+export async function connectGateway(host: GatewayHost) {
   host.lastError = null;
   host.hello = null;
   host.connected = false;
@@ -152,6 +206,11 @@ export function connectGateway(host: GatewayHost) {
 
   if (!isTrustedGatewayUrl(host.settings.gatewayUrl)) {
     host.lastError = `blocked untrusted gateway URL: ${host.settings.gatewayUrl}`;
+    return;
+  }
+
+  const exchanged = await exchangeBootstrapCode(host);
+  if (!exchanged) {
     return;
   }
 

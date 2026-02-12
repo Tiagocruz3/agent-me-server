@@ -149,6 +149,7 @@ Recent hardening work removed the high-risk findings in our active deployment ba
 - **Origin-bound shared-auth option**: `gateway.auth.allowedOrigins` can restrict token/password auth use to approved browser origins.
 - **Channel-aware tool policy**: `tools.byChannel` and `agents[].tools.byChannel` allow per-channel tool restrictions (e.g. tighter policies in Telegram groups).
 - **CI security gate**: added workflow to run deep security audit and auth/policy regression tests on PRs/pushes.
+- **Signed one-time bootstrap flow**: `POST /api/bootstrap/create` issues short-lived signed bootstrap codes; `GET /api/bootstrap/exchange` redeems once and returns auth secrets without URL token/password params.
 
 > Note: Agentic systems still require careful operational security (least privilege, isolated hosts, vetted skills, secret hygiene). This section summarizes hardening progress, not a guarantee against all prompt-injection or supply-chain risk.
 

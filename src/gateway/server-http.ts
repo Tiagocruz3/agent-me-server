@@ -1,4 +1,5 @@
 import type { TlsOptions } from "node:tls";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { WebSocketServer } from "ws";
 import {
   createServer as createHttpServer,
@@ -68,6 +69,69 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(body));
+}
+
+const usedBootstrapNonces = new Map<string, number>();
+const BOOTSTRAP_MAX_TTL_MS = 10 * 60 * 1000;
+
+function cleanupBootstrapNonceStore(nowMs: number) {
+  for (const [nonce, exp] of usedBootstrapNonces.entries()) {
+    if (exp <= nowMs) {
+      usedBootstrapNonces.delete(nonce);
+    }
+  }
+}
+
+function base64UrlEncode(value: string): string {
+  return Buffer.from(value, "utf8").toString("base64url");
+}
+
+function base64UrlDecode(value: string): string {
+  return Buffer.from(value, "base64url").toString("utf8");
+}
+
+function resolveBootstrapSecret(auth: ResolvedGatewayAuth): string | null {
+  const env = process.env.AGENTME_BOOTSTRAP_SECRET?.trim();
+  if (env) {
+    return env;
+  }
+  const base = auth.mode === "password" ? auth.password : auth.token;
+  if (!base || !base.trim()) {
+    return null;
+  }
+  return `agentme-bootstrap:${base.trim()}`;
+}
+
+function signBootstrapPayload(payloadB64: string, secret: string): string {
+  return createHmac("sha256", secret).update(payloadB64).digest("base64url");
+}
+
+function verifyBootstrapCode(code: string, secret: string):
+  | { ok: true; payload: { nonce: string; exp: number } }
+  | { ok: false; error: string } {
+  const [payloadB64, sig] = code.split(".");
+  if (!payloadB64 || !sig) {
+    return { ok: false, error: "invalid bootstrap code format" };
+  }
+  const expected = signBootstrapPayload(payloadB64, secret);
+  const validSig =
+    expected.length === sig.length &&
+    timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
+  if (!validSig) {
+    return { ok: false, error: "invalid bootstrap code signature" };
+  }
+  let payload: { nonce?: string; exp?: number };
+  try {
+    payload = JSON.parse(base64UrlDecode(payloadB64));
+  } catch {
+    return { ok: false, error: "invalid bootstrap code payload" };
+  }
+  const nonce = String(payload.nonce ?? "").trim();
+  const exp = Number(payload.exp ?? 0);
+  if (!nonce || !Number.isFinite(exp)) {
+    return { ok: false, error: "invalid bootstrap code payload" };
+  }
+  return { ok: true, payload: { nonce, exp } };
 }
 
 function isCanvasPath(pathname: string): boolean {
@@ -317,6 +381,83 @@ export function createGatewayHttpServer(opts: {
     try {
       const configSnapshot = loadConfig();
       const trustedProxies = configSnapshot.gateway?.trustedProxies ?? [];
+      const requestUrl = new URL(req.url ?? "/", "http://localhost");
+      if (requestUrl.pathname === "/api/bootstrap/create") {
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          res.setHeader("Allow", "POST");
+          res.end("Method Not Allowed");
+          return;
+        }
+        const token = getBearerToken(req);
+        const authResult = await authorizeGatewayConnect({
+          auth: { ...resolvedAuth, allowTailscale: false },
+          connectAuth: token ? { token, password: token } : null,
+          req,
+          trustedProxies,
+        });
+        if (!authResult.ok) {
+          sendUnauthorized(res);
+          return;
+        }
+        const secret = resolveBootstrapSecret(resolvedAuth);
+        if (!secret) {
+          sendJson(res, 400, { ok: false, error: "bootstrap secret unavailable" });
+          return;
+        }
+        const body = await readJsonBody(req, 16 * 1024);
+        const ttlSecRaw =
+          body.ok && body.value && typeof body.value === "object"
+            ? Number((body.value as Record<string, unknown>).ttlSec ?? 300)
+            : 300;
+        const ttlMs = Math.min(BOOTSTRAP_MAX_TTL_MS, Math.max(30_000, Math.floor(ttlSecRaw * 1000)));
+        const nowMs = Date.now();
+        cleanupBootstrapNonceStore(nowMs);
+        const payload = { nonce: randomUUID(), exp: nowMs + ttlMs };
+        const payloadB64 = base64UrlEncode(JSON.stringify(payload));
+        const sig = signBootstrapPayload(payloadB64, secret);
+        const code = `${payloadB64}.${sig}`;
+        sendJson(res, 200, { ok: true, code, expiresAt: new Date(payload.exp).toISOString() });
+        return;
+      }
+
+      if (requestUrl.pathname === "/api/bootstrap/exchange") {
+        if (req.method !== "GET" && req.method !== "POST") {
+          res.statusCode = 405;
+          res.setHeader("Allow", "GET, POST");
+          res.end("Method Not Allowed");
+          return;
+        }
+        const secret = resolveBootstrapSecret(resolvedAuth);
+        if (!secret) {
+          sendJson(res, 400, { ok: false, error: "bootstrap secret unavailable" });
+          return;
+        }
+        const code = requestUrl.searchParams.get("code")?.trim() ?? "";
+        const verified = verifyBootstrapCode(code, secret);
+        if (!verified.ok) {
+          sendJson(res, 400, { ok: false, error: verified.error });
+          return;
+        }
+        const nowMs = Date.now();
+        cleanupBootstrapNonceStore(nowMs);
+        if (verified.payload.exp <= nowMs) {
+          sendJson(res, 400, { ok: false, error: "bootstrap code expired" });
+          return;
+        }
+        if (usedBootstrapNonces.has(verified.payload.nonce)) {
+          sendJson(res, 400, { ok: false, error: "bootstrap code already used" });
+          return;
+        }
+        usedBootstrapNonces.set(verified.payload.nonce, verified.payload.exp);
+        sendJson(res, 200, {
+          ok: true,
+          token: resolvedAuth.mode === "token" ? resolvedAuth.token : undefined,
+          password: resolvedAuth.mode === "password" ? resolvedAuth.password : undefined,
+        });
+        return;
+      }
+
       if (await handleHooksRequest(req, res)) {
         return;
       }

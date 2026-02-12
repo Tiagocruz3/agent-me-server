@@ -55,6 +55,7 @@ type SettingsHost = {
   themeMedia: MediaQueryList | null;
   themeMediaHandler: ((event: MediaQueryListEvent) => void) | null;
   pendingGatewayUrl?: string | null;
+  pendingBootstrapCode?: string | null;
 };
 
 export function applySettings(host: SettingsHost, next: UiSettings) {
@@ -93,6 +94,7 @@ export function applySettingsFromUrl(host: SettingsHost) {
   const tokenRaw = params.get("token") ?? hashParams.get("token");
   const passwordRaw = params.get("password") ?? hashParams.get("password");
   const sessionRaw = params.get("session") ?? hashParams.get("session");
+  const bootstrapRaw = params.get("bootstrap") ?? hashParams.get("bootstrap");
   let shouldCleanUrl = false;
 
   if (tokenRaw != null) {
@@ -127,6 +129,15 @@ export function applySettingsFromUrl(host: SettingsHost) {
     }
   }
 
+  if (bootstrapRaw != null) {
+    const bootstrap = bootstrapRaw.trim();
+    if (bootstrap) {
+      host.pendingBootstrapCode = bootstrap;
+    }
+    params.delete("bootstrap");
+    hashParams.delete("bootstrap");
+    shouldCleanUrl = true;
+  }
 
   if (params.has("gatewayUrl") || hashParams.has("gatewayUrl")) {
     params.delete("gatewayUrl");
