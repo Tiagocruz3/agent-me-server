@@ -9,6 +9,11 @@ CLI_INSTALL_URL="${AGENTME_INSTALL_CLI_URL:-${CLAWDBOT_INSTALL_CLI_URL:-https://
 SKIP_NONROOT="${AGENTME_INSTALL_SMOKE_SKIP_NONROOT:-${CLAWDBOT_INSTALL_SMOKE_SKIP_NONROOT:-0}}"
 LATEST_DIR="$(mktemp -d)"
 LATEST_FILE="${LATEST_DIR}/latest"
+RUN_TIMEOUT="${AGENTME_INSTALL_SMOKE_TIMEOUT:-20m}"
+
+run_with_timeout() {
+  timeout "$RUN_TIMEOUT" "$@"
+}
 
 echo "==> Build smoke image (upgrade, root): $SMOKE_IMAGE"
 docker build \
@@ -17,7 +22,7 @@ docker build \
   "$ROOT_DIR/scripts/docker/install-sh-smoke"
 
 echo "==> Run installer smoke test (root): $INSTALL_URL"
-docker run --rm -t \
+run_with_timeout docker run --rm -t \
   -v "${LATEST_DIR}:/out" \
   -e AGENTME_INSTALL_URL="$INSTALL_URL" \
   -e AGENTME_INSTALL_LATEST_OUT="/out/latest" \
@@ -44,7 +49,7 @@ else
     "$ROOT_DIR/scripts/docker/install-sh-nonroot"
 
   echo "==> Run installer non-root test: $INSTALL_URL"
-  docker run --rm -t \
+  run_with_timeout docker run --rm -t \
     -e AGENTME_INSTALL_URL="$INSTALL_URL" \
     -e AGENTME_INSTALL_EXPECT_VERSION="$LATEST_VERSION" \
     -e AGENTME_NO_ONBOARD=1 \
@@ -63,7 +68,7 @@ if [[ "$SKIP_NONROOT" == "1" ]]; then
 fi
 
 echo "==> Run CLI installer non-root test (same image)"
-docker run --rm -t \
+run_with_timeout docker run --rm -t \
   --entrypoint /bin/bash \
   -e AGENTME_INSTALL_URL="$INSTALL_URL" \
   -e AGENTME_INSTALL_CLI_URL="$CLI_INSTALL_URL" \
