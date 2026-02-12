@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-INSTALL_URL="${AGENTME_INSTALL_URL:-https://agentme.bot/install.sh}"
+INSTALL_URL="${AGENTME_INSTALL_URL:-https://openclaw.ai/install.sh}"
 DEFAULT_PACKAGE="agentme"
 PACKAGE_NAME="${AGENTME_INSTALL_PACKAGE:-$DEFAULT_PACKAGE}"
+CLI_NAME="${AGENTME_INSTALL_CLI_NAME:-$PACKAGE_NAME}"
+SKIP_NPM_RESOLVE="${AGENTME_INSTALL_SKIP_NPM_RESOLVE:-0}"
 
 echo "==> Pre-flight: ensure git absent"
 if command -v git >/dev/null; then
@@ -23,24 +25,24 @@ command -v git >/dev/null
 EXPECTED_VERSION="${AGENTME_INSTALL_EXPECT_VERSION:-}"
 if [[ -n "$EXPECTED_VERSION" ]]; then
   LATEST_VERSION="$EXPECTED_VERSION"
+elif [[ "$SKIP_NPM_RESOLVE" == "1" ]]; then
+  LATEST_VERSION=""
 else
   LATEST_VERSION="$(npm view "$PACKAGE_NAME" version)"
 fi
-CLI_NAME="$PACKAGE_NAME"
 CMD_PATH="$(command -v "$CLI_NAME" || true)"
-if [[ -z "$CMD_PATH" && -x "$HOME/.npm-global/bin/$PACKAGE_NAME" ]]; then
-  CLI_NAME="$PACKAGE_NAME"
-  CMD_PATH="$HOME/.npm-global/bin/$PACKAGE_NAME"
+if [[ -z "$CMD_PATH" && -x "$HOME/.npm-global/bin/$CLI_NAME" ]]; then
+  CMD_PATH="$HOME/.npm-global/bin/$CLI_NAME"
 fi
 if [[ -z "$CMD_PATH" ]]; then
-  echo "$PACKAGE_NAME is not on PATH" >&2
+  echo "$CLI_NAME is not on PATH" >&2
   exit 1
 fi
 echo "==> Verify CLI installed: $CLI_NAME"
 INSTALLED_VERSION="$("$CMD_PATH" --version 2>/dev/null | head -n 1 | tr -d '\r')"
 
-echo "cli=$CLI_NAME installed=$INSTALLED_VERSION expected=$LATEST_VERSION"
-if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]]; then
+echo "cli=$CLI_NAME installed=$INSTALLED_VERSION expected=${LATEST_VERSION:-n/a}"
+if [[ -n "$LATEST_VERSION" && "$INSTALLED_VERSION" != "$LATEST_VERSION" ]]; then
   echo "ERROR: expected ${CLI_NAME}@${LATEST_VERSION}, got ${CLI_NAME}@${INSTALLED_VERSION}" >&2
   exit 1
 fi

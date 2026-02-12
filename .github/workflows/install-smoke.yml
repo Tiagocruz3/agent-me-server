@@ -2,31 +2,21 @@ name: Install Smoke
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "30 20 * * *" # daily 06:30 Australia/Brisbane (UTC 20:30)
 
 concurrency:
-  group: install-smoke-${{ github.event.pull_request.number || github.sha }}
+  group: install-smoke-${{ github.event.pull_request.number || github.sha || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  docs-scope:
-    runs-on: ubuntu-latest
-    outputs:
-      docs_only: ${{ steps.check.outputs.docs_only }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Detect docs-only changes
-        id: check
-        uses: ./.github/actions/detect-docs-changes
-
   install-smoke:
-    needs: [docs-scope]
-    if: needs.docs-scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [root, nonroot, cli]
     steps:
       - name: Checkout CLI
         uses: actions/checkout@v4
@@ -48,14 +38,17 @@ jobs:
       - name: Install pnpm deps (minimal)
         run: pnpm install --ignore-scripts --frozen-lockfile
 
-      - name: Run installer docker tests
+      - name: Run installer docker tests (${{ matrix.mode }})
         env:
           AGENTME_INSTALL_URL: https://openclaw.ai/install.sh
           AGENTME_INSTALL_CLI_URL: https://openclaw.ai/install-cli.sh
           AGENTME_NO_ONBOARD: "1"
-          AGENTME_INSTALL_SMOKE_SKIP_CLI: "1"
-          AGENTME_INSTALL_SMOKE_SKIP_NONROOT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          AGENTME_INSTALL_SMOKE_SKIP_PREVIOUS: "1"
           AGENTME_INSTALL_SKIP_NPM_RESOLVE: "1"
-          AGENTME_INSTALL_CLI_NAME: "agentme"
+          AGENTME_INSTALL_CLI_NAME: "openclaw"
+          AGENTME_INSTALL_PACKAGE: "openclaw"
+          AGENTME_INSTALL_SMOKE_SKIP_PREVIOUS: "1"
+          AGENTME_INSTALL_SMOKE_TIMEOUT: "20m"
+          AGENTME_INSTALL_SMOKE_SKIP_NONROOT: ${{ matrix.mode == 'root' && '1' || '0' }}
+          AGENTME_INSTALL_SMOKE_SKIP_CLI: ${{ matrix.mode == 'cli' && '0' || '1' }}
+          AGENTME_INSTALL_SMOKE_SKIP_ROOT: ${{ matrix.mode == 'root' && '0' || '1' }}
         run: pnpm test:install:smoke

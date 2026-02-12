@@ -551,9 +551,9 @@ export class AgentMeApp extends LitElement {
   }
 
   async handleStartOpenAiBrowserSignIn() {
-    this.setTab("config");
+    this.setTab("overview");
     this.lastError =
-      "OpenAI browser sign-in: run `agentme models auth login openai-codex` in your terminal on this host, then refresh. Native in-app OAuth handoff is being finalized.";
+      "OpenAI browser sign-in is in beta on web relay environments. Use the in-app OpenAI API key field below for now (fully native OAuth handoff is being rolled out).";
   }
 
   async handleGenerateBootstrapLink() {

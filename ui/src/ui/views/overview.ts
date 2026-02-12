@@ -178,7 +178,7 @@ export function renderOverview(props: OverviewProps) {
                 <span>OpenAI Auth Mode</span>
                 <select class="onboard-openai-auth-mode">
                   <option value="api-key" selected>API Key (recommended for Pi/server)</option>
-                  <option value="browser-sign-in">Browser Sign-In (easier setup)</option>
+                  <option value="browser-sign-in">Browser Sign-In (beta)</option>
                 </select>
               </label>
               <label class="field">
