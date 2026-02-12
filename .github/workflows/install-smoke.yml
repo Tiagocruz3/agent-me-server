@@ -58,4 +58,6 @@ jobs:
           AGENTME_INSTALL_SMOKE_SKIP_CLI: "1"
           AGENTME_INSTALL_SMOKE_SKIP_NONROOT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
           AGENTME_INSTALL_SMOKE_SKIP_PREVIOUS: "1"
+          AGENTME_INSTALL_SKIP_NPM_RESOLVE: "1"
+          AGENTME_INSTALL_CLI_NAME: "agentme"
         run: pnpm test:install:smoke
