@@ -82,6 +82,22 @@ import { renderUsage } from "./views/usage.ts";
 const AVATAR_DATA_RE = /^data:/i;
 const AVATAR_HTTP_RE = /^https?:\/\//i;
 
+function closeSiblingTopMenus(target: HTMLElement) {
+  const current = target.closest<HTMLDetailsElement>("details.topbar-menu__group");
+  if (!current?.open) {
+    return;
+  }
+  const host = current.closest(".topbar-menu");
+  if (!host) {
+    return;
+  }
+  host.querySelectorAll<HTMLDetailsElement>("details.topbar-menu__group[open]").forEach((item) => {
+    if (item !== current) {
+      item.removeAttribute("open");
+    }
+  });
+}
+
 function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   const list = state.agentsList?.agents ?? [];
   const parsed = parseAgentSessionKey(state.sessionKey);
@@ -144,7 +160,7 @@ export function renderApp(state: AppViewState) {
         <nav class="topbar-menu" aria-label="Primary">
           ${topMenuGroups.map(
             (group) => html`
-              <details class="topbar-menu__group">
+              <details class="topbar-menu__group" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>
                 <summary class="topbar-menu__title">${group.label}</summary>
                 <div class="topbar-menu__panel" role="menu" aria-label=${group.label}>
                   ${group.tabs.map(
