@@ -147,6 +147,53 @@ export function renderApp(state: AppViewState) {
           </div>
         </div>
         <div class="topbar-status">
+          <details class="menu-dropdown">
+            <summary class="btn secondary menu-dropdown__toggle" aria-label="Open menu">
+              ${icons.menu}
+              <span>Menu</span>
+            </summary>
+            <div class="menu-dropdown__panel" role="menu" aria-label="Navigation menu">
+              ${TAB_GROUPS.map(
+                (group) => html`
+                  <div class="menu-dropdown__section">
+                    <div class="menu-dropdown__section-title">${group.label}</div>
+                    <div class="menu-dropdown__section-items">
+                      ${group.tabs.map(
+                        (tab) => html`
+                          <button
+                            class="menu-dropdown__item ${state.tab === tab ? "is-active" : ""}"
+                            role="menuitem"
+                            @click=${(event: Event) => {
+                              state.setTab(tab);
+                              (event.currentTarget as HTMLElement)
+                                ?.closest("details")
+                                ?.removeAttribute("open");
+                            }}
+                          >
+                            <span class="menu-dropdown__item-label">${titleForTab(tab)}</span>
+                            <span class="menu-dropdown__item-sub">${subtitleForTab(tab)}</span>
+                          </button>
+                        `,
+                      )}
+                    </div>
+                  </div>
+                `,
+              )}
+              <div class="menu-dropdown__section">
+                <div class="menu-dropdown__section-title">Resources</div>
+                <a
+                  class="menu-dropdown__item menu-dropdown__item--link"
+                  href="https://docs.agentme.ai"
+                  target="_blank"
+                  rel="noreferrer"
+                  role="menuitem"
+                >
+                  <span class="menu-dropdown__item-label">Docs</span>
+                  <span class="menu-dropdown__item-sub">Open Agent Me documentation</span>
+                </a>
+              </div>
+            </div>
+          </details>
           <div class="pill">
             <span class="statusDot ${state.connected ? "ok" : ""}"></span>
             <span>Health</span>
