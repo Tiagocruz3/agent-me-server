@@ -82,6 +82,13 @@ import { renderUsage } from "./views/usage.ts";
 const AVATAR_DATA_RE = /^data:/i;
 const AVATAR_HTTP_RE = /^https?:\/\//i;
 
+function closeAllTopMenus(scope?: ParentNode | null) {
+  const root = scope ?? document;
+  root.querySelectorAll<HTMLDetailsElement>("details.topbar-menu__group[open]").forEach((item) => {
+    item.removeAttribute("open");
+  });
+}
+
 function closeSiblingTopMenus(target: HTMLElement) {
   const current = target.closest<HTMLDetailsElement>("details.topbar-menu__group");
   if (!current?.open) {
@@ -169,10 +176,11 @@ export function renderApp(state: AppViewState) {
                         class="topbar-menu__item ${state.tab === tab ? "is-active" : ""}"
                         role="menuitem"
                         @click=${(event: Event) => {
+                          const host = (event.currentTarget as HTMLElement)?.closest(
+                            ".topbar-menu",
+                          );
+                          closeAllTopMenus(host);
                           state.setTab(tab);
-                          (event.currentTarget as HTMLElement)
-                            ?.closest("details")
-                            ?.removeAttribute("open");
                         }}
                       >
                         <span class="topbar-menu__item-label">${titleForTab(tab)}</span>
