@@ -217,6 +217,7 @@ export function renderApp(state: AppViewState) {
         role=${isModalTab ? "dialog" : "main"}
         aria-modal=${isModalTab ? "true" : "false"}
         tabindex=${isModalTab ? "-1" : "0"}
+        @click=${() => closeAllTopMenus()}
         @keydown=${(event: KeyboardEvent) => {
           if (isModalTab && event.key === "Escape") {
             event.preventDefault();
