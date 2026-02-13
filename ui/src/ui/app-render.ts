@@ -3,7 +3,7 @@ import type { AppViewState } from "./app-view-state.ts";
 import type { UsageState } from "./controllers/usage.ts";
 import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
 import { refreshChatAvatar } from "./app-chat.ts";
-import { renderChatControls, renderTab, renderThemeToggle } from "./app-render.helpers.ts";
+import { renderChatControls, renderThemeToggle } from "./app-render.helpers.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
@@ -52,7 +52,7 @@ import {
 } from "./controllers/skills.ts";
 import { loadUsage, loadSessionTimeSeries, loadSessionLogs } from "./controllers/usage.ts";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import { normalizeBasePath, subtitleForTab, titleForTab } from "./navigation.ts";
 
 // Module-scope debounce for usage date changes (avoids type-unsafe hacks on state object)
 let usageDateDebounceTimeout: number | null = null;
@@ -106,6 +106,12 @@ export function renderApp(state: AppViewState) {
   const isChat = state.tab === "chat";
   const isModalTab = !isChat;
   const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding);
+  const topMenuGroups = [
+    { label: "Work", tabs: ["chat", "sessions", "memory"] as const },
+    { label: "Control", tabs: ["overview", "channels", "instances", "usage", "cron"] as const },
+    { label: "Build", tabs: ["agents", "skills", "nodes"] as const },
+    { label: "System", tabs: ["config", "debug", "logs"] as const },
+  ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
@@ -119,21 +125,9 @@ export function renderApp(state: AppViewState) {
     null;
 
   return html`
-    <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} ${state.settings.navCollapsed ? "shell--nav-collapsed" : ""} ${state.onboarding ? "shell--onboarding" : ""}">
+    <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} shell--nav-collapsed ${state.onboarding ? "shell--onboarding" : ""}">
       <header class="topbar">
         <div class="topbar-left">
-          <button
-            class="nav-collapse-toggle"
-            @click=${() =>
-              state.applySettings({
-                ...state.settings,
-                navCollapsed: !state.settings.navCollapsed,
-              })}
-            title="${state.settings.navCollapsed ? "Expand sidebar" : "Collapse sidebar"}"
-            aria-label="${state.settings.navCollapsed ? "Expand sidebar" : "Collapse sidebar"}"
-          >
-            <span class="nav-collapse-toggle__icon">${icons.menu}</span>
-          </button>
           <img
             class="topbar-app-icon"
             src=${basePath ? `${basePath}/apple-touch-icon.png` : "/apple-touch-icon.png"}
@@ -146,54 +140,37 @@ export function renderApp(state: AppViewState) {
             </div>
           </div>
         </div>
+
+        <nav class="topbar-menu" aria-label="Primary">
+          ${topMenuGroups.map(
+            (group) => html`
+              <details class="topbar-menu__group">
+                <summary class="topbar-menu__title">${group.label}</summary>
+                <div class="topbar-menu__panel" role="menu" aria-label=${group.label}>
+                  ${group.tabs.map(
+                    (tab) => html`
+                      <button
+                        class="topbar-menu__item ${state.tab === tab ? "is-active" : ""}"
+                        role="menuitem"
+                        @click=${(event: Event) => {
+                          state.setTab(tab);
+                          (event.currentTarget as HTMLElement)
+                            ?.closest("details")
+                            ?.removeAttribute("open");
+                        }}
+                      >
+                        <span class="topbar-menu__item-label">${titleForTab(tab)}</span>
+                        <span class="topbar-menu__item-sub">${subtitleForTab(tab)}</span>
+                      </button>
+                    `,
+                  )}
+                </div>
+              </details>
+            `,
+          )}
+        </nav>
+
         <div class="topbar-status">
-          <details class="menu-dropdown">
-            <summary class="btn secondary menu-dropdown__toggle" aria-label="Open menu">
-              ${icons.menu}
-              <span>Menu</span>
-            </summary>
-            <div class="menu-dropdown__panel" role="menu" aria-label="Navigation menu">
-              ${TAB_GROUPS.map(
-                (group) => html`
-                  <div class="menu-dropdown__section">
-                    <div class="menu-dropdown__section-title">${group.label}</div>
-                    <div class="menu-dropdown__section-items">
-                      ${group.tabs.map(
-                        (tab) => html`
-                          <button
-                            class="menu-dropdown__item ${state.tab === tab ? "is-active" : ""}"
-                            role="menuitem"
-                            @click=${(event: Event) => {
-                              state.setTab(tab);
-                              (event.currentTarget as HTMLElement)
-                                ?.closest("details")
-                                ?.removeAttribute("open");
-                            }}
-                          >
-                            <span class="menu-dropdown__item-label">${titleForTab(tab)}</span>
-                            <span class="menu-dropdown__item-sub">${subtitleForTab(tab)}</span>
-                          </button>
-                        `,
-                      )}
-                    </div>
-                  </div>
-                `,
-              )}
-              <div class="menu-dropdown__section">
-                <div class="menu-dropdown__section-title">Resources</div>
-                <a
-                  class="menu-dropdown__item menu-dropdown__item--link"
-                  href="https://docs.agentme.ai"
-                  target="_blank"
-                  rel="noreferrer"
-                  role="menuitem"
-                >
-                  <span class="menu-dropdown__item-label">Docs</span>
-                  <span class="menu-dropdown__item-sub">Open Agent Me documentation</span>
-                </a>
-              </div>
-            </div>
-          </details>
           <div class="pill">
             <span class="statusDot ${state.connected ? "ok" : ""}"></span>
             <span>Health</span>
@@ -202,51 +179,6 @@ export function renderApp(state: AppViewState) {
           ${renderThemeToggle(state)}
         </div>
       </header>
-      <aside class="nav ${state.settings.navCollapsed ? "nav--collapsed" : ""}">
-        ${TAB_GROUPS.map((group) => {
-          const isGroupCollapsed = state.settings.navGroupsCollapsed[group.label] ?? false;
-          const hasActiveTab = group.tabs.some((tab) => tab === state.tab);
-          return html`
-            <div class="nav-group ${isGroupCollapsed && !hasActiveTab ? "nav-group--collapsed" : ""}">
-              <button
-                class="nav-label"
-                @click=${() => {
-                  const next = { ...state.settings.navGroupsCollapsed };
-                  next[group.label] = !isGroupCollapsed;
-                  state.applySettings({
-                    ...state.settings,
-                    navGroupsCollapsed: next,
-                  });
-                }}
-                aria-expanded=${!isGroupCollapsed}
-              >
-                <span class="nav-label__text">${group.label}</span>
-                <span class="nav-label__chevron">${isGroupCollapsed ? "+" : "−"}</span>
-              </button>
-              <div class="nav-group__items">
-                ${group.tabs.map((tab) => renderTab(state, tab))}
-              </div>
-            </div>
-          `;
-        })}
-        <div class="nav-group nav-group--links">
-          <div class="nav-label nav-label--static">
-            <span class="nav-label__text">Resources</span>
-          </div>
-          <div class="nav-group__items">
-            <a
-              class="nav-item nav-item--external"
-              href="https://docs.agentme.ai"
-              target="_blank"
-              rel="noreferrer"
-              title="Docs (opens in new tab)"
-            >
-              <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
-              <span class="nav-item__text">Docs</span>
-            </a>
-          </div>
-        </div>
-      </aside>
       ${
         isModalTab
           ? html`<button
