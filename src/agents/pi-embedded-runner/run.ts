@@ -388,6 +388,8 @@ export async function runEmbeddedPiAgent(
       let toolResultTruncationAttempted = false;
       const usageAccumulator = createUsageAccumulator();
       let autoCompactionCount = 0;
+      let disableToolsForAttempt =
+        params.disableTools === true || (isProbeSession && provider === "openrouter");
       try {
         while (true) {
           attemptedThinking.add(thinkLevel);
@@ -420,7 +422,7 @@ export async function runEmbeddedPiAgent(
             skillsSnapshot: params.skillsSnapshot,
             prompt,
             images: params.images,
-            disableTools: params.disableTools,
+            disableTools: disableToolsForAttempt,
             provider,
             modelId,
             model,
@@ -650,6 +652,17 @@ export async function runEmbeddedPiAgent(
                 },
               };
             }
+            if (
+              provider === "openrouter" &&
+              !disableToolsForAttempt &&
+              /No endpoints found that support tool use/i.test(errorText)
+            ) {
+              log.warn(
+                `OpenRouter provider route does not support tools for ${provider}/${modelId}; retrying without tools`,
+              );
+              disableToolsForAttempt = true;
+              continue;
+            }
             const promptFailoverReason = classifyFailoverReason(errorText);
             if (promptFailoverReason && promptFailoverReason !== "timeout" && lastProfileId) {
               await markAuthProfileFailure({
@@ -690,6 +703,18 @@ export async function runEmbeddedPiAgent(
               });
             }
             throw promptError;
+          }
+
+          const openRouterToolUseRouteError =
+            provider === "openrouter" &&
+            !disableToolsForAttempt &&
+            /No endpoints found that support tool use/i.test(lastAssistant?.errorMessage ?? "");
+          if (openRouterToolUseRouteError && !aborted) {
+            log.warn(
+              `OpenRouter provider route does not support tools for ${provider}/${modelId}; retrying without tools`,
+            );
+            disableToolsForAttempt = true;
+            continue;
           }
 
           const fallbackThinking = pickFallbackThinkingLevel({
