@@ -1,3 +1,7 @@
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type { MsgContext } from "../templating.js";
 import type { GetReplyOptions, ReplyPayload } from "../types.js";
 import {
@@ -48,6 +52,94 @@ function mergeSkillFilters(channelFilter?: string[], agentFilter?: string[]): st
   }
   const agentSet = new Set(agent);
   return channel.filter((name) => agentSet.has(name));
+}
+
+function isTelegramImageRequest(ctx: MsgContext): boolean {
+  const channel =
+    String(ctx.OriginatingChannel ?? ctx.Surface ?? ctx.Provider ?? "")
+      .trim()
+      .toLowerCase() || "";
+  if (channel !== "telegram") {
+    return false;
+  }
+  const raw = String(ctx.CommandBody ?? ctx.RawBody ?? ctx.Body ?? "").trim();
+  if (!raw) {
+    return false;
+  }
+  return /\b(create|generate|make|draw)\b[\s\S]*\b(image|picture|photo|art|illustration|avatar|poster)\b/i.test(
+    raw,
+  );
+}
+
+async function tryGenerateTelegramImageReply(ctx: MsgContext): Promise<ReplyPayload | undefined> {
+  if (!isTelegramImageRequest(ctx)) {
+    return undefined;
+  }
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    return {
+      text: "I can generate images, but OPENAI_API_KEY is not configured on this host.",
+      isError: true,
+    };
+  }
+
+  const prompt = String(ctx.CommandBody ?? ctx.RawBody ?? ctx.Body ?? "").trim();
+  const resp = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-image-1",
+      size: "1024x1024",
+      prompt,
+    }),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    return {
+      text: `Image generation failed: ${resp.status} ${text.slice(0, 220)}`,
+      isError: true,
+    };
+  }
+
+  const data = (await resp.json()) as {
+    data?: Array<{ b64_json?: string; url?: string }>;
+  };
+  const item = data?.data?.[0];
+  if (!item) {
+    return { text: "Image generation failed: empty response.", isError: true };
+  }
+
+  let imageBuffer: Buffer | null = null;
+  if (item.b64_json) {
+    imageBuffer = Buffer.from(item.b64_json, "base64");
+  } else if (item.url) {
+    const imageResp = await fetch(item.url);
+    if (!imageResp.ok) {
+      return {
+        text: `Image download failed: ${imageResp.status}`,
+        isError: true,
+      };
+    }
+    imageBuffer = Buffer.from(await imageResp.arrayBuffer());
+  }
+
+  if (!imageBuffer || imageBuffer.length === 0) {
+    return { text: "Image generation failed: no image bytes returned.", isError: true };
+  }
+
+  const outDir = path.join(os.tmpdir(), "agentme-generated-images");
+  await fs.mkdir(outDir, { recursive: true });
+  const outPath = path.join(outDir, `telegram-image-${randomUUID()}.png`);
+  await fs.writeFile(outPath, imageBuffer);
+
+  return {
+    text: "",
+    mediaUrl: outPath,
+  };
 }
 
 export async function getReplyFromConfig(
@@ -113,6 +205,11 @@ export async function getReplyFromConfig(
     log: defaultRuntime.log,
   });
   opts?.onTypingController?.(typing);
+
+  const imageReply = await tryGenerateTelegramImageReply(ctx);
+  if (imageReply) {
+    return imageReply;
+  }
 
   const finalized = finalizeInboundContext(ctx);
 
