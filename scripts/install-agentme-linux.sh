@@ -37,6 +37,10 @@ have_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 ensure_base_deps() {
   if have_cmd apt-get; then
+    if have_cmd curl && have_cmd git && have_cmd make && (have_cmd gcc || have_cmd cc); then
+      echo "[agentme-install] Base deps already present; skipping apt install"
+      return
+    fi
     echo "[agentme-install] Ensuring curl/git/build deps"
     sudo apt-get update -y
     sudo apt-get install -y curl git ca-certificates build-essential
@@ -132,8 +136,11 @@ EOF
 write_config() {
   local cfg="$HOME/.agentme/agentme.json"
   if [[ -f "$cfg" && "$FORCE_CONFIG" != "1" ]]; then
-    echo "[agentme-install] Config exists, leaving in place: $cfg"
-    return
+    if node -e "JSON.parse(require('node:fs').readFileSync(process.argv[1], 'utf8'));" "$cfg" >/dev/null 2>&1; then
+      echo "[agentme-install] Config exists and is valid, leaving in place: $cfg"
+      return
+    fi
+    echo "[agentme-install] Existing config is invalid JSON; rewriting: $cfg"
   fi
 
   local token
