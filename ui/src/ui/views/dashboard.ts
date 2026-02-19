@@ -9,6 +9,7 @@ export type DashboardProps = {
   recentActivity: Array<{ label: string; ts?: string }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
+  onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
 };
 
 const starterApps = [
@@ -83,7 +84,10 @@ export function renderDashboard(props: DashboardProps) {
               </div>
               <div class="dashboard-app-card__name">${app.name}</div>
               <div class="dashboard-app-card__role">${app.role}</div>
-              <button class="btn" @click=${() => props.onOpenAppChat(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Open in chat</button>
+              <div class="row">
+                <button class="btn" @click=${() => props.onOpenAppChat(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Open in chat</button>
+                <button class="btn" @click=${() => props.onRunTask(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Run task</button>
+              </div>
             </article>
           `,
         )}

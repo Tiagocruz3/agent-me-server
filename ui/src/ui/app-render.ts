@@ -262,22 +262,32 @@ export function renderApp(state: AppViewState) {
                 sessionsCount,
                 presenceCount,
                 queuedCount: state.chatQueue.length,
-                recentActivity: (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                recentActivity: (Array.isArray(state.eventLog) ? state.eventLog : [])
                   .slice(-12)
                   .toReversed()
-                  .map((m: any) => ({
-                    label: `${m?.role === "assistant" ? "EMC2" : "User"}: ${String(m?.content ?? "").slice(0, 72)}`,
-                    ts: m?.ts ? new Date(m.ts).toLocaleTimeString() : "",
+                  .map((entry) => ({
+                    label: String(entry?.event ?? "event"),
+                    ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
                   const prompt =
                     app === "realestate"
-                      ? "Run realestate workflow: apartments in Broadbeach up to 650 per week. Return shortlist cards."
+                      ? "Realestate mode: apartments in Broadbeach up to 650 per week."
                       : app === "birdx"
-                        ? "Run Bird X workflow: show 25 non-followers sample and prep unfollow plan."
-                        : "EMC2 mission mode: summarize priorities and propose next best actions.";
+                        ? "Bird X mode: show non-followers sample 25."
+                        : "EMC2 mission mode: summarize priorities.";
+                  state.chatMessage = prompt;
+                },
+                onRunTask: (app) => {
+                  state.setTab("chat");
+                  const prompt =
+                    app === "realestate"
+                      ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
+                      : app === "birdx"
+                        ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
+                        : "EMC2 run task now: produce top priorities and next actions.";
                   void state.handleSendChat(prompt);
                 },
               })
