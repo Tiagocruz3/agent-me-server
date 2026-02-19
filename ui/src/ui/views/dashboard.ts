@@ -6,6 +6,7 @@ export type DashboardProps = {
   sessionsCount: number | null;
   presenceCount: number;
   queuedCount: number;
+  autopilotMode: "off" | "assisted" | "full";
   recentActivity: Array<{ label: string; ts?: string }>;
   taskResults: Array<{
     app: string;
@@ -21,6 +22,8 @@ export type DashboardProps = {
   onScheduleTask: (app: "realestate" | "birdx" | "emc2") => void;
   onViewResult: (app: "realestate" | "birdx" | "emc2") => void;
   onFixSchema: (app: "realestate" | "birdx" | "emc2") => void;
+  onSetAutopilotMode: (mode: "off" | "assisted" | "full") => void;
+  onEmergencyStop: () => void;
 };
 
 const starterApps = [
@@ -55,11 +58,18 @@ export function renderDashboard(props: DashboardProps) {
     <section class="card" style="margin-bottom:14px;">
       <div class="card-title">Mission Control</div>
       <div class="card-sub">Run your AI workforce from one place.</div>
-      <div class="row" style="margin-top:10px;">
+      <div class="row" style="margin-top:10px; flex-wrap: wrap;">
         <button class="btn" @click=${() => props.onOpenTab("chat")}>Open Chat</button>
         <button class="btn" @click=${() => props.onOpenTab("agents")}>Manage Agents</button>
         <button class="btn" @click=${() => props.onOpenTab("cron")}>Scheduler</button>
         <button class="btn" @click=${() => props.onOpenTab("logs")}>Logs</button>
+      </div>
+      <div class="row" style="margin-top:10px; align-items:center; gap:8px; flex-wrap: wrap;">
+        <span class="muted">Autopilot:</span>
+        <button class="btn ${props.autopilotMode === "off" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("off")}>Off</button>
+        <button class="btn ${props.autopilotMode === "assisted" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("assisted")}>Assisted</button>
+        <button class="btn ${props.autopilotMode === "full" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("full")}>Full</button>
+        <button class="btn btn-danger" @click=${() => props.onEmergencyStop()}>Emergency Stop</button>
       </div>
       <div class="muted" style="margin-top:8px;">Active instances: ${props.presenceCount}</div>
     </section>

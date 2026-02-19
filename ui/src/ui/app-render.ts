@@ -379,6 +379,10 @@ export function renderApp(state: AppViewState) {
                 sessionsCount,
                 presenceCount,
                 queuedCount: state.chatQueue.length,
+                autopilotMode: (state.settings.chatFocusMode ? "assisted" : "off") as
+                  | "off"
+                  | "assisted"
+                  | "full",
                 recentActivity: (Array.isArray(state.eventLog) ? state.eventLog : [])
                   .slice(-12)
                   .toReversed()
@@ -528,6 +532,38 @@ export function renderApp(state: AppViewState) {
                     taskResultSchemaInstruction(app),
                   ].join("\n\n");
                   void state.handleSendChat(prompt);
+                },
+                onSetAutopilotMode: (mode) => {
+                  if (mode === "off") {
+                    state.applySettings({ ...state.settings, chatFocusMode: false });
+                  } else if (mode === "assisted") {
+                    state.applySettings({ ...state.settings, chatFocusMode: true });
+                  } else {
+                    state.applySettings({ ...state.settings, chatFocusMode: true });
+                    state.eventLog = [
+                      { ts: Date.now(), event: "autopilot.full.enabled" },
+                      ...state.eventLog,
+                    ].slice(0, 200);
+                  }
+                  state.eventLog = [
+                    { ts: Date.now(), event: `autopilot.mode.${mode}` },
+                    ...state.eventLog,
+                  ].slice(0, 200);
+                },
+                onEmergencyStop: () => {
+                  const approved = window.confirm("Emergency stop all pending actions?");
+                  if (!approved) {
+                    return;
+                  }
+                  state.chatQueue = [];
+                  state.chatRunId = null;
+                  state.chatStream = null;
+                  state.chatStreamStartedAt = null;
+                  state.applySettings({ ...state.settings, chatFocusMode: false });
+                  state.eventLog = [
+                    { ts: Date.now(), event: "autopilot.emergency_stop" },
+                    ...state.eventLog,
+                  ].slice(0, 200);
                 },
               })
             : nothing
