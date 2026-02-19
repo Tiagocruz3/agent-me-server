@@ -147,6 +147,7 @@ function extractDashboardTaskResult(content: unknown): {
   appId: "realestate" | "birdx" | "emc2";
   summary: string;
   status: "running" | "success" | "error";
+  schemaMismatch?: boolean;
 } {
   const text = String(content ?? "");
   const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/i)?.[1] ?? null;
@@ -175,7 +176,21 @@ function extractDashboardTaskResult(content: unknown): {
       const summary = String(parsed.summary ?? text).slice(0, 120);
       return { app, appId, summary, status };
     } catch {
-      // fall through to heuristic mode
+      const lower = text.toLowerCase();
+      const appId =
+        lower.includes("realestate") || lower.includes("property")
+          ? "realestate"
+          : lower.includes("bird") || lower.includes("twitter") || lower.includes("non-follower")
+            ? "birdx"
+            : "emc2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      return {
+        app,
+        appId,
+        summary: "Schema mismatch in result JSON. Use the expected JSON block format.",
+        status: "error",
+        schemaMismatch: true,
+      };
     }
   }
 
@@ -358,6 +373,7 @@ export function renderApp(state: AppViewState) {
                       summary: parsed.summary,
                       ts: "",
                       status: parsed.status,
+                      schemaMismatch: parsed.schemaMismatch,
                     };
                   }),
                 onOpenTab: (tab) => state.setTab(tab),

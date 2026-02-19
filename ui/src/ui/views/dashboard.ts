@@ -13,6 +13,7 @@ export type DashboardProps = {
     summary: string;
     ts?: string;
     status: "running" | "success" | "error";
+    schemaMismatch?: boolean;
   }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
@@ -102,6 +103,13 @@ export function renderDashboard(props: DashboardProps) {
             <span>
               <strong>${item.app}</strong>
               <span class="result-status result-status--${item.status}">${item.status}</span>
+              ${
+                item.schemaMismatch
+                  ? html`
+                      <span class="result-status result-status--mismatch">schema mismatch</span>
+                    `
+                  : ""
+              }
               — ${item.summary}
               <span class="muted" style="margin-left:8px;">${item.ts || ""}</span>
             </span>

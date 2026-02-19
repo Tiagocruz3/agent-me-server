@@ -871,3 +871,9 @@
   border-color: color-mix(in oklab, #f87171 60%, var(--border));
   background: color-mix(in oklab, #f87171 14%, transparent);
 }
+
+.result-status--mismatch {
+  color: #eab308;
+  border-color: color-mix(in oklab, #eab308 60%, var(--border));
+  background: color-mix(in oklab, #eab308 14%, transparent);
+}
