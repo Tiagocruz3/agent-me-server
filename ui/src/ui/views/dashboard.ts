@@ -19,6 +19,7 @@ export type DashboardProps = {
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
   onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
   onViewResult: (app: "realestate" | "birdx" | "emc2") => void;
+  onFixSchema: (app: "realestate" | "birdx" | "emc2") => void;
 };
 
 const starterApps = [
@@ -116,6 +117,11 @@ export function renderDashboard(props: DashboardProps) {
             <span class="row" style="gap:6px;">
               <button class="btn" @click=${() => props.onViewResult(item.appId)}>Open</button>
               <button class="btn" @click=${() => props.onRunTask(item.appId)}>Re-run</button>
+              ${
+                item.schemaMismatch
+                  ? html`<button class="btn" @click=${() => props.onFixSchema(item.appId)}>Fix format</button>`
+                  : ""
+              }
             </span>
           </div>
         `,

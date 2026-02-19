@@ -408,6 +408,15 @@ export function renderApp(state: AppViewState) {
                         : "Show latest EMC2 task result summary.";
                   state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
                 },
+                onFixSchema: (app) => {
+                  state.setTab("chat");
+                  const prompt = [
+                    "Reformat your previous response now.",
+                    "Return ONLY one fenced JSON block with the exact schema, then one concise human summary.",
+                    taskResultSchemaInstruction(app),
+                  ].join("\n\n");
+                  void state.handleSendChat(prompt);
+                },
               })
             : nothing
         }
