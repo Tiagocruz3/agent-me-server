@@ -149,6 +149,34 @@ function extractDashboardTaskResult(content: unknown): {
   status: "running" | "success" | "error";
   schemaMismatch?: boolean;
 } {
+  if (content && typeof content === "object") {
+    const obj = content as {
+      appId?: unknown;
+      agentId?: unknown;
+      status?: unknown;
+      summary?: unknown;
+      text?: unknown;
+    };
+    const rawApp = String(obj.appId ?? obj.agentId ?? "").toLowerCase();
+    if (rawApp) {
+      const appId = rawApp.includes("realestate")
+        ? "realestate"
+        : rawApp.includes("twitter") || rawApp.includes("bird") || rawApp.includes("x")
+          ? "birdx"
+          : "emc2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      const statusRaw = String(obj.status ?? "").toLowerCase();
+      const status =
+        statusRaw.includes("error") || statusRaw.includes("fail")
+          ? "error"
+          : statusRaw.includes("run") || statusRaw.includes("progress")
+            ? "running"
+            : "success";
+      const summary = String(obj.summary ?? obj.text ?? "(no summary)").slice(0, 120);
+      return { app, appId, summary, status };
+    }
+  }
+
   const text = String(content ?? "");
   const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/i)?.[1] ?? null;
   if (jsonBlock) {
@@ -366,12 +394,26 @@ export function renderApp(state: AppViewState) {
                   .slice(-8)
                   .toReversed()
                   .map((m) => {
-                    const parsed = extractDashboardTaskResult((m as { content?: unknown }).content);
+                    const typed = m as {
+                      content?: unknown;
+                      ts?: number;
+                      createdAt?: number;
+                      created_at?: string;
+                    };
+                    const parsed = extractDashboardTaskResult(typed.content);
+                    const tsValue =
+                      typeof typed.ts === "number"
+                        ? new Date(typed.ts).toLocaleTimeString()
+                        : typeof typed.createdAt === "number"
+                          ? new Date(typed.createdAt).toLocaleTimeString()
+                          : typeof typed.created_at === "string"
+                            ? new Date(typed.created_at).toLocaleTimeString()
+                            : "";
                     return {
                       app: parsed.app,
                       appId: parsed.appId,
                       summary: parsed.summary,
-                      ts: "",
+                      ts: tsValue,
                       status: parsed.status,
                       schemaMismatch: parsed.schemaMismatch,
                     };
