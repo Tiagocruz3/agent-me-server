@@ -7,6 +7,13 @@ import { listSystemPresence, updateSystemPresence } from "../../infra/system-pre
 import { ErrorCodes, errorShape } from "../protocol/index.js";
 
 let autopilotMode: "off" | "assisted" | "full" = "off";
+let agentResults: Array<{
+  id: string;
+  ts: number;
+  appId: string;
+  status: "running" | "success" | "error";
+  summary: string;
+}> = [];
 
 export const systemHandlers: GatewayRequestHandlers = {
   "last-heartbeat": ({ respond }) => {
@@ -27,6 +34,30 @@ export const systemHandlers: GatewayRequestHandlers = {
     }
     autopilotMode = mode;
     respond(true, { ok: true, mode: autopilotMode }, undefined);
+  },
+  "agent-results.list": ({ respond }) => {
+    respond(true, { items: agentResults.slice(0, 100) }, undefined);
+  },
+  "agent-result.add": ({ params, respond }) => {
+    const appId = typeof params.appId === "string" ? params.appId : "emc2";
+    const status =
+      params.status === "running" || params.status === "success" || params.status === "error"
+        ? params.status
+        : "running";
+    const summary = typeof params.summary === "string" ? params.summary.slice(0, 200) : "";
+    const item = {
+      id: randomUUID(),
+      ts: Date.now(),
+      appId,
+      status,
+      summary,
+    } as const;
+    agentResults = [item, ...agentResults].slice(0, 200);
+    respond(true, { ok: true, item }, undefined);
+  },
+  "agent-results.clear": ({ respond }) => {
+    agentResults = [];
+    respond(true, { ok: true }, undefined);
   },
   "set-heartbeats": ({ params, respond }) => {
     const enabled = params.enabled;

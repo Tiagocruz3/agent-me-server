@@ -394,47 +394,45 @@ export function renderApp(state: AppViewState) {
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
                 taskResults: (() => {
-                  const rows = (Array.isArray(state.chatMessages) ? state.chatMessages : [])
-                    .filter(
-                      (m) =>
-                        m && typeof m === "object" && (m as { role?: string }).role === "assistant",
-                    )
-                    .slice(-8)
-                    .toReversed()
-                    .map((m) => {
-                      const typed = m as {
-                        content?: unknown;
-                        ts?: number;
-                        createdAt?: number;
-                        created_at?: string;
-                      };
-                      const parsed = extractDashboardTaskResult(typed.content);
-                      const tsValue =
-                        typeof typed.ts === "number"
-                          ? new Date(typed.ts).toLocaleTimeString()
-                          : typeof typed.createdAt === "number"
-                            ? new Date(typed.createdAt).toLocaleTimeString()
-                            : typeof typed.created_at === "string"
-                              ? new Date(typed.created_at).toLocaleTimeString()
-                              : "";
-                      return {
-                        app: parsed.app,
-                        appId: parsed.appId,
-                        summary: parsed.summary,
-                        ts: tsValue,
-                        status: parsed.status,
-                        schemaMismatch: parsed.schemaMismatch,
-                      };
-                    });
-                  if (state.chatRunId) {
-                    rows.unshift({
-                      app: "EMC2",
-                      appId: "emc2",
-                      summary: "Task running…",
-                      ts: new Date().toLocaleTimeString(),
-                      status: "running",
+                  const rows = (Array.isArray(state.agentResults) ? state.agentResults : []).map(
+                    (item) => ({
+                      app:
+                        item.appId === "realestate"
+                          ? "Realestate"
+                          : item.appId === "birdx"
+                            ? "Bird X"
+                            : "EMC2",
+                      appId: item.appId,
+                      summary: item.summary,
+                      ts: item.ts ? new Date(item.ts).toLocaleTimeString() : "",
+                      status: item.status,
                       schemaMismatch: false,
-                    });
+                    }),
+                  );
+                  if (rows.length === 0) {
+                    const fallback = (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                      .filter(
+                        (m) =>
+                          m &&
+                          typeof m === "object" &&
+                          (m as { role?: string }).role === "assistant",
+                      )
+                      .slice(-5)
+                      .toReversed()
+                      .map((m) => {
+                        const parsed = extractDashboardTaskResult(
+                          (m as { content?: unknown }).content,
+                        );
+                        return {
+                          app: parsed.app,
+                          appId: parsed.appId,
+                          summary: parsed.summary,
+                          ts: "",
+                          status: parsed.status,
+                          schemaMismatch: parsed.schemaMismatch,
+                        };
+                      });
+                    return fallback;
                   }
                   return rows;
                 })(),
@@ -475,6 +473,71 @@ export function renderApp(state: AppViewState) {
                         ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
                         : "EMC2 run task now: produce top priorities and next actions.";
                   const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
+
+                  state.agentResults = [
+                    {
+                      id: `local_${Date.now()}`,
+                      ts: Date.now(),
+                      appId: app,
+                      status: "running",
+                      summary: "Task started from dashboard",
+                    },
+                    ...state.agentResults,
+                  ].slice(0, 100);
+
+                  if (state.client && state.connected) {
+                    void state.client
+                      .request<{
+                        item?: {
+                          id?: string;
+                          ts?: number;
+                          appId?: string;
+                          status?: string;
+                          summary?: string;
+                        };
+                      }>("agent-result.add", {
+                        appId: app,
+                        status: "running",
+                        summary: "Task started from dashboard",
+                      })
+                      .then(() =>
+                        state.client?.request<{
+                          items?: Array<{
+                            id?: string;
+                            ts?: number;
+                            appId?: string;
+                            status?: string;
+                            summary?: string;
+                          }>;
+                        }>("agent-results.list", {}),
+                      )
+                      .then((res) => {
+                        const items = Array.isArray(res?.items) ? res.items : [];
+                        state.agentResults = items
+                          .map((it) => ({
+                            id: typeof it.id === "string" ? it.id : undefined,
+                            ts: typeof it.ts === "number" ? it.ts : Date.now(),
+                            appId:
+                              it.appId === "realestate" ||
+                              it.appId === "birdx" ||
+                              it.appId === "emc2"
+                                ? it.appId
+                                : "emc2",
+                            status:
+                              it.status === "running" ||
+                              it.status === "success" ||
+                              it.status === "error"
+                                ? it.status
+                                : "running",
+                            summary: typeof it.summary === "string" ? it.summary : "",
+                          }))
+                          .slice(0, 100);
+                      })
+                      .catch(() => {
+                        // keep local optimistic state
+                      });
+                  }
+
                   void state.handleSendChat(prompt);
                 },
                 onScheduleTask: (app) => {
@@ -576,7 +639,11 @@ export function renderApp(state: AppViewState) {
                     void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
                       state.lastError = String(err);
                     });
+                    void state.client.request("agent-results.clear", {}).catch(() => {
+                      // non-fatal
+                    });
                   }
+                  state.agentResults = [];
                   state.eventLog = [
                     { ts: Date.now(), event: "autopilot.emergency_stop" },
                     ...state.eventLog,

@@ -122,6 +122,13 @@ export class AgentMeApp extends LitElement {
   @state() hello: GatewayHelloOk | null = null;
   @state() lastError: string | null = null;
   @state() eventLog: EventLogEntry[] = [];
+  @state() agentResults: Array<{
+    id?: string;
+    ts?: number;
+    appId: "realestate" | "birdx" | "emc2";
+    status: "running" | "success" | "error";
+    summary: string;
+  }> = [];
   private eventLogBuffer: EventLogEntry[] = [];
   private toolStreamSyncTimer: number | null = null;
   private sidebarCloseTimer: number | null = null;

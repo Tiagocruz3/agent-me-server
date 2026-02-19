@@ -47,6 +47,13 @@ export type AppViewState = {
   hello: GatewayHelloOk | null;
   lastError: string | null;
   eventLog: EventLogEntry[];
+  agentResults: Array<{
+    id?: string;
+    ts?: number;
+    appId: "realestate" | "birdx" | "emc2";
+    status: "running" | "success" | "error";
+    summary: string;
+  }>;
   assistantName: string;
   assistantAvatar: string | null;
   assistantAgentId: string | null;
