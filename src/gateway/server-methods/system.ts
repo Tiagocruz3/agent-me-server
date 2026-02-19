@@ -15,6 +15,11 @@ let agentResults: Array<{
   summary: string;
 }> = [];
 
+function hasOperatorAccess(client: { connect: { role?: string } } | null): boolean {
+  const role = (client?.connect?.role ?? "").toLowerCase();
+  return role === "admin" || role === "operator";
+}
+
 export const systemHandlers: GatewayRequestHandlers = {
   "last-heartbeat": ({ respond }) => {
     respond(true, getLastHeartbeatEvent(), undefined);
@@ -22,7 +27,11 @@ export const systemHandlers: GatewayRequestHandlers = {
   "get-autopilot": ({ respond }) => {
     respond(true, { mode: autopilotMode }, undefined);
   },
-  "set-autopilot": ({ params, respond }) => {
+  "set-autopilot": ({ params, respond, client }) => {
+    if (!hasOperatorAccess(client)) {
+      respond(false, undefined, errorShape(ErrorCodes.FORBIDDEN, "operator role required"));
+      return;
+    }
     const mode = typeof params.mode === "string" ? params.mode : "";
     if (mode !== "off" && mode !== "assisted" && mode !== "full") {
       respond(
@@ -38,7 +47,11 @@ export const systemHandlers: GatewayRequestHandlers = {
   "agent-results.list": ({ respond }) => {
     respond(true, { items: agentResults.slice(0, 100) }, undefined);
   },
-  "agent-result.add": ({ params, respond }) => {
+  "agent-result.add": ({ params, respond, client }) => {
+    if (!hasOperatorAccess(client)) {
+      respond(false, undefined, errorShape(ErrorCodes.FORBIDDEN, "operator role required"));
+      return;
+    }
     const appId = typeof params.appId === "string" ? params.appId : "emc2";
     const status =
       params.status === "running" || params.status === "success" || params.status === "error"
@@ -55,7 +68,11 @@ export const systemHandlers: GatewayRequestHandlers = {
     agentResults = [item, ...agentResults].slice(0, 200);
     respond(true, { ok: true, item }, undefined);
   },
-  "agent-results.clear": ({ respond }) => {
+  "agent-results.clear": ({ respond, client }) => {
+    if (!hasOperatorAccess(client)) {
+      respond(false, undefined, errorShape(ErrorCodes.FORBIDDEN, "operator role required"));
+      return;
+    }
     agentResults = [];
     respond(true, { ok: true }, undefined);
   },

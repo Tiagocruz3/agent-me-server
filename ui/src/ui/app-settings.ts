@@ -37,6 +37,15 @@ import { resolveTheme, type ResolvedTheme, type ThemeMode } from "./theme.ts";
 
 type SettingsHost = {
   settings: UiSettings;
+  client?: AgentMeApp["client"];
+  lastError?: string | null;
+  agentResults?: Array<{
+    id?: string;
+    ts?: number;
+    appId: "realestate" | "birdx" | "emc2";
+    status: "running" | "success" | "error";
+    summary: string;
+  }>;
   password?: string;
   theme: ThemeMode;
   themeResolved: ResolvedTheme;
@@ -190,6 +199,9 @@ export function setTheme(host: SettingsHost, next: ThemeMode, context?: ThemeTra
 }
 
 export async function refreshActiveTab(host: SettingsHost) {
+  if (host.tab === "dashboard") {
+    await loadDashboard(host);
+  }
   if (host.tab === "overview") {
     await loadOverview(host);
   }
@@ -413,6 +425,61 @@ export function syncUrlWithSessionKey(host: SettingsHost, sessionKey: string, re
     window.history.replaceState({}, "", url.toString());
   } else {
     window.history.pushState({}, "", url.toString());
+  }
+}
+
+export async function loadDashboard(host: SettingsHost) {
+  await Promise.all([
+    loadPresence(host as unknown as AgentMeApp),
+    loadSessions(host as unknown as AgentMeApp),
+    loadCronStatus(host as unknown as AgentMeApp),
+  ]);
+  if ((host as AgentMeApp).client && (host as AgentMeApp).connected) {
+    try {
+      const [resultsRes, autoRes] = await Promise.all([
+        (host as AgentMeApp).client!.request<{
+          items?: Array<{
+            id?: string;
+            ts?: number;
+            appId?: string;
+            status?: string;
+            summary?: string;
+          }>;
+        }>("agent-results.list", {}),
+        (host as AgentMeApp).client!.request<{ mode?: "off" | "assisted" | "full" }>(
+          "get-autopilot",
+          {},
+        ),
+      ]);
+
+      const items = Array.isArray(resultsRes.items) ? resultsRes.items : [];
+      host.agentResults = items
+        .map((it) => ({
+          id: typeof it.id === "string" ? it.id : undefined,
+          ts: typeof it.ts === "number" ? it.ts : Date.now(),
+          appId:
+            it.appId === "realestate" || it.appId === "birdx" || it.appId === "emc2"
+              ? it.appId
+              : "emc2",
+          status:
+            it.status === "running" || it.status === "success" || it.status === "error"
+              ? it.status
+              : "running",
+          summary: typeof it.summary === "string" ? it.summary : "",
+        }))
+        .slice(0, 100);
+
+      const mode = autoRes.mode;
+      if (mode === "off" || mode === "assisted" || mode === "full") {
+        applySettings(host, {
+          ...host.settings,
+          autopilotMode: mode,
+          chatFocusMode: mode !== "off",
+        });
+      }
+    } catch (err) {
+      host.lastError = String(err);
+    }
   }
 }
 
