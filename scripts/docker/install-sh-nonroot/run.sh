@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-INSTALL_URL="${AGENTME_INSTALL_URL:-https://openclaw.ai/install.sh}"
+INSTALL_URL="${AGENTME_INSTALL_URL:-https://agentme.bot/install.sh}"
 DEFAULT_PACKAGE="agentme"
 PACKAGE_NAME="${AGENTME_INSTALL_PACKAGE:-$DEFAULT_PACKAGE}"
 CLI_NAME="${AGENTME_INSTALL_CLI_NAME:-$PACKAGE_NAME}"
