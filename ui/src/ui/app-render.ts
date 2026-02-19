@@ -122,6 +122,60 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   return identity?.avatarUrl;
 }
 
+function extractDashboardTaskResult(content: unknown): {
+  app: "Realestate" | "Bird X" | "EMC2";
+  appId: "realestate" | "birdx" | "emc2";
+  summary: string;
+  status: "running" | "success" | "error";
+} {
+  const text = String(content ?? "");
+  const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/i)?.[1] ?? null;
+  if (jsonBlock) {
+    try {
+      const parsed = JSON.parse(jsonBlock) as {
+        agentId?: string;
+        appId?: string;
+        status?: string;
+        summary?: string;
+      };
+      const rawApp = String(parsed.appId ?? parsed.agentId ?? "").toLowerCase();
+      const appId = rawApp.includes("realestate")
+        ? "realestate"
+        : rawApp.includes("twitter") || rawApp.includes("bird") || rawApp.includes("x")
+          ? "birdx"
+          : "emc2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      const statusRaw = String(parsed.status ?? "").toLowerCase();
+      const status =
+        statusRaw.includes("error") || statusRaw.includes("fail")
+          ? "error"
+          : statusRaw.includes("run") || statusRaw.includes("progress")
+            ? "running"
+            : "success";
+      const summary = String(parsed.summary ?? text).slice(0, 120);
+      return { app, appId, summary, status };
+    } catch {
+      // fall through to heuristic mode
+    }
+  }
+
+  const lower = text.toLowerCase();
+  const appId =
+    lower.includes("realestate") || lower.includes("property")
+      ? "realestate"
+      : lower.includes("bird") || lower.includes("twitter") || lower.includes("non-follower")
+        ? "birdx"
+        : "emc2";
+  const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+  const status =
+    lower.includes("error") || lower.includes("failed")
+      ? "error"
+      : lower.includes("running") || lower.includes("working") || lower.includes("processing")
+        ? "running"
+        : "success";
+  return { app, appId, summary: text.slice(0, 120), status };
+}
+
 export function renderApp(state: AppViewState) {
   const presenceCount = state.presenceEntries.length;
   const sessionsCount = state.sessionsResult?.count ?? null;
@@ -277,32 +331,13 @@ export function renderApp(state: AppViewState) {
                   .slice(-8)
                   .toReversed()
                   .map((m) => {
-                    const text = String((m as { content?: unknown }).content ?? "");
-                    const lower = text.toLowerCase();
-                    const appId =
-                      lower.includes("realestate") || lower.includes("property")
-                        ? "realestate"
-                        : lower.includes("bird") ||
-                            lower.includes("twitter") ||
-                            lower.includes("non-follower")
-                          ? "birdx"
-                          : "emc2";
-                    const app =
-                      appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
-                    const status =
-                      lower.includes("error") || lower.includes("failed")
-                        ? "error"
-                        : lower.includes("running") ||
-                            lower.includes("working") ||
-                            lower.includes("processing")
-                          ? "running"
-                          : "success";
+                    const parsed = extractDashboardTaskResult((m as { content?: unknown }).content);
                     return {
-                      app,
-                      appId,
-                      summary: text.slice(0, 120),
+                      app: parsed.app,
+                      appId: parsed.appId,
+                      summary: parsed.summary,
                       ts: "",
-                      status,
+                      status: parsed.status,
                     };
                   }),
                 onOpenTab: (tab) => state.setTab(tab),
