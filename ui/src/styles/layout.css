@@ -76,7 +76,7 @@
   grid-area: topbar;
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 140;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -218,7 +218,7 @@
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  z-index: 60;
+  z-index: 170;
   width: min(360px, calc(100vw - 24px));
   max-height: min(70vh, 540px);
   overflow: auto;
