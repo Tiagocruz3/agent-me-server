@@ -540,7 +540,7 @@ export function renderApp(state: AppViewState) {
                   state.applySettings({
                     ...state.settings,
                     autopilotMode: mode,
-                    chatFocusMode: mode === "off" ? false : true,
+                    chatFocusMode: mode !== "off",
                   });
                   if (mode === "full") {
                     state.eventLog = [
