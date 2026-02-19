@@ -791,3 +791,54 @@
     transform: translateY(0) scale(1);
   }
 }
+
+.metric {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 8px;
+}
+
+.dashboard-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.dashboard-app-card {
+  background: color-mix(in oklab, var(--panel) 88%, var(--app-accent) 12%);
+  border: 1px solid color-mix(in oklab, var(--app-accent) 50%, var(--border));
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-app-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-app-card__icon {
+  font-size: 18px;
+}
+
+.dashboard-app-card__pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.dashboard-app-card__name {
+  font-weight: 700;
+}
+
+.dashboard-app-card__role {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 4px;
+}

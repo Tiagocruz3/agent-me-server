@@ -67,6 +67,7 @@ import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderConfig } from "./views/config.ts";
 import { renderCron } from "./views/cron.ts";
+import { renderDashboard } from "./views/dashboard.ts";
 import { renderDebug } from "./views/debug.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
@@ -131,7 +132,10 @@ export function renderApp(state: AppViewState) {
   const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding);
   const topMenuGroups = [
     { label: "Work", tabs: ["chat", "sessions", "memory"] as const },
-    { label: "Control", tabs: ["overview", "channels", "instances", "usage", "cron"] as const },
+    {
+      label: "Control",
+      tabs: ["dashboard", "overview", "channels", "instances", "usage", "cron"] as const,
+    },
     { label: "Build", tabs: ["agents", "skills", "nodes"] as const },
     { label: "System", tabs: ["config", "debug", "logs"] as const },
   ];
@@ -249,6 +253,18 @@ export function renderApp(state: AppViewState) {
             }
           </div>
         </section>
+
+        ${
+          state.tab === "dashboard"
+            ? renderDashboard({
+                connected: state.connected,
+                agentCount: state.agentsList?.count ?? state.agentsList?.agents?.length ?? 0,
+                sessionsCount,
+                presenceCount,
+                onOpenTab: (tab) => state.setTab(tab),
+              })
+            : nothing
+        }
 
         ${
           state.tab === "overview"
