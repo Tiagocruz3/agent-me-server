@@ -66,10 +66,10 @@ export function renderDashboard(props: DashboardProps) {
       </div>
       <div class="row" style="margin-top:10px; align-items:center; gap:8px; flex-wrap: wrap;">
         <span class="muted">Autopilot:</span>
-        <button class="btn ${props.autopilotMode === "off" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("off")}>Off</button>
-        <button class="btn ${props.autopilotMode === "assisted" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("assisted")}>Assisted</button>
-        <button class="btn ${props.autopilotMode === "full" ? "btn-primary" : ""}" @click=${() => props.onSetAutopilotMode("full")}>Full</button>
-        <button class="btn btn-danger" @click=${() => props.onEmergencyStop()}>Emergency Stop</button>
+        <button class="btn ${props.autopilotMode === "off" ? "primary" : ""}" @click=${() => props.onSetAutopilotMode("off")}>Off</button>
+        <button class="btn ${props.autopilotMode === "assisted" ? "primary" : ""}" @click=${() => props.onSetAutopilotMode("assisted")}>Assisted</button>
+        <button class="btn ${props.autopilotMode === "full" ? "primary" : ""}" @click=${() => props.onSetAutopilotMode("full")}>Full</button>
+        <button class="btn danger" @click=${() => props.onEmergencyStop()}>Emergency Stop</button>
       </div>
       <div class="muted" style="margin-top:8px;">Active instances: ${props.presenceCount}</div>
     </section>

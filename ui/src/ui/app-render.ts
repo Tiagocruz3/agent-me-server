@@ -257,6 +257,9 @@ export function renderApp(state: AppViewState) {
     { label: "System", tabs: ["config", "debug", "logs"] as const },
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
+  const autopilotMode: "off" | "assisted" | "full" = state.settings.chatFocusMode
+    ? "assisted"
+    : "off";
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
   const configValue =
@@ -321,6 +324,10 @@ export function renderApp(state: AppViewState) {
             <span>Health</span>
             <span class="mono">${state.connected ? "OK" : "Offline"}</span>
           </div>
+          <div class="pill">
+            <span>Autopilot</span>
+            <span class="mono">${autopilotMode.toUpperCase()}</span>
+          </div>
           ${renderThemeToggle(state)}
         </div>
       </header>
@@ -379,10 +386,7 @@ export function renderApp(state: AppViewState) {
                 sessionsCount,
                 presenceCount,
                 queuedCount: state.chatQueue.length,
-                autopilotMode: (state.settings.chatFocusMode ? "assisted" : "off") as
-                  | "off"
-                  | "assisted"
-                  | "full",
+                autopilotMode,
                 recentActivity: (Array.isArray(state.eventLog) ? state.eventLog : [])
                   .slice(-12)
                   .toReversed()
