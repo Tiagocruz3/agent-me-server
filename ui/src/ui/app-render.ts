@@ -443,6 +443,24 @@ export function renderApp(state: AppViewState) {
                   state.chatMessage = prompt;
                 },
                 onRunTask: (app) => {
+                  const approved = window.confirm(
+                    app === "birdx"
+                      ? "Run Bird X task now? This may prepare social account actions."
+                      : app === "realestate"
+                        ? "Run Realestate task now? This will execute property workflow queries."
+                        : "Run EMC2 task now?",
+                  );
+                  if (!approved) {
+                    state.eventLog = [
+                      { ts: Date.now(), event: `approval.denied.${app}.run` },
+                      ...state.eventLog,
+                    ].slice(0, 200);
+                    return;
+                  }
+                  state.eventLog = [
+                    { ts: Date.now(), event: `approval.granted.${app}.run` },
+                    ...state.eventLog,
+                  ].slice(0, 200);
                   const basePrompt =
                     app === "realestate"
                       ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
@@ -453,6 +471,20 @@ export function renderApp(state: AppViewState) {
                   void state.handleSendChat(prompt);
                 },
                 onScheduleTask: (app) => {
+                  const approved = window.confirm(
+                    "Create scheduled automation for this app? You can edit timing before saving.",
+                  );
+                  if (!approved) {
+                    state.eventLog = [
+                      { ts: Date.now(), event: `approval.denied.${app}.schedule` },
+                      ...state.eventLog,
+                    ].slice(0, 200);
+                    return;
+                  }
+                  state.eventLog = [
+                    { ts: Date.now(), event: `approval.granted.${app}.schedule` },
+                    ...state.eventLog,
+                  ].slice(0, 200);
                   state.cronForm = {
                     ...state.cronForm,
                     name:
