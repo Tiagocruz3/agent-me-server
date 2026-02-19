@@ -18,6 +18,7 @@ export type DashboardProps = {
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
   onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
+  onScheduleTask: (app: "realestate" | "birdx" | "emc2") => void;
   onViewResult: (app: "realestate" | "birdx" | "emc2") => void;
   onFixSchema: (app: "realestate" | "birdx" | "emc2") => void;
 };
@@ -144,6 +145,7 @@ export function renderDashboard(props: DashboardProps) {
               <div class="row">
                 <button class="btn" @click=${() => props.onOpenAppChat(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Open in chat</button>
                 <button class="btn" @click=${() => props.onRunTask(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Run task</button>
+                <button class="btn" @click=${() => props.onScheduleTask(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Schedule</button>
               </div>
             </article>
           `,

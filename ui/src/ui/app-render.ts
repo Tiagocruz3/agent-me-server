@@ -452,6 +452,32 @@ export function renderApp(state: AppViewState) {
                   const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
                   void state.handleSendChat(prompt);
                 },
+                onScheduleTask: (app) => {
+                  state.cronForm = {
+                    ...state.cronForm,
+                    name:
+                      app === "realestate"
+                        ? "Realestate Daily Run"
+                        : app === "birdx"
+                          ? "Bird X Daily Cleanup"
+                          : "EMC2 Daily Brief",
+                    description: "Created from Dashboard app card",
+                    scheduleKind: "cron",
+                    cronExpr: "0 8 * * *",
+                    cronTz: "Australia/Brisbane",
+                    sessionTarget: "isolated",
+                    payloadKind: "agentTurn",
+                    agentId: "main",
+                    payloadText:
+                      app === "realestate"
+                        ? "Run realestate workflow and return structured summary cards."
+                        : app === "birdx"
+                          ? "Run Bird X workflow and return structured summary cards."
+                          : "Generate EMC2 daily mission summary with top priorities.",
+                    deliveryMode: "announce",
+                  };
+                  state.setTab("cron");
+                },
                 onViewResult: (app) => {
                   state.setTab("chat");
                   const basePrompt =
