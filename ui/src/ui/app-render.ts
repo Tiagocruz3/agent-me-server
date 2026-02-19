@@ -289,11 +289,20 @@ export function renderApp(state: AppViewState) {
                           : "emc2";
                     const app =
                       appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+                    const status =
+                      lower.includes("error") || lower.includes("failed")
+                        ? "error"
+                        : lower.includes("running") ||
+                            lower.includes("working") ||
+                            lower.includes("processing")
+                          ? "running"
+                          : "success";
                     return {
                       app,
                       appId,
                       summary: text.slice(0, 120),
                       ts: "",
+                      status,
                     };
                   }),
                 onOpenTab: (tab) => state.setTab(tab),

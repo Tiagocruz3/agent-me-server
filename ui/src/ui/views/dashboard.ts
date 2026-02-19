@@ -12,6 +12,7 @@ export type DashboardProps = {
     appId: "realestate" | "birdx" | "emc2";
     summary: string;
     ts?: string;
+    status: "running" | "success" | "error";
   }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
@@ -85,14 +86,23 @@ export function renderDashboard(props: DashboardProps) {
       <div class="list" style="margin-top:10px;">
         ${(props.taskResults.length
           ? props.taskResults
-          : [{ app: "system", appId: "emc2", summary: "No task results yet." }]
+          : [
+              {
+                app: "system",
+                appId: "emc2",
+                summary: "No task results yet.",
+                status: "success" as const,
+              },
+            ]
         )
           .slice(0, 5)
           .map(
             (item) => html`
           <div class="list-item" style="grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
             <span>
-              <strong>${item.app}</strong> — ${item.summary}
+              <strong>${item.app}</strong>
+              <span class="result-status result-status--${item.status}">${item.status}</span>
+              — ${item.summary}
               <span class="muted" style="margin-left:8px;">${item.ts || ""}</span>
             </span>
             <span class="row" style="gap:6px;">
