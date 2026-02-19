@@ -7,10 +7,16 @@ export type DashboardProps = {
   presenceCount: number;
   queuedCount: number;
   recentActivity: Array<{ label: string; ts?: string }>;
-  taskResults: Array<{ app: string; summary: string; ts?: string }>;
+  taskResults: Array<{
+    app: string;
+    appId: "realestate" | "birdx" | "emc2";
+    summary: string;
+    ts?: string;
+  }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
   onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
+  onViewResult: (app: "realestate" | "birdx" | "emc2") => void;
 };
 
 const starterApps = [
@@ -77,7 +83,25 @@ export function renderDashboard(props: DashboardProps) {
       <div class="card-title">Task Results</div>
       <div class="card-sub">Structured outcomes from recent runs</div>
       <div class="list" style="margin-top:10px;">
-        ${(props.taskResults.length ? props.taskResults : [{ app: "system", summary: "No task results yet." }]).slice(0, 5).map((item) => html`<div class="list-item"><span><strong>${item.app}</strong> — ${item.summary}</span><span class="muted">${item.ts || ""}</span></div>`)}
+        ${(props.taskResults.length
+          ? props.taskResults
+          : [{ app: "system", appId: "emc2", summary: "No task results yet." }]
+        )
+          .slice(0, 5)
+          .map(
+            (item) => html`
+          <div class="list-item" style="grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
+            <span>
+              <strong>${item.app}</strong> — ${item.summary}
+              <span class="muted" style="margin-left:8px;">${item.ts || ""}</span>
+            </span>
+            <span class="row" style="gap:6px;">
+              <button class="btn" @click=${() => props.onViewResult(item.appId)}>Open</button>
+              <button class="btn" @click=${() => props.onRunTask(item.appId)}>Re-run</button>
+            </span>
+          </div>
+        `,
+          )}
       </div>
     </section>
 

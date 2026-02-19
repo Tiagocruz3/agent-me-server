@@ -274,13 +274,28 @@ export function renderApp(state: AppViewState) {
                     (m) =>
                       m && typeof m === "object" && (m as { role?: string }).role === "assistant",
                   )
-                  .slice(-5)
+                  .slice(-8)
                   .toReversed()
-                  .map((m) => ({
-                    app: "agent",
-                    summary: String((m as { content?: unknown }).content ?? "").slice(0, 120),
-                    ts: "",
-                  })),
+                  .map((m) => {
+                    const text = String((m as { content?: unknown }).content ?? "");
+                    const lower = text.toLowerCase();
+                    const appId =
+                      lower.includes("realestate") || lower.includes("property")
+                        ? "realestate"
+                        : lower.includes("bird") ||
+                            lower.includes("twitter") ||
+                            lower.includes("non-follower")
+                          ? "birdx"
+                          : "emc2";
+                    const app =
+                      appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+                    return {
+                      app,
+                      appId,
+                      summary: text.slice(0, 120),
+                      ts: "",
+                    };
+                  }),
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
@@ -301,6 +316,15 @@ export function renderApp(state: AppViewState) {
                         ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
                         : "EMC2 run task now: produce top priorities and next actions.";
                   void state.handleSendChat(prompt);
+                },
+                onViewResult: (app) => {
+                  state.setTab("chat");
+                  state.chatMessage =
+                    app === "realestate"
+                      ? "Show latest Realestate result in a clean summary card format."
+                      : app === "birdx"
+                        ? "Show latest Bird X result with actionable next steps."
+                        : "Show latest EMC2 task result summary.";
                 },
               })
             : nothing
