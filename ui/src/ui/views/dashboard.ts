@@ -48,18 +48,68 @@ const starterApps = [
 ];
 
 export function renderDashboard(props: DashboardProps) {
+  const totalTasks = props.taskResults.length;
+  const highPriority = props.taskResults.filter((item) => item.status === "error").length;
+  const activeAgents = props.presenceCount;
+  const taskCompletion = totalTasks
+    ? Math.round(
+        (props.taskResults.filter((item) => item.status === "success").length / totalTasks) * 100,
+      )
+    : 0;
+
   return html`
-    <section class="grid grid-cols-3" style="margin-bottom:14px;">
-      <div class="card"><div class="card-title">System Health</div><div class="metric">${props.connected ? "Online" : "Offline"}</div></div>
-      <div class="card"><div class="card-title">Agents</div><div class="metric">${props.agentCount}</div></div>
-      <div class="card"><div class="card-title">Sessions</div><div class="metric">${props.sessionsCount ?? 0}</div></div>
+    <section class="dashboard-hero card" style="margin-bottom:14px;">
+      <div>
+        <div class="card-title">Dashboard</div>
+        <div class="card-sub">Power control for your AI workforce.</div>
+      </div>
+      <div class="dashboard-hero__chips">
+        <span class="result-status ${props.connected ? "result-status--success" : "result-status--error"}">
+          ${props.connected ? "Connected" : "Disconnected"}
+        </span>
+        <span class="result-status result-status--running">Autopilot ${props.autopilotMode.toUpperCase()}</span>
+      </div>
+    </section>
+
+    <section class="dashboard-kpis" style="margin-bottom:14px;">
+      <article class="dashboard-kpi-card card">
+        <div class="card-sub">Total Agents</div>
+        <div class="metric">${props.agentCount}</div>
+        <div class="dashboard-kpi-bar"><span style="width:${Math.min(100, props.agentCount * 20)}%"></span></div>
+      </article>
+      <article class="dashboard-kpi-card card">
+        <div class="card-sub">Total Tasks</div>
+        <div class="metric">${totalTasks}</div>
+        <div class="dashboard-kpi-bar kpi-purple"><span style="width:${Math.min(100, totalTasks * 12)}%"></span></div>
+      </article>
+      <article class="dashboard-kpi-card card">
+        <div class="card-sub">Active Agents</div>
+        <div class="metric">${activeAgents}</div>
+        <div class="dashboard-kpi-bar kpi-cyan"><span style="width:${Math.min(100, activeAgents * 25)}%"></span></div>
+      </article>
+      <article class="dashboard-kpi-card card">
+        <div class="card-sub">High Priority</div>
+        <div class="metric">${highPriority}</div>
+        <div class="dashboard-kpi-bar kpi-amber"><span style="width:${Math.min(100, highPriority * 25)}%"></span></div>
+      </article>
+    </section>
+
+    <section class="card" style="margin-bottom:14px;">
+      <div class="dashboard-toolbar">
+        <input class="input" disabled value="Search agents, roles, tags..." />
+        <div class="dashboard-toolbar__stats muted">
+          <span>Agents <strong>${props.agentCount}</strong></span>
+          <span>Tasks <strong>${totalTasks}</strong></span>
+          <span>Completion <strong>${taskCompletion}%</strong></span>
+        </div>
+      </div>
     </section>
 
     <section class="card" style="margin-bottom:14px;">
       <div class="card-title">Mission Control</div>
-      <div class="card-sub">Run your AI workforce from one place.</div>
+      <div class="card-sub">Quick-access power actions</div>
       <div class="row" style="margin-top:10px; flex-wrap: wrap;">
-        <button class="btn" @click=${() => props.onOpenTab("chat")}>Open Chat</button>
+        <button class="btn primary" @click=${() => props.onOpenTab("chat")}>Open Chat</button>
         <button class="btn" @click=${() => props.onOpenTab("agents")}>Manage Agents</button>
         <button class="btn" @click=${() => props.onOpenTab("cron")}>Scheduler</button>
         <button class="btn" @click=${() => props.onOpenTab("logs")}>Logs</button>
@@ -71,13 +121,11 @@ export function renderDashboard(props: DashboardProps) {
         <button class="btn ${props.autopilotMode === "full" ? "primary" : ""}" @click=${() => props.onSetAutopilotMode("full")}>Full</button>
         <button class="btn danger" @click=${() => props.onEmergencyStop()}>Emergency Stop</button>
       </div>
-      <div class="muted" style="margin-top:8px;">Active instances: ${props.presenceCount}</div>
     </section>
 
     <section class="grid grid-cols-2" style="margin-bottom: 14px; align-items: start;">
       <div class="card">
         <div class="card-title">Live Activity Feed</div>
-        <div class="card-sub">Latest events across agents</div>
         <div class="list" style="margin-top:10px;">
           ${(props.recentActivity.length ? props.recentActivity : [{ label: "No activity yet" }]).slice(0, 6).map((item) => html`<div class="list-item"><span>${item.label}</span><span class="muted">${item.ts || ""}</span></div>`)}
         </div>
@@ -95,7 +143,6 @@ export function renderDashboard(props: DashboardProps) {
 
     <section class="card" style="margin-bottom:14px;">
       <div class="card-title">Task Results</div>
-      <div class="card-sub">Structured outcomes from recent runs</div>
       <div class="list" style="margin-top:10px;">
         ${(props.taskResults.length
           ? props.taskResults
@@ -128,11 +175,7 @@ export function renderDashboard(props: DashboardProps) {
             <span class="row" style="gap:6px;">
               <button class="btn" @click=${() => props.onViewResult(item.appId)}>Open</button>
               <button class="btn" @click=${() => props.onRunTask(item.appId)}>Re-run</button>
-              ${
-                item.schemaMismatch
-                  ? html`<button class="btn" @click=${() => props.onFixSchema(item.appId)}>Fix format</button>`
-                  : ""
-              }
+              ${item.schemaMismatch ? html`<button class="btn" @click=${() => props.onFixSchema(item.appId)}>Fix format</button>` : ""}
             </span>
           </div>
         `,
