@@ -122,6 +122,26 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   return identity?.avatarUrl;
 }
 
+function taskResultSchemaInstruction(appId: "realestate" | "birdx" | "emc2"): string {
+  const appLabel =
+    appId === "realestate" ? "realestate-agent" : appId === "birdx" ? "twitter-agent" : "emc2";
+  return [
+    "Return your final answer with a fenced JSON block first using this exact schema:",
+    "```json",
+    JSON.stringify(
+      {
+        appId: appLabel,
+        status: "success",
+        summary: "short operator summary",
+      },
+      null,
+      2,
+    ),
+    "```",
+    "Then provide human-readable details below the JSON.",
+  ].join("\n");
+}
+
 function extractDashboardTaskResult(content: unknown): {
   app: "Realestate" | "Bird X" | "EMC2";
   appId: "realestate" | "birdx" | "emc2";
@@ -353,22 +373,24 @@ export function renderApp(state: AppViewState) {
                 },
                 onRunTask: (app) => {
                   state.setTab("chat");
-                  const prompt =
+                  const basePrompt =
                     app === "realestate"
                       ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
                       : app === "birdx"
                         ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
                         : "EMC2 run task now: produce top priorities and next actions.";
+                  const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
                   void state.handleSendChat(prompt);
                 },
                 onViewResult: (app) => {
                   state.setTab("chat");
-                  state.chatMessage =
+                  const basePrompt =
                     app === "realestate"
                       ? "Show latest Realestate result in a clean summary card format."
                       : app === "birdx"
                         ? "Show latest Bird X result with actionable next steps."
                         : "Show latest EMC2 task result summary.";
+                  state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
                 },
               })
             : nothing
