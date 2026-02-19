@@ -261,7 +261,25 @@ export function renderApp(state: AppViewState) {
                 agentCount: state.agentsList?.count ?? state.agentsList?.agents?.length ?? 0,
                 sessionsCount,
                 presenceCount,
+                queuedCount: state.chatQueue.length,
+                recentActivity: (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                  .slice(-12)
+                  .toReversed()
+                  .map((m: any) => ({
+                    label: `${m?.role === "assistant" ? "EMC2" : "User"}: ${String(m?.content ?? "").slice(0, 72)}`,
+                    ts: m?.ts ? new Date(m.ts).toLocaleTimeString() : "",
+                  })),
                 onOpenTab: (tab) => state.setTab(tab),
+                onOpenAppChat: (app) => {
+                  state.setTab("chat");
+                  const prompt =
+                    app === "realestate"
+                      ? "Run realestate workflow: apartments in Broadbeach up to 650 per week. Return shortlist cards."
+                      : app === "birdx"
+                        ? "Run Bird X workflow: show 25 non-followers sample and prep unfollow plan."
+                        : "EMC2 mission mode: summarize priorities and propose next best actions.";
+                  void state.handleSendChat(prompt);
+                },
               })
             : nothing
         }

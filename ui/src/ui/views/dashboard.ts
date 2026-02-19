@@ -5,7 +5,10 @@ export type DashboardProps = {
   agentCount: number;
   sessionsCount: number | null;
   presenceCount: number;
+  queuedCount: number;
+  recentActivity: Array<{ label: string; ts?: string }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
+  onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
 };
 
 const starterApps = [
@@ -49,6 +52,25 @@ export function renderDashboard(props: DashboardProps) {
       <div class="muted" style="margin-top:8px;">Active instances: ${props.presenceCount}</div>
     </section>
 
+    <section class="grid grid-cols-2" style="margin-bottom: 14px; align-items: start;">
+      <div class="card">
+        <div class="card-title">Live Activity Feed</div>
+        <div class="card-sub">Latest events across agents</div>
+        <div class="list" style="margin-top:10px;">
+          ${(props.recentActivity.length ? props.recentActivity : [{ label: "No activity yet" }]).slice(0, 6).map((item) => html`<div class="list-item"><span>${item.label}</span><span class="muted">${item.ts || ""}</span></div>`)}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Task Queue</div>
+        <div class="card-sub">Queued chat tasks waiting to run</div>
+        <div class="metric">${props.queuedCount}</div>
+        <div class="row" style="margin-top: 8px;">
+          <button class="btn" @click=${() => props.onOpenTab("chat")}>Open Queue</button>
+          <button class="btn" @click=${() => props.onOpenTab("logs")}>View Logs</button>
+        </div>
+      </div>
+    </section>
+
     <section>
       <div class="card-title" style="margin-bottom:10px;">Apps Gallery</div>
       <div class="dashboard-app-grid">
@@ -61,7 +83,7 @@ export function renderDashboard(props: DashboardProps) {
               </div>
               <div class="dashboard-app-card__name">${app.name}</div>
               <div class="dashboard-app-card__role">${app.role}</div>
-              <button class="btn" @click=${() => props.onOpenTab("chat")}>Open in chat</button>
+              <button class="btn" @click=${() => props.onOpenAppChat(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Open in chat</button>
             </article>
           `,
         )}
