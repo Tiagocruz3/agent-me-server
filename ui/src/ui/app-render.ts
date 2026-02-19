@@ -257,9 +257,8 @@ export function renderApp(state: AppViewState) {
     { label: "System", tabs: ["config", "debug", "logs"] as const },
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
-  const autopilotMode: "off" | "assisted" | "full" = state.settings.chatFocusMode
-    ? "assisted"
-    : "off";
+  const autopilotMode: "off" | "assisted" | "full" =
+    state.settings.autopilotMode ?? (state.settings.chatFocusMode ? "assisted" : "off");
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
   const configValue =
@@ -538,12 +537,12 @@ export function renderApp(state: AppViewState) {
                   void state.handleSendChat(prompt);
                 },
                 onSetAutopilotMode: (mode) => {
-                  if (mode === "off") {
-                    state.applySettings({ ...state.settings, chatFocusMode: false });
-                  } else if (mode === "assisted") {
-                    state.applySettings({ ...state.settings, chatFocusMode: true });
-                  } else {
-                    state.applySettings({ ...state.settings, chatFocusMode: true });
+                  state.applySettings({
+                    ...state.settings,
+                    autopilotMode: mode,
+                    chatFocusMode: mode === "off" ? false : true,
+                  });
+                  if (mode === "full") {
                     state.eventLog = [
                       { ts: Date.now(), event: "autopilot.full.enabled" },
                       ...state.eventLog,
@@ -563,7 +562,11 @@ export function renderApp(state: AppViewState) {
                   state.chatRunId = null;
                   state.chatStream = null;
                   state.chatStreamStartedAt = null;
-                  state.applySettings({ ...state.settings, chatFocusMode: false });
+                  state.applySettings({
+                    ...state.settings,
+                    autopilotMode: "off",
+                    chatFocusMode: false,
+                  });
                   state.eventLog = [
                     { ts: Date.now(), event: "autopilot.emergency_stop" },
                     ...state.eventLog,

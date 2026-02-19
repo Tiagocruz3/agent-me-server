@@ -8,6 +8,7 @@ export type UiSettings = {
   sessionKey: string;
   lastActiveSessionKey: string;
   theme: ThemeMode;
+  autopilotMode: "off" | "assisted" | "full";
   chatFocusMode: boolean;
   chatShowThinking: boolean;
   splitRatio: number; // Sidebar split ratio (0.4 to 0.7, default 0.6)
@@ -27,6 +28,7 @@ export function loadSettings(): UiSettings {
     sessionKey: "main",
     lastActiveSessionKey: "main",
     theme: "dark",
+    autopilotMode: "off",
     chatFocusMode: false,
     chatShowThinking: true,
     splitRatio: 0.6,
@@ -59,6 +61,12 @@ export function loadSettings(): UiSettings {
         parsed.theme === "light" || parsed.theme === "dark" || parsed.theme === "system"
           ? parsed.theme
           : defaults.theme,
+      autopilotMode:
+        parsed.autopilotMode === "off" ||
+        parsed.autopilotMode === "assisted" ||
+        parsed.autopilotMode === "full"
+          ? parsed.autopilotMode
+          : defaults.autopilotMode,
       chatFocusMode:
         typeof parsed.chatFocusMode === "boolean" ? parsed.chatFocusMode : defaults.chatFocusMode,
       chatShowThinking:
