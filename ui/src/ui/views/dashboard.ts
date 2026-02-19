@@ -7,6 +7,7 @@ export type DashboardProps = {
   presenceCount: number;
   queuedCount: number;
   recentActivity: Array<{ label: string; ts?: string }>;
+  taskResults: Array<{ app: string; summary: string; ts?: string }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
   onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
@@ -69,6 +70,14 @@ export function renderDashboard(props: DashboardProps) {
           <button class="btn" @click=${() => props.onOpenTab("chat")}>Open Queue</button>
           <button class="btn" @click=${() => props.onOpenTab("logs")}>View Logs</button>
         </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px;">
+      <div class="card-title">Task Results</div>
+      <div class="card-sub">Structured outcomes from recent runs</div>
+      <div class="list" style="margin-top:10px;">
+        ${(props.taskResults.length ? props.taskResults : [{ app: "system", summary: "No task results yet." }]).slice(0, 5).map((item) => html`<div class="list-item"><span><strong>${item.app}</strong> — ${item.summary}</span><span class="muted">${item.ts || ""}</span></div>`)}
       </div>
     </section>
 

@@ -269,6 +269,18 @@ export function renderApp(state: AppViewState) {
                     label: String(entry?.event ?? "event"),
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
+                taskResults: (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                  .filter(
+                    (m) =>
+                      m && typeof m === "object" && (m as { role?: string }).role === "assistant",
+                  )
+                  .slice(-5)
+                  .toReversed()
+                  .map((m) => ({
+                    app: "agent",
+                    summary: String((m as { content?: unknown }).content ?? "").slice(0, 120),
+                    ts: "",
+                  })),
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
