@@ -386,38 +386,51 @@ export function renderApp(state: AppViewState) {
                     label: String(entry?.event ?? "event"),
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
-                taskResults: (Array.isArray(state.chatMessages) ? state.chatMessages : [])
-                  .filter(
-                    (m) =>
-                      m && typeof m === "object" && (m as { role?: string }).role === "assistant",
-                  )
-                  .slice(-8)
-                  .toReversed()
-                  .map((m) => {
-                    const typed = m as {
-                      content?: unknown;
-                      ts?: number;
-                      createdAt?: number;
-                      created_at?: string;
-                    };
-                    const parsed = extractDashboardTaskResult(typed.content);
-                    const tsValue =
-                      typeof typed.ts === "number"
-                        ? new Date(typed.ts).toLocaleTimeString()
-                        : typeof typed.createdAt === "number"
-                          ? new Date(typed.createdAt).toLocaleTimeString()
-                          : typeof typed.created_at === "string"
-                            ? new Date(typed.created_at).toLocaleTimeString()
-                            : "";
-                    return {
-                      app: parsed.app,
-                      appId: parsed.appId,
-                      summary: parsed.summary,
-                      ts: tsValue,
-                      status: parsed.status,
-                      schemaMismatch: parsed.schemaMismatch,
-                    };
-                  }),
+                taskResults: (() => {
+                  const rows = (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                    .filter(
+                      (m) =>
+                        m && typeof m === "object" && (m as { role?: string }).role === "assistant",
+                    )
+                    .slice(-8)
+                    .toReversed()
+                    .map((m) => {
+                      const typed = m as {
+                        content?: unknown;
+                        ts?: number;
+                        createdAt?: number;
+                        created_at?: string;
+                      };
+                      const parsed = extractDashboardTaskResult(typed.content);
+                      const tsValue =
+                        typeof typed.ts === "number"
+                          ? new Date(typed.ts).toLocaleTimeString()
+                          : typeof typed.createdAt === "number"
+                            ? new Date(typed.createdAt).toLocaleTimeString()
+                            : typeof typed.created_at === "string"
+                              ? new Date(typed.created_at).toLocaleTimeString()
+                              : "";
+                      return {
+                        app: parsed.app,
+                        appId: parsed.appId,
+                        summary: parsed.summary,
+                        ts: tsValue,
+                        status: parsed.status,
+                        schemaMismatch: parsed.schemaMismatch,
+                      };
+                    });
+                  if (state.chatRunId) {
+                    rows.unshift({
+                      app: "EMC2",
+                      appId: "emc2",
+                      summary: "Task running…",
+                      ts: new Date().toLocaleTimeString(),
+                      status: "running",
+                      schemaMismatch: false,
+                    });
+                  }
+                  return rows;
+                })(),
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
@@ -430,7 +443,6 @@ export function renderApp(state: AppViewState) {
                   state.chatMessage = prompt;
                 },
                 onRunTask: (app) => {
-                  state.setTab("chat");
                   const basePrompt =
                     app === "realestate"
                       ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
