@@ -542,6 +542,11 @@ export function renderApp(state: AppViewState) {
                     autopilotMode: mode,
                     chatFocusMode: mode !== "off",
                   });
+                  if (state.client && state.connected) {
+                    void state.client.request("set-autopilot", { mode }).catch((err) => {
+                      state.lastError = String(err);
+                    });
+                  }
                   if (mode === "full") {
                     state.eventLog = [
                       { ts: Date.now(), event: "autopilot.full.enabled" },
@@ -567,6 +572,11 @@ export function renderApp(state: AppViewState) {
                     autopilotMode: "off",
                     chatFocusMode: false,
                   });
+                  if (state.client && state.connected) {
+                    void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
+                      state.lastError = String(err);
+                    });
+                  }
                   state.eventLog = [
                     { ts: Date.now(), event: "autopilot.emergency_stop" },
                     ...state.eventLog,

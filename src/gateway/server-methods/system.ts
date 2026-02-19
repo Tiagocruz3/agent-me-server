@@ -6,9 +6,27 @@ import { enqueueSystemEvent, isSystemEventContextChanged } from "../../infra/sys
 import { listSystemPresence, updateSystemPresence } from "../../infra/system-presence.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
 
+let autopilotMode: "off" | "assisted" | "full" = "off";
+
 export const systemHandlers: GatewayRequestHandlers = {
   "last-heartbeat": ({ respond }) => {
     respond(true, getLastHeartbeatEvent(), undefined);
+  },
+  "get-autopilot": ({ respond }) => {
+    respond(true, { mode: autopilotMode }, undefined);
+  },
+  "set-autopilot": ({ params, respond }) => {
+    const mode = typeof params.mode === "string" ? params.mode : "";
+    if (mode !== "off" && mode !== "assisted" && mode !== "full") {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "invalid set-autopilot params: mode required"),
+      );
+      return;
+    }
+    autopilotMode = mode;
+    respond(true, { ok: true, mode: autopilotMode }, undefined);
   },
   "set-heartbeats": ({ params, respond }) => {
     const enabled = params.enabled;
