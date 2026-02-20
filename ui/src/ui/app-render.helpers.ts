@@ -11,6 +11,23 @@ import { ChatState, loadChatHistory } from "./controllers/chat.ts";
 import { icons } from "./icons.ts";
 import { iconForTab, pathForTab, titleForTab, type Tab } from "./navigation.ts";
 
+function buildChatHistorySidebarContent(state: AppViewState): string {
+  const msgs = (Array.isArray(state.chatMessages) ? state.chatMessages : []) as Array<{
+    role?: string;
+    content?: unknown;
+  }>;
+  const lines = msgs
+    .slice(-30)
+    .map((m, i) => {
+      const role = String(m?.role || "message").toUpperCase();
+      const raw = typeof m?.content === "string" ? m.content : JSON.stringify(m?.content ?? "");
+      const text = raw.replace(/\s+/g, " ").trim().slice(0, 180);
+      return `${i + 1}. [${role}] ${text}`;
+    })
+    .join("\n\n");
+  return `# Chat History\n\n${lines || "No messages yet."}`;
+}
+
 export function renderTab(state: AppViewState, tab: Tab) {
   const href = pathForTab(tab, state.basePath);
   return html`
@@ -215,6 +232,21 @@ export function renderChatControls(state: AppViewState) {
         }
       >
         ${icons.brain}
+      </button>
+      <button
+        class="btn btn--sm btn--icon ${state.sidebarOpen ? "active" : ""}"
+        @click=${() => {
+          const app = state as unknown as AgentMeApp;
+          if (state.sidebarOpen) {
+            app.handleCloseSidebar();
+            return;
+          }
+          app.handleOpenSidebar(buildChatHistorySidebarContent(state));
+        }}
+        aria-pressed=${Boolean(state.sidebarOpen)}
+        title="Toggle chat history sidebar"
+      >
+        ${icons.book}
       </button>
       <button
         class="btn btn--sm btn--icon ${focusActive ? "active" : ""}"
