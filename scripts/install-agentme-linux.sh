@@ -175,6 +175,12 @@ install_service() {
 }
 
 post_checks() {
+  if [[ "$NO_SERVICE" == "1" ]]; then
+    echo "[agentme-install] --no-service selected; skipping gateway probe"
+    echo "[agentme-install] Start manually: agentme gateway"
+    return
+  fi
+
   echo "[agentme-install] Probing gateway"
   if ! agentme gateway probe; then
     echo "[agentme-install] Gateway probe failed" >&2
