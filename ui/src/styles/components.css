@@ -1223,7 +1223,7 @@
 .chat-msg {
   display: grid;
   gap: 6px;
-  max-width: min(700px, 82%);
+  max-width: min(620px, 66%);
 }
 
 .chat-line.user .chat-msg {

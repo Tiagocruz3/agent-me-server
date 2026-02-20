@@ -198,6 +198,20 @@ export function renderChat(props: ChatProps) {
   };
 
   const hasAttachments = (props.attachments?.length ?? 0) > 0;
+  const activeAgentId = (() => {
+    const m = /^agent:([^:]+):/.exec(props.sessionKey);
+    return m?.[1] || "main";
+  })();
+  const agentOptions = (() => {
+    const set = new Set<string>(["main"]);
+    for (const row of props.sessions?.sessions ?? []) {
+      const m = /^agent:([^:]+):/.exec(row.key);
+      if (m?.[1]) {
+        set.add(m[1]);
+      }
+    }
+    return Array.from(set);
+  })();
   const composePlaceholder = props.connected
     ? hasAttachments
       ? "Add a message or paste more images..."
@@ -444,6 +458,21 @@ export function renderChat(props: ChatProps) {
             >
               ${canAbort ? "Stop" : "New session"}
             </button>
+            <label class="chat-compose__agent-select-wrap" title="Active agent">
+              <select
+                class="chat-compose__agent-select"
+                .value=${activeAgentId}
+                ?disabled=${!props.connected}
+                @change=${(e: Event) => {
+                  const selectedAgent = (e.target as HTMLSelectElement).value || "main";
+                  const nextSession =
+                    selectedAgent === "main" ? "main" : `agent:${selectedAgent}:main`;
+                  props.onSessionKeyChange(nextSession);
+                }}
+              >
+                ${agentOptions.map((id) => html`<option value=${id}>${id}</option>`)}
+              </select>
+            </label>
             <button
               class="btn primary"
               ?disabled=${!props.connected}
