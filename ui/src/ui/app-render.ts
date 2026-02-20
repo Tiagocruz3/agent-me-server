@@ -73,6 +73,7 @@ import { renderDebug } from "./views/debug.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderInstances } from "./views/instances.ts";
+import { renderLoginView } from "./views/login.ts";
 import { renderLogs } from "./views/logs.ts";
 import { renderMemory } from "./views/memory.ts";
 import { renderNodes } from "./views/nodes.ts";
@@ -258,6 +259,33 @@ export function renderApp(state: AppViewState) {
     { label: "System", tabs: ["config", "debug", "logs"] as const },
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
+
+  if (!state.connected && !state.onboarding) {
+    return html`
+      <div class="shell shell--chat shell--nav-collapsed">
+        <header class="topbar">
+          <div class="topbar-brand">
+            <span class="app-logo" aria-hidden="true">${icons.logo}</span>
+            <div>
+              <strong>Agent Me</strong>
+              <small>Control Dashboard</small>
+            </div>
+          </div>
+          <div class="topbar-status"><span class="statusDot"></span><span>Disconnected</span></div>
+        </header>
+        <main class="content">
+          ${renderLoginView({
+            settings: state.settings,
+            password: state.password,
+            lastError: state.lastError,
+            onSettingsChange: (next) => state.applySettings(next),
+            onPasswordChange: (next) => (state.password = next),
+            onConnect: () => state.connect(),
+          })}
+        </main>
+      </div>
+    `;
+  }
   const autopilotMode: "off" | "assisted" | "full" =
     state.settings.autopilotMode ?? (state.settings.chatFocusMode ? "assisted" : "off");
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
