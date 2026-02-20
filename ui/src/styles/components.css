@@ -1237,6 +1237,16 @@
   border-radius: var(--radius-lg);
   padding: 10px 14px;
   min-width: 0;
+  animation: chat-pop 180ms var(--ease-out);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.chat-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 :root[data-theme="light"] .chat-bubble {
@@ -1264,6 +1274,17 @@
   background: var(--bg-muted);
 }
 
+@keyframes chat-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes chatStreamPulse {
   0%,
   100% {
@@ -1279,6 +1300,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chat-bubble {
+    animation: none;
+  }
   .chat-bubble.streaming {
     animation: none;
     border-color: var(--accent);
