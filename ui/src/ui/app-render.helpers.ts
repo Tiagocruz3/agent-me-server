@@ -65,10 +65,6 @@ export function renderChatControls(state: AppViewState) {
   );
   const disableThinkingToggle = state.onboarding;
   const disableFocusToggle = state.onboarding;
-  const activeAgentId = (() => {
-    const match = /^agent:([^:]+):/.exec(state.sessionKey);
-    return match?.[1] || "main";
-  })();
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
   const focusActive = state.onboarding ? true : state.settings.chatFocusMode;
   // Refresh icon
