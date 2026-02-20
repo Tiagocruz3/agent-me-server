@@ -520,7 +520,12 @@ export function renderApp(state: AppViewState) {
                 },
                 onOpenAgentModal: (app) => {
                   state.dashboardAgentModal = app;
-                  state.dashboardAgentChatDraft = "";
+                  state.dashboardAgentChatDraft =
+                    app === "realestate"
+                      ? "Find 5 new listings matching my saved criteria."
+                      : app === "birdx"
+                        ? "Show today's follower/non-follower delta and suggest next action."
+                        : "Summarize today's priorities and propose next best action.";
                   state.dashboardAgentTaskDraft = "";
                   state.dashboardAgentSystemPromptDraft = "";
                   state.dashboardAgentAvatarDraft = "";
@@ -543,21 +548,22 @@ export function renderApp(state: AppViewState) {
                 onAgentSendChat: () => {
                   const app = state.dashboardAgentModal ?? "emc2";
                   const text = state.dashboardAgentChatDraft.trim();
-                  if (!text) {
-                    return;
-                  }
+                  const fallback =
+                    app === "realestate"
+                      ? "Run realestate workflow with current preferences."
+                      : app === "birdx"
+                        ? "Run birdx daily workflow and report actions."
+                        : "Run EMC2 mission workflow and summarize output.";
                   state.setTab("chat");
-                  state.chatMessage = `[${app}] ${text}`;
+                  state.chatMessage = `[${app}] ${text || fallback}`;
                   state.dashboardAgentModal = null;
                 },
                 onAgentSetTask: () => {
                   const app = state.dashboardAgentModal ?? "emc2";
                   const text = state.dashboardAgentTaskDraft.trim();
-                  if (!text) {
-                    return;
-                  }
+                  const fallback = "Create and queue one actionable task for this agent.";
                   state.setTab("chat");
-                  state.chatMessage = `[${app}] task: ${text}`;
+                  state.chatMessage = `[${app}] task: ${text || fallback}`;
                   state.dashboardAgentModal = null;
                 },
                 onAgentSaveSystemPrompt: () => {

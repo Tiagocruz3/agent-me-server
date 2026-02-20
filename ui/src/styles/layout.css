@@ -1023,7 +1023,7 @@
   position: fixed;
   inset: 0;
   background: color-mix(in srgb, black 60%, transparent);
-  z-index: 180;
+  z-index: 260;
 }
 
 .agent-chat-modal {
@@ -1034,5 +1034,5 @@
   width: min(820px, calc(100vw - 24px));
   max-height: calc(100vh - 40px);
   overflow: auto;
-  z-index: 190;
+  z-index: 270;
 }
