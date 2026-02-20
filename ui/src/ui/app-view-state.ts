@@ -54,6 +54,11 @@ export type AppViewState = {
     status: "running" | "success" | "error";
     summary: string;
   }>;
+  dashboardAgentModal: "realestate" | "birdx" | "emc2" | null;
+  dashboardAgentChatDraft: string;
+  dashboardAgentTaskDraft: string;
+  dashboardAgentSystemPromptDraft: string;
+  dashboardAgentAvatarDraft: string;
   assistantName: string;
   assistantAvatar: string | null;
   assistantAgentId: string | null;

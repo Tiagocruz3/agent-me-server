@@ -7,6 +7,11 @@ export type DashboardProps = {
   presenceCount: number;
   queuedCount: number;
   autopilotMode: "off" | "assisted" | "full";
+  agentModal: "realestate" | "birdx" | "emc2" | null;
+  agentChatDraft: string;
+  agentTaskDraft: string;
+  agentSystemPromptDraft: string;
+  agentAvatarDraft: string;
   recentActivity: Array<{ label: string; ts?: string }>;
   taskResults: Array<{
     app: string;
@@ -18,6 +23,16 @@ export type DashboardProps = {
   }>;
   onOpenTab: (tab: "agents" | "chat" | "cron" | "logs") => void;
   onOpenAppChat: (app: "realestate" | "birdx" | "emc2") => void;
+  onOpenAgentModal: (app: "realestate" | "birdx" | "emc2") => void;
+  onCloseAgentModal: () => void;
+  onAgentChatDraftChange: (text: string) => void;
+  onAgentTaskDraftChange: (text: string) => void;
+  onAgentSystemPromptDraftChange: (text: string) => void;
+  onAgentAvatarDraftChange: (text: string) => void;
+  onAgentSendChat: () => void;
+  onAgentSetTask: () => void;
+  onAgentSaveSystemPrompt: () => void;
+  onAgentSaveAvatar: () => void;
   onRunTask: (app: "realestate" | "birdx" | "emc2") => void;
   onScheduleTask: (app: "realestate" | "birdx" | "emc2") => void;
   onViewResult: (app: "realestate" | "birdx" | "emc2") => void;
@@ -28,18 +43,21 @@ export type DashboardProps = {
 
 const starterApps = [
   {
+    id: "realestate" as const,
     name: "Realestate Agent",
     role: "Property workflows",
     accent: "#06b6d4",
     icon: "🏠",
   },
   {
+    id: "birdx" as const,
     name: "Bird X Agent",
     role: "X/Twitter operations",
     accent: "#3b82f6",
     icon: "🐦",
   },
   {
+    id: "emc2" as const,
     name: "EMC2 Core",
     role: "Mission orchestration",
     accent: "#8b5cf6",
@@ -92,6 +110,31 @@ export function renderDashboard(props: DashboardProps) {
         <div class="metric">${highPriority}</div>
         <div class="dashboard-kpi-bar kpi-amber"><span style="width:${Math.min(100, highPriority * 25)}%"></span></div>
       </article>
+    </section>
+
+    <section class="card" style="margin-bottom:14px;">
+      <div class="card-title">Agent Quick Access</div>
+      <div class="card-sub">Featured agents with direct chat/task controls</div>
+      <div class="dashboard-agent-grid" style="margin-top:10px;">
+        ${starterApps.map(
+          (app) => html`
+            <article class="dashboard-agent-card" style=${`--app-accent:${app.accent}`}>
+              <div class="dashboard-agent-card__top">
+                <div class="dashboard-agent-avatar">${app.icon}</div>
+                <div>
+                  <div class="dashboard-app-card__name">${app.name}</div>
+                  <div class="dashboard-app-card__role">${app.role}</div>
+                </div>
+              </div>
+              <div class="row" style="margin-top:8px;">
+                <button class="btn primary" @click=${() => props.onOpenAgentModal(app.id)}>Chat</button>
+                <button class="btn" @click=${() => props.onRunTask(app.id)}>Run</button>
+                <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
+              </div>
+            </article>
+          `,
+        )}
+      </div>
     </section>
 
     <section class="card" style="margin-bottom:14px;">
@@ -196,14 +239,76 @@ export function renderDashboard(props: DashboardProps) {
               <div class="dashboard-app-card__name">${app.name}</div>
               <div class="dashboard-app-card__role">${app.role}</div>
               <div class="row">
-                <button class="btn" @click=${() => props.onOpenAppChat(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Open in chat</button>
-                <button class="btn" @click=${() => props.onRunTask(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Run task</button>
-                <button class="btn" @click=${() => props.onScheduleTask(app.name.includes("Realestate") ? "realestate" : app.name.includes("Bird") ? "birdx" : "emc2")}>Schedule</button>
+                <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
+                <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
+                <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
               </div>
             </article>
           `,
         )}
       </div>
     </section>
+
+    ${
+      props.agentModal
+        ? html`
+          <div class="agent-chat-modal-backdrop" @click=${props.onCloseAgentModal}></div>
+          <section class="agent-chat-modal card">
+            <div class="row" style="justify-content: space-between; align-items: center;">
+              <div>
+                <div class="card-title">Agent Chat Studio</div>
+                <div class="card-sub">Direct chat, task prompt, system prompt, and avatar setup</div>
+              </div>
+              <button class="btn" @click=${props.onCloseAgentModal}>Close</button>
+            </div>
+
+            <label class="field" style="margin-top:10px;">
+              <span>Avatar URL (profile picture)</span>
+              <input
+                class="input"
+                .value=${props.agentAvatarDraft}
+                @input=${(e: Event) => props.onAgentAvatarDraftChange((e.target as HTMLInputElement).value)}
+                placeholder="https://..."
+              />
+            </label>
+            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSaveAvatar}>Save Avatar</button></div>
+
+            <label class="field" style="margin-top:10px;">
+              <span>System Prompt</span>
+              <textarea
+                class="textarea"
+                .value=${props.agentSystemPromptDraft}
+                @input=${(e: Event) =>
+                  props.onAgentSystemPromptDraftChange((e.target as HTMLTextAreaElement).value)}
+                rows="3"
+              ></textarea>
+            </label>
+            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSaveSystemPrompt}>Save System Prompt</button></div>
+
+            <label class="field" style="margin-top:10px;">
+              <span>Chat Message</span>
+              <textarea
+                class="textarea"
+                .value=${props.agentChatDraft}
+                @input=${(e: Event) => props.onAgentChatDraftChange((e.target as HTMLTextAreaElement).value)}
+                rows="3"
+              ></textarea>
+            </label>
+            <div class="row" style="margin-top:6px;"><button class="btn primary" @click=${props.onAgentSendChat}>Send to Agent Chat</button></div>
+
+            <label class="field" style="margin-top:10px;">
+              <span>Task Instruction</span>
+              <textarea
+                class="textarea"
+                .value=${props.agentTaskDraft}
+                @input=${(e: Event) => props.onAgentTaskDraftChange((e.target as HTMLTextAreaElement).value)}
+                rows="2"
+              ></textarea>
+            </label>
+            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSetTask}>Set Task</button></div>
+          </section>
+        `
+        : ""
+    }
   `;
 }

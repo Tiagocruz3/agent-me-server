@@ -459,6 +459,11 @@ export function renderApp(state: AppViewState) {
                     label: String(entry?.event ?? "event"),
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
+                agentModal: state.dashboardAgentModal,
+                agentChatDraft: state.dashboardAgentChatDraft,
+                agentTaskDraft: state.dashboardAgentTaskDraft,
+                agentSystemPromptDraft: state.dashboardAgentSystemPromptDraft,
+                agentAvatarDraft: state.dashboardAgentAvatarDraft,
                 taskResults: (() => {
                   const rows = (Array.isArray(state.agentResults) ? state.agentResults : []).map(
                     (item) => ({
@@ -512,6 +517,76 @@ export function renderApp(state: AppViewState) {
                         ? "Bird X mode: show non-followers sample 25."
                         : "EMC2 mission mode: summarize priorities.";
                   state.chatMessage = prompt;
+                },
+                onOpenAgentModal: (app) => {
+                  state.dashboardAgentModal = app;
+                  state.dashboardAgentChatDraft = "";
+                  state.dashboardAgentTaskDraft = "";
+                  state.dashboardAgentSystemPromptDraft = "";
+                  state.dashboardAgentAvatarDraft = "";
+                },
+                onCloseAgentModal: () => {
+                  state.dashboardAgentModal = null;
+                },
+                onAgentChatDraftChange: (text) => {
+                  state.dashboardAgentChatDraft = text;
+                },
+                onAgentTaskDraftChange: (text) => {
+                  state.dashboardAgentTaskDraft = text;
+                },
+                onAgentSystemPromptDraftChange: (text) => {
+                  state.dashboardAgentSystemPromptDraft = text;
+                },
+                onAgentAvatarDraftChange: (text) => {
+                  state.dashboardAgentAvatarDraft = text;
+                },
+                onAgentSendChat: () => {
+                  const app = state.dashboardAgentModal ?? "emc2";
+                  const text = state.dashboardAgentChatDraft.trim();
+                  if (!text) {
+                    return;
+                  }
+                  state.setTab("chat");
+                  state.chatMessage = `[${app}] ${text}`;
+                  state.dashboardAgentModal = null;
+                },
+                onAgentSetTask: () => {
+                  const app = state.dashboardAgentModal ?? "emc2";
+                  const text = state.dashboardAgentTaskDraft.trim();
+                  if (!text) {
+                    return;
+                  }
+                  state.setTab("chat");
+                  state.chatMessage = `[${app}] task: ${text}`;
+                  state.dashboardAgentModal = null;
+                },
+                onAgentSaveSystemPrompt: () => {
+                  const app = state.dashboardAgentModal ?? "emc2";
+                  const text = state.dashboardAgentSystemPromptDraft.trim();
+                  if (!text) {
+                    return;
+                  }
+                  state.eventLog = [
+                    ...state.eventLog,
+                    {
+                      ts: Date.now(),
+                      event: `agent.systemPrompt.saved:${app}`,
+                    },
+                  ];
+                },
+                onAgentSaveAvatar: () => {
+                  const app = state.dashboardAgentModal ?? "emc2";
+                  const text = state.dashboardAgentAvatarDraft.trim();
+                  if (!text) {
+                    return;
+                  }
+                  state.eventLog = [
+                    ...state.eventLog,
+                    {
+                      ts: Date.now(),
+                      event: `agent.avatar.saved:${app}`,
+                    },
+                  ];
                 },
                 onRunTask: (app) => {
                   const approved = window.confirm(
