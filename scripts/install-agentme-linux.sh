@@ -150,8 +150,8 @@ write_config() {
   "gateway": {
     "mode": "local",
     "port": $PORT,
-    "bind": "loopback"
-    "auth": { "token": "$token" },
+    "bind": "loopback",
+    "auth": { "mode": "token", "token": "$token" },
     "trustedProxies": ["127.0.0.1", "::1", "localhost"],
     "controlUi": { "root": "$REPO_DIR/dist/control-ui" }
   }
