@@ -245,13 +245,7 @@ export function renderChat(props: ChatProps) {
                 <h2 class="chat-welcome__title">How can I help you today?</h2>
                 <div class="chat-welcome__status">
                   <div class="chat-welcome__status-avatar">
-                    ${
-                      assistantIdentity.avatar
-                        ? html`<img src=${assistantIdentity.avatar} alt=${assistantIdentity.name} />`
-                        : html`
-                            <span>🤖</span>
-                          `
-                    }
+                    <img src="/apple-touch-icon.png" alt="Agent Me" />
                   </div>
                   <div>
                     <div class="chat-welcome__status-name">${assistantIdentity.name}</div>
