@@ -100,10 +100,10 @@
   object-fit: cover;
   flex-shrink: 0;
   display: block;
-  padding: 1px;
-  border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, white 18%, transparent);
-  background: color-mix(in srgb, white 94%, transparent);
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 .topbar .nav-collapse-toggle {
