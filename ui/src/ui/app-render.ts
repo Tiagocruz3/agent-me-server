@@ -62,6 +62,7 @@ const debouncedLoadUsage = (state: UsageState) => {
   }
   usageDateDebounceTimeout = window.setTimeout(() => void loadUsage(state), 400);
 };
+import { confirmInApp, promptInApp } from "./in-app-dialog.ts";
 import { renderAgents } from "./views/agents.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
@@ -595,137 +596,141 @@ export function renderApp(state: AppViewState) {
                   ];
                 },
                 onRunTask: (app) => {
-                  const approved = window.confirm(
+                  void confirmInApp(
                     app === "birdx"
                       ? "Run Bird X task now? This may prepare social account actions."
                       : app === "realestate"
                         ? "Run Realestate task now? This will execute property workflow queries."
                         : "Run EMC2 task now?",
-                  );
-                  if (!approved) {
+                    "Approve task run",
+                  ).then((approved) => {
+                    if (!approved) {
+                      state.eventLog = [
+                        { ts: Date.now(), event: `approval.denied.${app}.run` },
+                        ...state.eventLog,
+                      ].slice(0, 200);
+                      return;
+                    }
                     state.eventLog = [
-                      { ts: Date.now(), event: `approval.denied.${app}.run` },
+                      { ts: Date.now(), event: `approval.granted.${app}.run` },
                       ...state.eventLog,
                     ].slice(0, 200);
-                    return;
-                  }
-                  state.eventLog = [
-                    { ts: Date.now(), event: `approval.granted.${app}.run` },
-                    ...state.eventLog,
-                  ].slice(0, 200);
-                  const basePrompt =
-                    app === "realestate"
-                      ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
-                      : app === "birdx"
-                        ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
-                        : "EMC2 run task now: produce top priorities and next actions.";
-                  const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
+                    const basePrompt =
+                      app === "realestate"
+                        ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
+                        : app === "birdx"
+                          ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
+                          : "EMC2 run task now: produce top priorities and next actions.";
+                    const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
 
-                  state.agentResults = [
-                    {
-                      id: `local_${Date.now()}`,
-                      ts: Date.now(),
-                      appId: app,
-                      status: "running",
-                      summary: "Task started from dashboard",
-                    },
-                    ...state.agentResults,
-                  ].slice(0, 100);
-
-                  if (state.client && state.connected) {
-                    void state.client
-                      .request<{
-                        item?: {
-                          id?: string;
-                          ts?: number;
-                          appId?: string;
-                          status?: string;
-                          summary?: string;
-                        };
-                      }>("agent-result.add", {
+                    state.agentResults = [
+                      {
+                        id: `local_${Date.now()}`,
+                        ts: Date.now(),
                         appId: app,
                         status: "running",
                         summary: "Task started from dashboard",
-                      })
-                      .then(() =>
-                        state.client?.request<{
-                          items?: Array<{
+                      },
+                      ...state.agentResults,
+                    ].slice(0, 100);
+
+                    if (state.client && state.connected) {
+                      void state.client
+                        .request<{
+                          item?: {
                             id?: string;
                             ts?: number;
                             appId?: string;
                             status?: string;
                             summary?: string;
-                          }>;
-                        }>("agent-results.list", {}),
-                      )
-                      .then((res) => {
-                        const items = Array.isArray(res?.items) ? res.items : [];
-                        state.agentResults = items
-                          .map((it) => ({
-                            id: typeof it.id === "string" ? it.id : undefined,
-                            ts: typeof it.ts === "number" ? it.ts : Date.now(),
-                            appId:
-                              it.appId === "realestate" ||
-                              it.appId === "birdx" ||
-                              it.appId === "emc2"
-                                ? it.appId
-                                : "emc2",
-                            status:
-                              it.status === "running" ||
-                              it.status === "success" ||
-                              it.status === "error"
-                                ? it.status
-                                : "running",
-                            summary: typeof it.summary === "string" ? it.summary : "",
-                          }))
-                          .slice(0, 100);
-                      })
-                      .catch(() => {
-                        // keep local optimistic state
-                      });
-                  }
+                          };
+                        }>("agent-result.add", {
+                          appId: app,
+                          status: "running",
+                          summary: "Task started from dashboard",
+                        })
+                        .then(() =>
+                          state.client?.request<{
+                            items?: Array<{
+                              id?: string;
+                              ts?: number;
+                              appId?: string;
+                              status?: string;
+                              summary?: string;
+                            }>;
+                          }>("agent-results.list", {}),
+                        )
+                        .then((res) => {
+                          const items = Array.isArray(res?.items) ? res.items : [];
+                          state.agentResults = items
+                            .map((it) => ({
+                              id: typeof it.id === "string" ? it.id : undefined,
+                              ts: typeof it.ts === "number" ? it.ts : Date.now(),
+                              appId:
+                                it.appId === "realestate" ||
+                                it.appId === "birdx" ||
+                                it.appId === "emc2"
+                                  ? it.appId
+                                  : "emc2",
+                              status:
+                                it.status === "running" ||
+                                it.status === "success" ||
+                                it.status === "error"
+                                  ? it.status
+                                  : "running",
+                              summary: typeof it.summary === "string" ? it.summary : "",
+                            }))
+                            .slice(0, 100);
+                        })
+                        .catch(() => {
+                          // keep local optimistic state
+                        });
+                    }
 
-                  void state.handleSendChat(prompt);
+                    void state.handleSendChat(prompt);
+                  });
                 },
                 onScheduleTask: (app) => {
-                  const approved = window.confirm(
+                  void confirmInApp(
                     "Create scheduled automation for this app? You can edit timing before saving.",
-                  );
-                  if (!approved) {
+                    "Approve schedule",
+                  ).then((approved) => {
+                    if (!approved) {
+                      state.eventLog = [
+                        { ts: Date.now(), event: `approval.denied.${app}.schedule` },
+                        ...state.eventLog,
+                      ].slice(0, 200);
+                      return;
+                    }
                     state.eventLog = [
-                      { ts: Date.now(), event: `approval.denied.${app}.schedule` },
+                      { ts: Date.now(), event: `approval.granted.${app}.schedule` },
                       ...state.eventLog,
                     ].slice(0, 200);
-                    return;
-                  }
-                  state.eventLog = [
-                    { ts: Date.now(), event: `approval.granted.${app}.schedule` },
-                    ...state.eventLog,
-                  ].slice(0, 200);
-                  state.cronForm = {
-                    ...state.cronForm,
-                    name:
-                      app === "realestate"
-                        ? "Realestate Daily Run"
-                        : app === "birdx"
-                          ? "Bird X Daily Cleanup"
-                          : "EMC2 Daily Brief",
-                    description: "Created from Dashboard app card",
-                    scheduleKind: "cron",
-                    cronExpr: "0 8 * * *",
-                    cronTz: "Australia/Brisbane",
-                    sessionTarget: "isolated",
-                    payloadKind: "agentTurn",
-                    agentId: "main",
-                    payloadText:
-                      app === "realestate"
-                        ? "Run realestate workflow and return structured summary cards."
-                        : app === "birdx"
-                          ? "Run Bird X workflow and return structured summary cards."
-                          : "Generate EMC2 daily mission summary with top priorities.",
-                    deliveryMode: "announce",
-                  };
-                  state.setTab("cron");
+                    state.cronForm = {
+                      ...state.cronForm,
+                      name:
+                        app === "realestate"
+                          ? "Realestate Daily Run"
+                          : app === "birdx"
+                            ? "Bird X Daily Cleanup"
+                            : "EMC2 Daily Brief",
+                      description: "Created from Dashboard app card",
+                      scheduleKind: "cron",
+                      cronExpr: "0 8 * * *",
+                      cronTz: "Australia/Brisbane",
+                      sessionTarget: "isolated",
+                      payloadKind: "agentTurn",
+                      agentId: "main",
+                      payloadText:
+                        app === "realestate"
+                          ? "Run realestate workflow and return structured summary cards."
+                          : app === "birdx"
+                            ? "Run Bird X workflow and return structured summary cards."
+                            : "Generate EMC2 daily mission summary with top priorities.",
+                      deliveryMode: "announce",
+                    };
+                    state.setTab("cron");
+                  });
                 },
                 onViewResult: (app) => {
                   state.setTab("chat");
@@ -769,32 +774,35 @@ export function renderApp(state: AppViewState) {
                   ].slice(0, 200);
                 },
                 onEmergencyStop: () => {
-                  const approved = window.confirm("Emergency stop all pending actions?");
-                  if (!approved) {
-                    return;
-                  }
-                  state.chatQueue = [];
-                  state.chatRunId = null;
-                  state.chatStream = null;
-                  state.chatStreamStartedAt = null;
-                  state.applySettings({
-                    ...state.settings,
-                    autopilotMode: "off",
-                    chatFocusMode: false,
-                  });
-                  if (state.client && state.connected) {
-                    void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
-                      state.lastError = String(err);
-                    });
-                    void state.client.request("agent-results.clear", {}).catch(() => {
-                      // non-fatal
-                    });
-                  }
-                  state.agentResults = [];
-                  state.eventLog = [
-                    { ts: Date.now(), event: "autopilot.emergency_stop" },
-                    ...state.eventLog,
-                  ].slice(0, 200);
+                  void confirmInApp("Emergency stop all pending actions?", "Emergency stop").then(
+                    (approved) => {
+                      if (!approved) {
+                        return;
+                      }
+                      state.chatQueue = [];
+                      state.chatRunId = null;
+                      state.chatStream = null;
+                      state.chatStreamStartedAt = null;
+                      state.applySettings({
+                        ...state.settings,
+                        autopilotMode: "off",
+                        chatFocusMode: false,
+                      });
+                      if (state.client && state.connected) {
+                        void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
+                          state.lastError = String(err);
+                        });
+                        void state.client.request("agent-results.clear", {}).catch(() => {
+                          // non-fatal
+                        });
+                      }
+                      state.agentResults = [];
+                      state.eventLog = [
+                        { ts: Date.now(), event: "autopilot.emergency_stop" },
+                        ...state.eventLog,
+                      ].slice(0, 200);
+                    },
+                  );
                 },
               })
             : nothing
@@ -1768,34 +1776,47 @@ export function renderApp(state: AppViewState) {
                   state.memoryFilterQuery = value;
                 },
                 onCreate: () => {
-                  const name = window.prompt(
-                    "New memory file path (e.g. topics/new-note.md)",
-                    "topics/new-note.md",
-                  );
-                  if (!name) {
-                    return;
-                  }
-                  void state.createMemoryFile(name);
+                  void promptInApp({
+                    title: "New memory file",
+                    message: "New memory file path (e.g. topics/new-note.md)",
+                    initialValue: "topics/new-note.md",
+                    placeholder: "topics/new-note.md",
+                    confirmText: "Create",
+                  }).then((name) => {
+                    if (!name) {
+                      return;
+                    }
+                    void state.createMemoryFile(name);
+                  });
                 },
                 onRename: () => {
                   if (!state.memoryActivePath) {
                     return;
                   }
-                  const next = window.prompt("Rename file to:", state.memoryActivePath);
-                  if (!next || next === state.memoryActivePath) {
-                    return;
-                  }
-                  void state.renameMemoryFile(state.memoryActivePath, next);
+                  void promptInApp({
+                    title: "Rename memory file",
+                    message: "Rename file to:",
+                    initialValue: state.memoryActivePath,
+                    confirmText: "Rename",
+                  }).then((next) => {
+                    if (!next || next === state.memoryActivePath) {
+                      return;
+                    }
+                    void state.renameMemoryFile(state.memoryActivePath as string, next);
+                  });
                 },
                 onDelete: () => {
                   if (!state.memoryActivePath) {
                     return;
                   }
-                  const ok = window.confirm(`Delete ${state.memoryActivePath}?`);
-                  if (!ok) {
-                    return;
-                  }
-                  void state.deleteMemoryFile(state.memoryActivePath);
+                  void confirmInApp(`Delete ${state.memoryActivePath}?`, "Delete memory file").then(
+                    (ok) => {
+                      if (!ok) {
+                        return;
+                      }
+                      void state.deleteMemoryFile(state.memoryActivePath as string);
+                    },
+                  );
                 },
                 onTemplate: (kind) => {
                   const date = new Date().toISOString().slice(0, 10);
