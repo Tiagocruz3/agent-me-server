@@ -374,6 +374,18 @@
   background: linear-gradient(135deg, #7b66ff, #8a74ff);
 }
 
+:root[data-theme="light"] .chat-compose__row {
+  border-color: rgba(22, 163, 74, 0.55);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(22, 163, 74, 0.12),
+    0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .chat-compose .chat-compose__field textarea {
+  color: #0f172a;
+}
+
 .chat-compose__agent-select-wrap {
   display: inline-flex;
   align-items: center;
@@ -388,6 +400,12 @@
   padding: 0 12px;
   min-width: 110px;
   font-weight: 600;
+}
+
+:root[data-theme="light"] .chat-compose__agent-select {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
 }
 
 /* Empty state styled like Agent Me chat app */
@@ -458,6 +476,23 @@
   margin-top: 4px;
   color: #9ca3af;
   font-size: 20px;
+}
+
+:root[data-theme="light"] .chat-welcome__title {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .chat-welcome__status {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.95), rgba(236, 253, 245, 0.9));
+}
+
+:root[data-theme="light"] .chat-welcome__status-name {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .chat-welcome__status-sub {
+  color: #475569;
 }
 
 .chat-welcome__prompts {
