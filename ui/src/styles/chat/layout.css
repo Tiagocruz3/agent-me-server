@@ -408,6 +408,12 @@
   border-color: #cbd5e1;
 }
 
+:root[data-theme="light"] .chat-compose__field > .chat-compose__agent-pill {
+  color: #0f172a;
+  background: #d1fae5;
+  border-color: #86efac;
+}
+
 /* Empty state styled like Agent Me chat app */
 .chat-welcome {
   max-width: 760px;
