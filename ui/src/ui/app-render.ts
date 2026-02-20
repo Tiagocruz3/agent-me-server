@@ -288,6 +288,53 @@ export function renderApp(state: AppViewState) {
         </div>
 
         <nav class="topbar-menu" aria-label="Primary">
+          <details class="topbar-menu__group topbar-menu__group--agentme" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>
+            <summary class="topbar-menu__title topbar-menu__title--agentme">AGENT ME</summary>
+            <div class="topbar-menu__panel" role="menu" aria-label="Agent Me features">
+              ${[
+                {
+                  label: "Mission Control Dashboard",
+                  sub: "Power center: KPIs, queue, live activity, app actions",
+                  tab: "dashboard" as const,
+                },
+                {
+                  label: "Autopilot + Emergency Stop",
+                  sub: "Assisted/full control modes with hard stop",
+                  tab: "dashboard" as const,
+                },
+                {
+                  label: "Task Results Envelope Store",
+                  sub: "Backend result rows (not chat parsing dependent)",
+                  tab: "dashboard" as const,
+                },
+                {
+                  label: "App Run + Schedule Quick Actions",
+                  sub: "Run now and prefill schedules into Cron",
+                  tab: "cron" as const,
+                },
+                {
+                  label: "Approval + Audit Trail",
+                  sub: "Governed actions with traceable logs",
+                  tab: "logs" as const,
+                },
+              ].map(
+                (item) => html`
+                  <button
+                    class="topbar-menu__item ${state.tab === item.tab ? "is-active" : ""}"
+                    role="menuitem"
+                    @click=${(event: Event) => {
+                      const host = (event.currentTarget as HTMLElement)?.closest(".topbar-menu");
+                      closeAllTopMenus(host);
+                      state.setTab(item.tab);
+                    }}
+                  >
+                    <span class="topbar-menu__item-label">${item.label}</span>
+                    <span class="topbar-menu__item-sub">${item.sub}</span>
+                  </button>
+                `,
+              )}
+            </div>
+          </details>
           ${topMenuGroups.map(
             (group) => html`
               <details class="topbar-menu__group" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>

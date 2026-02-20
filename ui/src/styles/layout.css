@@ -214,6 +214,19 @@
   border-color: var(--border);
 }
 
+.topbar-menu__title--agentme {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  border-color: color-mix(in oklab, #22c55e 70%, #ffffff 10%);
+}
+
+.topbar-menu__group--agentme[open] .topbar-menu__title--agentme,
+.topbar-menu__title--agentme:hover {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  border-color: color-mix(in oklab, #16a34a 75%, #ffffff 8%);
+}
+
 .topbar-menu__panel {
   position: absolute;
   top: calc(100% + 8px);
