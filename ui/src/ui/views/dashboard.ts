@@ -109,7 +109,7 @@ export function renderDashboard(props: DashboardProps) {
                 </div>
               </div>
               <div class="row" style="margin-top:8px;">
-                <button class="btn primary" @click=${() => props.onOpenAgentModal(app.id)}>Chat</button>
+                <button class="btn primary" @click=${() => props.onOpenAppChat(app.id)}>Chat</button>
                 <button class="btn" @click=${() => props.onRunTask(app.id)}>Run</button>
                 <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
               </div>
@@ -240,66 +240,5 @@ export function renderDashboard(props: DashboardProps) {
       </div>
     </section>
 
-    ${
-      props.agentModal
-        ? html`
-          <div class="agent-chat-modal-backdrop" @click=${props.onCloseAgentModal}></div>
-          <section class="agent-chat-modal card">
-            <div class="row" style="justify-content: space-between; align-items: center;">
-              <div>
-                <div class="card-title">Agent Chat Studio</div>
-                <div class="card-sub">Direct chat, task prompt, system prompt, and avatar setup</div>
-              </div>
-              <button class="btn" @click=${props.onCloseAgentModal}>Close</button>
-            </div>
-
-            <label class="field" style="margin-top:10px;">
-              <span>Avatar URL (profile picture)</span>
-              <input
-                class="input"
-                .value=${props.agentAvatarDraft}
-                @input=${(e: Event) => props.onAgentAvatarDraftChange((e.target as HTMLInputElement).value)}
-                placeholder="https://..."
-              />
-            </label>
-            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSaveAvatar}>Save Avatar</button></div>
-
-            <label class="field" style="margin-top:10px;">
-              <span>System Prompt</span>
-              <textarea
-                class="textarea"
-                .value=${props.agentSystemPromptDraft}
-                @input=${(e: Event) =>
-                  props.onAgentSystemPromptDraftChange((e.target as HTMLTextAreaElement).value)}
-                rows="3"
-              ></textarea>
-            </label>
-            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSaveSystemPrompt}>Save System Prompt</button></div>
-
-            <label class="field" style="margin-top:10px;">
-              <span>Chat Message</span>
-              <textarea
-                class="textarea"
-                .value=${props.agentChatDraft}
-                @input=${(e: Event) => props.onAgentChatDraftChange((e.target as HTMLTextAreaElement).value)}
-                rows="3"
-              ></textarea>
-            </label>
-            <div class="row" style="margin-top:6px;"><button class="btn primary" @click=${props.onAgentSendChat}>Send to Agent Chat</button></div>
-
-            <label class="field" style="margin-top:10px;">
-              <span>Task Instruction</span>
-              <textarea
-                class="textarea"
-                .value=${props.agentTaskDraft}
-                @input=${(e: Event) => props.onAgentTaskDraftChange((e.target as HTMLTextAreaElement).value)}
-                rows="2"
-              ></textarea>
-            </label>
-            <div class="row" style="margin-top:6px;"><button class="btn" @click=${props.onAgentSetTask}>Set Task</button></div>
-          </section>
-        `
-        : ""
-    }
   `;
 }

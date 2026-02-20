@@ -468,7 +468,10 @@ export function renderApp(state: AppViewState) {
                   }>
                 ).map((a, idx) => ({
                   id: a.id || `agent-${idx}`,
-                  name: a.name || a.identity?.name || a.id || "Agent",
+                  name:
+                    a.id === "main"
+                      ? state.assistantName || a.name || a.identity?.name || "Main Agent"
+                      : a.name || a.identity?.name || a.id || "Agent",
                   role: `Agent ID: ${a.id || "unknown"}`,
                   accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#22c55e"][idx % 4],
                   icon: a.identity?.emoji || "🤖",
@@ -527,12 +530,9 @@ export function renderApp(state: AppViewState) {
                   state.chatMessage = `[${app}] Open agent chat and summarize current status.`;
                 },
                 onAddAgent: () => {
-                  state.dashboardAgentModal = "__new__";
-                  state.dashboardAgentChatDraft =
-                    "Create an agent for: (describe what you want in plain English)";
-                  state.dashboardAgentTaskDraft = "";
-                  state.dashboardAgentSystemPromptDraft = "";
-                  state.dashboardAgentAvatarDraft = "";
+                  state.setTab("chat");
+                  state.chatMessage =
+                    "Create a new agent from my natural-language request. Ask me any missing details, then return recommended agent id, purpose, system prompt, and tool profile.";
                 },
                 onOpenAgentModal: (app) => {
                   state.dashboardAgentModal = app;

@@ -48,6 +48,14 @@ export function renderChatControls(state: AppViewState) {
   );
   const disableThinkingToggle = state.onboarding;
   const disableFocusToggle = state.onboarding;
+  const configuredAgents = (state.agentsList?.agents ?? []) as Array<{
+    id?: string;
+    name?: string;
+  }>;
+  const activeAgentId = (() => {
+    const match = /^agent:([^:]+):/.exec(state.sessionKey);
+    return match?.[1] || "main";
+  })();
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
   const focusActive = state.onboarding ? true : state.settings.chatFocusMode;
   // Refresh icon
@@ -86,6 +94,44 @@ export function renderChatControls(state: AppViewState) {
   `;
   return html`
     <div class="chat-controls">
+      <label class="field chat-controls__session" title="Active agent">
+        <select
+          .value=${activeAgentId}
+          ?disabled=${!state.connected}
+          @change=${(e: Event) => {
+            const selectedAgent = (e.target as HTMLSelectElement).value || "main";
+            const nextSession =
+              selectedAgent === "main" ? mainSessionKey || "main" : `agent:${selectedAgent}:main`;
+            state.sessionKey = nextSession;
+            state.chatMessage = "";
+            state.chatStream = null;
+            (state as unknown as AgentMeApp).chatStreamStartedAt = null;
+            state.chatRunId = null;
+            (state as unknown as AgentMeApp).resetToolStream();
+            (state as unknown as AgentMeApp).resetChatScroll();
+            state.applySettings({
+              ...state.settings,
+              sessionKey: nextSession,
+              lastActiveSessionKey: nextSession,
+            });
+            void state.loadAssistantIdentity();
+            syncUrlWithSessionKey(
+              state as unknown as Parameters<typeof syncUrlWithSessionKey>[0],
+              nextSession,
+              true,
+            );
+            void loadChatHistory(state as unknown as ChatState);
+          }}
+        >
+          <option value="main">main</option>
+          ${configuredAgents
+            .filter((a) => a.id && a.id !== "main")
+            .map(
+              (a) =>
+                html`<option value=${a.id as string}>${(a.name || a.id || "agent") as string}</option>`,
+            )}
+        </select>
+      </label>
       <label class="field chat-controls__session">
         <select
           .value=${state.sessionKey}
