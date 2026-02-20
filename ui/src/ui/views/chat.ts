@@ -229,6 +229,21 @@ export function renderChat(props: ChatProps) {
                   <img class="chat-welcome__icon-image" src="/favicon.svg" alt="Agent Me" />
                 </div>
                 <h2 class="chat-welcome__title">How can I help you today?</h2>
+                <div class="chat-welcome__status">
+                  <div class="chat-welcome__status-avatar">
+                    ${
+                      assistantIdentity.avatar
+                        ? html`<img src=${assistantIdentity.avatar} alt=${assistantIdentity.name} />`
+                        : html`
+                            <span>🤖</span>
+                          `
+                    }
+                  </div>
+                  <div>
+                    <div class="chat-welcome__status-name">${assistantIdentity.name}</div>
+                    <div class="chat-welcome__status-sub">Connected via Agent Me</div>
+                  </div>
+                </div>
               </div>
             `
           : nothing
@@ -389,6 +404,7 @@ export function renderChat(props: ChatProps) {
         <div class="chat-compose__row">
           <label class="field chat-compose__field">
             <span>Message</span>
+            <span class="chat-compose__agent-pill">Talking to ${props.assistantName}</span>
             <textarea
               ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
               .value=${props.draft}

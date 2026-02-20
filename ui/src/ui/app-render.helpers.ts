@@ -69,6 +69,13 @@ export function renderChatControls(state: AppViewState) {
     id?: string;
     name?: string;
   }>;
+  const resolveAgentDisplay = (agentId: string) => {
+    if (agentId === "main") {
+      return state.assistantName || "Main Agent";
+    }
+    const found = configuredAgents.find((a) => a.id === agentId);
+    return found?.name || found?.id || agentId;
+  };
   const activeAgentId = (() => {
     const match = /^agent:([^:]+):/.exec(state.sessionKey);
     return match?.[1] || "main";
@@ -119,6 +126,7 @@ export function renderChatControls(state: AppViewState) {
             const selectedAgent = (e.target as HTMLSelectElement).value || "main";
             const nextSession =
               selectedAgent === "main" ? mainSessionKey || "main" : `agent:${selectedAgent}:main`;
+            state.assistantName = resolveAgentDisplay(selectedAgent);
             state.sessionKey = nextSession;
             state.chatMessage = "";
             state.chatStream = null;
@@ -155,6 +163,9 @@ export function renderChatControls(state: AppViewState) {
           ?disabled=${!state.connected}
           @change=${(e: Event) => {
             const next = (e.target as HTMLSelectElement).value;
+            const match = /^agent:([^:]+):/.exec(next);
+            const nextAgentId = match?.[1] || "main";
+            state.assistantName = resolveAgentDisplay(nextAgentId);
             state.sessionKey = next;
             state.chatMessage = "";
             state.chatStream = null;

@@ -280,9 +280,22 @@
   align-items: stretch;
 }
 
-/* Hide the "Message" label - keep textarea only */
+/* Hide generic field label in composer */
 .chat-compose__field > span {
   display: none;
+}
+
+.chat-compose__field > .chat-compose__agent-pill {
+  display: inline-flex;
+  align-self: center;
+  margin: 0 0 8px 2px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(25, 195, 125, 0.45);
+  background: rgba(25, 195, 125, 0.14);
+  color: #c8f7e3;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* Override .field textarea min-height (180px) from components.css */
@@ -409,6 +422,13 @@
   background: #19c37d;
   color: #03140d;
   font-size: 26px;
+  overflow: hidden;
+}
+
+.chat-welcome__status-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .chat-welcome__status-name {
