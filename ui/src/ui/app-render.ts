@@ -293,29 +293,39 @@ export function renderApp(state: AppViewState) {
             <div class="topbar-menu__panel" role="menu" aria-label="Agent Me features">
               ${[
                 {
+                  icon: "⚡",
                   label: "Mission Control Dashboard",
                   sub: "Power center: KPIs, queue, live activity, app actions",
                   tab: "dashboard" as const,
+                  isNew: true,
                 },
                 {
+                  icon: "🛡️",
                   label: "Autopilot + Emergency Stop",
                   sub: "Assisted/full control modes with hard stop",
                   tab: "dashboard" as const,
+                  isNew: true,
                 },
                 {
+                  icon: "📦",
                   label: "Task Results Envelope Store",
                   sub: "Backend result rows (not chat parsing dependent)",
                   tab: "dashboard" as const,
+                  isNew: true,
                 },
                 {
+                  icon: "🗓️",
                   label: "App Run + Schedule Quick Actions",
                   sub: "Run now and prefill schedules into Cron",
                   tab: "cron" as const,
+                  isNew: true,
                 },
                 {
+                  icon: "🧾",
                   label: "Approval + Audit Trail",
                   sub: "Governed actions with traceable logs",
                   tab: "logs" as const,
+                  isNew: false,
                 },
               ].map(
                 (item) => html`
@@ -328,7 +338,16 @@ export function renderApp(state: AppViewState) {
                       state.setTab(item.tab);
                     }}
                   >
-                    <span class="topbar-menu__item-label">${item.label}</span>
+                    <span class="topbar-menu__item-label">
+                      <span>${item.icon} ${item.label}</span>
+                      ${
+                        item.isNew
+                          ? html`
+                              <span class="topbar-feature-badge">NEW</span>
+                            `
+                          : nothing
+                      }
+                    </span>
                     <span class="topbar-menu__item-sub">${item.sub}</span>
                   </button>
                 `,
