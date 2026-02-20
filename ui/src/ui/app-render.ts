@@ -460,6 +460,19 @@ export function renderApp(state: AppViewState) {
                     label: String(entry?.event ?? "event"),
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
+                featuredAgents: (
+                  (state.agentsList?.agents ?? []) as Array<{
+                    id?: string;
+                    name?: string;
+                    identity?: { name?: string; emoji?: string };
+                  }>
+                ).map((a, idx) => ({
+                  id: a.id || `agent-${idx}`,
+                  name: a.name || a.identity?.name || a.id || "Agent",
+                  role: `Agent ID: ${a.id || "unknown"}`,
+                  accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#22c55e"][idx % 4],
+                  icon: a.identity?.emoji || "🤖",
+                })),
                 agentModal: state.dashboardAgentModal,
                 agentChatDraft: state.dashboardAgentChatDraft,
                 agentTaskDraft: state.dashboardAgentTaskDraft,
@@ -511,22 +524,19 @@ export function renderApp(state: AppViewState) {
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
-                  const prompt =
-                    app === "realestate"
-                      ? "Realestate mode: apartments in Broadbeach up to 650 per week."
-                      : app === "birdx"
-                        ? "Bird X mode: show non-followers sample 25."
-                        : "EMC2 mission mode: summarize priorities.";
-                  state.chatMessage = prompt;
+                  state.chatMessage = `[${app}] Open agent chat and summarize current status.`;
+                },
+                onAddAgent: () => {
+                  state.dashboardAgentModal = "__new__";
+                  state.dashboardAgentChatDraft =
+                    "Create an agent for: (describe what you want in plain English)";
+                  state.dashboardAgentTaskDraft = "";
+                  state.dashboardAgentSystemPromptDraft = "";
+                  state.dashboardAgentAvatarDraft = "";
                 },
                 onOpenAgentModal: (app) => {
                   state.dashboardAgentModal = app;
-                  state.dashboardAgentChatDraft =
-                    app === "realestate"
-                      ? "Find 5 new listings matching my saved criteria."
-                      : app === "birdx"
-                        ? "Show today's follower/non-follower delta and suggest next action."
-                        : "Summarize today's priorities and propose next best action.";
+                  state.dashboardAgentChatDraft = `Run ${app} and summarize current status + next action.`;
                   state.dashboardAgentTaskDraft = "";
                   state.dashboardAgentSystemPromptDraft = "";
                   state.dashboardAgentAvatarDraft = "";
@@ -547,24 +557,25 @@ export function renderApp(state: AppViewState) {
                   state.dashboardAgentAvatarDraft = text;
                 },
                 onAgentSendChat: () => {
-                  const app = state.dashboardAgentModal ?? "emc2";
+                  const app = state.dashboardAgentModal ?? "main";
                   const text = state.dashboardAgentChatDraft.trim();
-                  const fallback =
-                    app === "realestate"
-                      ? "Run realestate workflow with current preferences."
-                      : app === "birdx"
-                        ? "Run birdx daily workflow and report actions."
-                        : "Run EMC2 mission workflow and summarize output.";
                   state.setTab("chat");
-                  state.chatMessage = `[${app}] ${text || fallback}`;
+                  if (app === "__new__") {
+                    state.chatMessage = `Create a new agent from this request: ${text || "general operations assistant"}. Return suggested agent id, purpose, tool policy, and starter system prompt.`;
+                  } else {
+                    state.chatMessage = `[${app}] ${text || `Run ${app} and summarize current status.`}`;
+                  }
                   state.dashboardAgentModal = null;
                 },
                 onAgentSetTask: () => {
-                  const app = state.dashboardAgentModal ?? "emc2";
+                  const app = state.dashboardAgentModal ?? "main";
                   const text = state.dashboardAgentTaskDraft.trim();
                   const fallback = "Create and queue one actionable task for this agent.";
                   state.setTab("chat");
-                  state.chatMessage = `[${app}] task: ${text || fallback}`;
+                  state.chatMessage =
+                    app === "__new__"
+                      ? `Design a new agent and first task from this request: ${text || fallback}`
+                      : `[${app}] task: ${text || fallback}`;
                   state.dashboardAgentModal = null;
                 },
                 onAgentSaveSystemPrompt: () => {
@@ -596,29 +607,31 @@ export function renderApp(state: AppViewState) {
                   ];
                 },
                 onRunTask: (app) => {
+                  const appKey: "realestate" | "birdx" | "emc2" =
+                    appKey === "realestate" || app === "birdx" || app === "emc2" ? app : "emc2";
                   void confirmInApp(
-                    app === "birdx"
+                    appKey === "birdx"
                       ? "Run Bird X task now? This may prepare social account actions."
-                      : app === "realestate"
+                      : appKey === "realestate"
                         ? "Run Realestate task now? This will execute property workflow queries."
-                        : "Run EMC2 task now?",
+                        : `Run ${app} task now?`,
                     "Approve task run",
                   ).then((approved) => {
                     if (!approved) {
                       state.eventLog = [
-                        { ts: Date.now(), event: `approval.denied.${app}.run` },
+                        { ts: Date.now(), event: `approval.denied.${appKey}.run` },
                         ...state.eventLog,
                       ].slice(0, 200);
                       return;
                     }
                     state.eventLog = [
-                      { ts: Date.now(), event: `approval.granted.${app}.run` },
+                      { ts: Date.now(), event: `approval.granted.${appKey}.run` },
                       ...state.eventLog,
                     ].slice(0, 200);
                     const basePrompt =
-                      app === "realestate"
+                      appKey === "realestate"
                         ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
-                        : app === "birdx"
+                        : appKey === "birdx"
                           ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
                           : "EMC2 run task now: produce top priorities and next actions.";
                     const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
@@ -627,7 +640,7 @@ export function renderApp(state: AppViewState) {
                       {
                         id: `local_${Date.now()}`,
                         ts: Date.now(),
-                        appId: app,
+                        appId: appKey,
                         status: "running",
                         summary: "Task started from dashboard",
                       },
@@ -645,7 +658,7 @@ export function renderApp(state: AppViewState) {
                             summary?: string;
                           };
                         }>("agent-result.add", {
-                          appId: app,
+                          appId: appKey,
                           status: "running",
                           summary: "Task started from dashboard",
                         })
@@ -691,6 +704,8 @@ export function renderApp(state: AppViewState) {
                   });
                 },
                 onScheduleTask: (app) => {
+                  const appKey: "realestate" | "birdx" | "emc2" =
+                    app === "realestate" || app === "birdx" || app === "emc2" ? app : "emc2";
                   void confirmInApp(
                     "Create scheduled automation for this app? You can edit timing before saving.",
                     "Approve schedule",
@@ -709,9 +724,9 @@ export function renderApp(state: AppViewState) {
                     state.cronForm = {
                       ...state.cronForm,
                       name:
-                        app === "realestate"
+                        appKey === "realestate"
                           ? "Realestate Daily Run"
-                          : app === "birdx"
+                          : appKey === "birdx"
                             ? "Bird X Daily Cleanup"
                             : "EMC2 Daily Brief",
                       description: "Created from Dashboard app card",
@@ -722,9 +737,9 @@ export function renderApp(state: AppViewState) {
                       payloadKind: "agentTurn",
                       agentId: "main",
                       payloadText:
-                        app === "realestate"
+                        appKey === "realestate"
                           ? "Run realestate workflow and return structured summary cards."
-                          : app === "birdx"
+                          : appKey === "birdx"
                             ? "Run Bird X workflow and return structured summary cards."
                             : "Generate EMC2 daily mission summary with top priorities.",
                       deliveryMode: "announce",
@@ -735,9 +750,9 @@ export function renderApp(state: AppViewState) {
                 onViewResult: (app) => {
                   state.setTab("chat");
                   const basePrompt =
-                    app === "realestate"
+                    appKey === "realestate"
                       ? "Show latest Realestate result in a clean summary card format."
-                      : app === "birdx"
+                      : appKey === "birdx"
                         ? "Show latest Bird X result with actionable next steps."
                         : "Show latest EMC2 task result summary.";
                   state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;

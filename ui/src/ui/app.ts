@@ -129,7 +129,7 @@ export class AgentMeApp extends LitElement {
     status: "running" | "success" | "error";
     summary: string;
   }> = [];
-  @state() dashboardAgentModal: "realestate" | "birdx" | "emc2" | null = null;
+  @state() dashboardAgentModal: string | null = null;
   @state() dashboardAgentChatDraft = "";
   @state() dashboardAgentTaskDraft = "";
   @state() dashboardAgentSystemPromptDraft = "";
