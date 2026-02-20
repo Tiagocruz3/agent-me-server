@@ -145,7 +145,7 @@ function taskResultSchemaInstruction(appId: "realestate" | "birdx" | "emc2"): st
 }
 
 function extractDashboardTaskResult(content: unknown): {
-  app: "Realestate" | "Bird X" | "EMC2";
+  app: "Realestate" | "Bird X" | "Agent Me";
   appId: "realestate" | "birdx" | "emc2";
   summary: string;
   status: "running" | "success" | "error";
@@ -166,7 +166,7 @@ function extractDashboardTaskResult(content: unknown): {
         : rawApp.includes("twitter") || rawApp.includes("bird") || rawApp.includes("x")
           ? "birdx"
           : "emc2";
-      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "Agent Me";
       const statusRaw = String(obj.status ?? "").toLowerCase();
       const status =
         statusRaw.includes("error") || statusRaw.includes("fail")
@@ -195,7 +195,7 @@ function extractDashboardTaskResult(content: unknown): {
         : rawApp.includes("twitter") || rawApp.includes("bird") || rawApp.includes("x")
           ? "birdx"
           : "emc2";
-      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "Agent Me";
       const statusRaw = String(parsed.status ?? "").toLowerCase();
       const status =
         statusRaw.includes("error") || statusRaw.includes("fail")
@@ -213,7 +213,7 @@ function extractDashboardTaskResult(content: unknown): {
           : lower.includes("bird") || lower.includes("twitter") || lower.includes("non-follower")
             ? "birdx"
             : "emc2";
-      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+      const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "Agent Me";
       return {
         app,
         appId,
@@ -231,7 +231,7 @@ function extractDashboardTaskResult(content: unknown): {
       : lower.includes("bird") || lower.includes("twitter") || lower.includes("non-follower")
         ? "birdx"
         : "emc2";
-  const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "EMC2";
+  const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "Agent Me";
   const status =
     lower.includes("error") || lower.includes("failed")
       ? "error"
@@ -517,7 +517,7 @@ export function renderApp(state: AppViewState) {
                           ? "Realestate"
                           : item.appId === "birdx"
                             ? "Bird X"
-                            : "EMC2",
+                            : "Agent Me",
                       appId: item.appId,
                       summary: item.summary,
                       ts: item.ts ? new Date(item.ts).toLocaleTimeString() : "",
@@ -661,7 +661,7 @@ export function renderApp(state: AppViewState) {
                         ? "Run realestate workflow now: apartments in Broadbeach up to 650 per week. Return structured cards and actions."
                         : appKey === "birdx"
                           ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
-                          : "EMC2 run task now: produce top priorities and next actions.";
+                          : "Agent Me run task now: produce top priorities and next actions.";
                     const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
 
                     state.agentResults = [
@@ -756,7 +756,7 @@ export function renderApp(state: AppViewState) {
                           ? "Realestate Daily Run"
                           : appKey === "birdx"
                             ? "Bird X Daily Cleanup"
-                            : "EMC2 Daily Brief",
+                            : "Agent Me Daily Brief",
                       description: "Created from Dashboard app card",
                       scheduleKind: "cron",
                       cronExpr: "0 8 * * *",
@@ -769,7 +769,7 @@ export function renderApp(state: AppViewState) {
                           ? "Run realestate workflow and return structured summary cards."
                           : appKey === "birdx"
                             ? "Run Bird X workflow and return structured summary cards."
-                            : "Generate EMC2 daily mission summary with top priorities.",
+                            : "Generate Agent Me daily mission summary with top priorities.",
                       deliveryMode: "announce",
                     };
                     state.setTab("cron");
@@ -782,7 +782,7 @@ export function renderApp(state: AppViewState) {
                       ? "Show latest Realestate result in a clean summary card format."
                       : appKey === "birdx"
                         ? "Show latest Bird X result with actionable next steps."
-                        : "Show latest EMC2 task result summary.";
+                        : "Show latest Agent Me task result summary.";
                   state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
                 },
                 onFixSchema: (app) => {
@@ -1786,6 +1786,13 @@ export function renderApp(state: AppViewState) {
                 onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
                 assistantName: state.assistantName,
                 assistantAvatar: state.assistantAvatar,
+                agentChoices: (state.agentsList?.agents ?? []).map((agent) => ({
+                  id: agent.id,
+                  label:
+                    agent.id === "main"
+                      ? state.assistantName
+                      : agent.identity?.name?.trim() || agent.name?.trim() || agent.id,
+                })),
               })
             : nothing
         }

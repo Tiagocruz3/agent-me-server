@@ -50,6 +50,7 @@ export type ChatProps = {
   splitRatio?: number;
   assistantName: string;
   assistantAvatar: string | null;
+  agentChoices?: Array<{ id: string; label: string }>;
   // Image attachments
   attachments?: ChatAttachment[];
   onAttachmentsChange?: (attachments: ChatAttachment[]) => void;
@@ -203,14 +204,23 @@ export function renderChat(props: ChatProps) {
     return m?.[1] || "main";
   })();
   const agentOptions = (() => {
-    const set = new Set<string>(["main"]);
+    const byId = new Map<string, string>();
+    for (const choice of props.agentChoices ?? []) {
+      if (!choice?.id) {
+        continue;
+      }
+      byId.set(choice.id, choice.label || choice.id);
+    }
+    if (!byId.has("main")) {
+      byId.set("main", props.assistantName || "Assistant");
+    }
     for (const row of props.sessions?.sessions ?? []) {
       const m = /^agent:([^:]+):/.exec(row.key);
-      if (m?.[1]) {
-        set.add(m[1]);
+      if (m?.[1] && !byId.has(m[1])) {
+        byId.set(m[1], m[1] === "main" ? props.assistantName || "Assistant" : m[1]);
       }
     }
-    return Array.from(set);
+    return Array.from(byId.entries()).map(([id, label]) => ({ id, label }));
   })();
   const composePlaceholder = props.connected
     ? hasAttachments
@@ -464,7 +474,7 @@ export function renderChat(props: ChatProps) {
                   props.onSessionKeyChange(nextSession);
                 }}
               >
-                ${agentOptions.map((id) => html`<option value=${id}>${id}</option>`)}
+                ${agentOptions.map((entry) => html`<option value=${entry.id}>${entry.label}</option>`)}
               </select>
             </label>
             <button
