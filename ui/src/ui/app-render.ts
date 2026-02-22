@@ -356,15 +356,36 @@ export function renderApp(state: AppViewState) {
                   tab: "logs" as const,
                   isNew: false,
                 },
-              ].map(
-                (item) => html`
+                {
+                  icon: "💾",
+                  label: "Backup Server",
+                  sub: "Export complete setup bundle (agents, config, workspace)",
+                  href: `/setup/export`,
+                  isNew: false,
+                },
+                {
+                  icon: "♻️",
+                  label: "Restore Server",
+                  sub: "Open setup restore flow to import previous server backup",
+                  href: `/setup`,
+                  isNew: false,
+                },
+              ].map((item) => {
+                const active = "tab" in item && item.tab ? state.tab === item.tab : false;
+                return html`
                   <button
-                    class="topbar-menu__item ${state.tab === item.tab ? "is-active" : ""}"
+                    class="topbar-menu__item ${active ? "is-active" : ""}"
                     role="menuitem"
                     @click=${(event: Event) => {
                       const host = (event.currentTarget as HTMLElement)?.closest(".topbar-menu");
                       closeAllTopMenus(host);
-                      state.setTab(item.tab);
+                      if ("href" in item && item.href) {
+                        window.open(item.href, "_blank", "noopener,noreferrer");
+                        return;
+                      }
+                      if ("tab" in item && item.tab) {
+                        state.setTab(item.tab);
+                      }
                     }}
                   >
                     <span class="topbar-menu__item-label">
@@ -379,8 +400,8 @@ export function renderApp(state: AppViewState) {
                     </span>
                     <span class="topbar-menu__item-sub">${item.sub}</span>
                   </button>
-                `,
-              )}
+                `;
+              })}
             </div>
           </details>
           ${topMenuGroups.map(
