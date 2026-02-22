@@ -317,6 +317,15 @@ export function renderApp(state: AppViewState) {
         </div>
 
         <nav class="topbar-menu" aria-label="Primary">
+          <button
+            class="topbar-chat-cta ${state.tab === "chat" ? "is-active" : ""}"
+            type="button"
+            @click=${() => state.setTab("chat")}
+            aria-label="Open Chat"
+            title="Open Chat"
+          >
+            Chat
+          </button>
           <details class="topbar-menu__group topbar-menu__group--agentme" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>
             <summary class="topbar-menu__title topbar-menu__title--agentme">AGENT ME</summary>
             <div class="topbar-menu__panel" role="menu" aria-label="Agent Me features">
@@ -404,15 +413,6 @@ export function renderApp(state: AppViewState) {
               })}
             </div>
           </details>
-          <button
-            class="topbar-chat-cta ${state.tab === "chat" ? "is-active" : ""}"
-            type="button"
-            @click=${() => state.setTab("chat")}
-            aria-label="Open Chat"
-            title="Open Chat"
-          >
-            Chat
-          </button>
           ${topMenuGroups.map(
             (group) => html`
               <details class="topbar-menu__group" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>
