@@ -43,6 +43,38 @@ export type DashboardProps = {
   onEmergencyStop: () => void;
 };
 
+function toDisplayText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value == null) {
+    return "";
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => toDisplayText(item))
+      .filter(Boolean)
+      .join(", ");
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const preferred = [record.summary, record.message, record.text, record.title]
+      .map((item) => toDisplayText(item))
+      .find(Boolean);
+    if (preferred) {
+      return preferred;
+    }
+    return Object.entries(record)
+      .slice(0, 3)
+      .map(([k, v]) => `${k}: ${toDisplayText(v)}`)
+      .join(" · ");
+  }
+  return String(value);
+}
+
 export function renderDashboard(props: DashboardProps) {
   const totalTasks = props.taskResults.length;
   const highPriority = props.taskResults.filter((item) => item.status === "error").length;
@@ -161,7 +193,12 @@ export function renderDashboard(props: DashboardProps) {
       <div class="card">
         <div class="card-title">Live Activity Feed</div>
         <div class="list" style="margin-top:10px;">
-          ${(props.recentActivity.length ? props.recentActivity : [{ label: "No activity yet" }]).slice(0, 6).map((item) => html`<div class="list-item"><span>${item.label}</span><span class="muted">${item.ts || ""}</span></div>`)}
+          ${(props.recentActivity.length ? props.recentActivity : [{ label: "No activity yet" }])
+            .slice(0, 6)
+            .map(
+              (item) =>
+                html`<div class="list-item"><span>${toDisplayText(item.label)}</span><span class="muted">${item.ts || ""}</span></div>`,
+            )}
         </div>
       </div>
       <div class="card">
@@ -203,7 +240,7 @@ export function renderDashboard(props: DashboardProps) {
                     `
                   : ""
               }
-              — ${item.summary}
+              — ${toDisplayText(item.summary)}
               <span class="muted" style="margin-left:8px;">${item.ts || ""}</span>
             </span>
             <span class="row" style="gap:6px;">
@@ -217,28 +254,6 @@ export function renderDashboard(props: DashboardProps) {
       </div>
     </section>
 
-    <section>
-      <div class="card-title" style="margin-bottom:10px;">Agent Cards</div>
-      <div class="dashboard-app-grid">
-        ${props.featuredAgents.map(
-          (app) => html`
-            <article class="dashboard-app-card" style=${`--app-accent:${app.accent}`}>
-              <div class="dashboard-app-card__head">
-                <span class="dashboard-app-card__icon">${app.icon}</span>
-                <span class="dashboard-app-card__pill">ready</span>
-              </div>
-              <div class="dashboard-app-card__name">${app.name}</div>
-              <div class="dashboard-app-card__role">${app.role}</div>
-              <div class="row">
-                <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
-                <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
-                <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
-              </div>
-            </article>
-          `,
-        )}
-      </div>
-    </section>
 
   `;
 }
