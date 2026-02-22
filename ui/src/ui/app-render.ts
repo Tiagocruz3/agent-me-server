@@ -250,7 +250,7 @@ export function renderApp(state: AppViewState) {
   const isModalTab = !isChat;
   const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding);
   const topMenuGroups = [
-    { label: "Work", tabs: ["chat", "sessions", "memory"] as const },
+    { label: "Work", tabs: ["sessions", "memory"] as const },
     {
       label: "Control",
       tabs: ["dashboard", "overview", "channels", "instances", "usage", "cron"] as const,
@@ -404,6 +404,15 @@ export function renderApp(state: AppViewState) {
               })}
             </div>
           </details>
+          <button
+            class="topbar-chat-cta ${state.tab === "chat" ? "is-active" : ""}"
+            type="button"
+            @click=${() => state.setTab("chat")}
+            aria-label="Open Chat"
+            title="Open Chat"
+          >
+            💬 Chat
+          </button>
           ${topMenuGroups.map(
             (group) => html`
               <details class="topbar-menu__group" name="topbar-nav" @toggle=${(event: Event) => closeSiblingTopMenus(event.currentTarget as HTMLElement)}>
