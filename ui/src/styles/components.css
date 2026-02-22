@@ -942,6 +942,15 @@
   box-shadow: inset 0 0 0 1px rgba(61, 220, 151, 0.45);
 }
 
+.cron-edit-drawer {
+  position: sticky;
+  top: 72px;
+  z-index: 6;
+  margin-top: 12px;
+  border-color: #5a4acb;
+  box-shadow: 0 10px 24px rgba(22, 12, 58, 0.35);
+}
+
 @media (max-width: 980px) {
   .cron-master-grid {
     grid-template-columns: 1fr;

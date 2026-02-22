@@ -127,6 +127,7 @@ export function renderCron(props: CronProps) {
       : props.form.scheduleKind === "cron"
         ? "week"
         : "month";
+  const drawerOpen = Boolean(props.form.name.trim() || props.form.payloadText.trim());
 
   return html`
     <section class="card cron-google">
@@ -257,6 +258,47 @@ export function renderCron(props: CronProps) {
         </div>
       </div>
     </section>
+
+    ${drawerOpen
+      ? html`
+          <aside class="card cron-edit-drawer">
+            <div class="row" style="justify-content:space-between; align-items:center;">
+              <div class="card-title" style="font-size:14px;">Quick Edit</div>
+              <button
+                class="btn"
+                @click=${() =>
+                  props.onFormChange({
+                    name: "",
+                    description: "",
+                    payloadText: "",
+                    deliveryTo: "",
+                    timeoutSeconds: "",
+                  })}
+              >
+                Close
+              </button>
+            </div>
+            <div class="card-sub">Google-calendar style side editor</div>
+            <div class="form-grid" style="margin-top:10px;">
+              <label class="field">
+                <span>Task name</span>
+                <input .value=${props.form.name} @input=${(e: Event) => props.onFormChange({ name: (e.target as HTMLInputElement).value })} />
+              </label>
+              <label class="field">
+                <span>Agent</span>
+                <input .value=${props.form.agentId} @input=${(e: Event) => props.onFormChange({ agentId: (e.target as HTMLInputElement).value })} />
+              </label>
+            </div>
+            <label class="field" style="margin-top:10px;">
+              <span>Task details</span>
+              <textarea rows="3" .value=${props.form.payloadText} @input=${(e: Event) => props.onFormChange({ payloadText: (e.target as HTMLTextAreaElement).value })}></textarea>
+            </label>
+            <div class="row" style="margin-top:10px; gap:8px;">
+              <button class="btn primary" ?disabled=${props.busy} @click=${props.onAdd}>Save job</button>
+            </div>
+          </aside>
+        `
+      : nothing}
 
     <section class="grid grid-cols-2">
       <div class="card">
