@@ -106,9 +106,13 @@ export function renderCron(props: CronProps) {
   );
   const anchor = new Date(`${selectedDayKey}T00:00:00`);
   const calendarCells = monthGrid(anchor);
-  const weekKeys = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(anchor);
-    d.setDate(anchor.getDate() + i);
+  const mondayAnchor = new Date(anchor);
+  const dayOfWeek = mondayAnchor.getDay();
+  const shiftToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  mondayAnchor.setDate(mondayAnchor.getDate() + shiftToMonday);
+  const workWeekKeys = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(mondayAnchor);
+    d.setDate(mondayAnchor.getDate() + i);
     return toDayKey(d.getTime());
   });
   const jobsByDay = new Map<string, CronJob[]>();
@@ -153,107 +157,69 @@ export function renderCron(props: CronProps) {
         </div>
       </div>
       <div class="card-sub">Google-calendar style planner for wakeups and recurring agent runs.</div>
-      <div class="cron-master-controls" style="margin-top:10px;">
-        <div class="row" style="gap:8px; flex-wrap:wrap;">
-          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Daily</button>
-          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1-5" })}>Weekdays</button>
-          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1" })}>Weekly</button>
-          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 1 * *" })}>Monthly</button>
-          <input
-            class="input"
-            style="min-width:180px"
-            .value=${props.form.agentId}
-            placeholder="Filter by agent id"
-            @input=${(e: Event) => props.onFormChange({ agentId: (e.target as HTMLInputElement).value })}
-          />
-        </div>
-      </div>
+      <div class="cron-google-shell" style="margin-top:12px;">
+        <aside class="cron-google-sidebar">
+          <button class="btn primary" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>+ Create</button>
+          <div class="cron-master-month" style="margin-top:12px;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
+          <div class="cron-master-weekdays">
+            ${["S", "M", "T", "W", "T", "F", "S"].map((d) => html`<span>${d}</span>`) }
+          </div>
+          <div class="cron-master-calendar">
+            ${calendarCells.map((cell) => {
+              if (!cell.inMonth) {
+                return html`<span class="cron-master-day cron-master-day--pad"></span>`;
+              }
+              const dayJobs = jobsByDay.get(cell.key) ?? [];
+              return html`<button
+                class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
+                ${cell.key === todayKey ? "is-today" : ""}
+                ${dayJobs.length > 0 ? "has-jobs" : ""}"
+                @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key) })}
+              >
+                <span class="cron-master-day-num">${cell.day}</span>
+              </button>`;
+            })}
+          </div>
+          <div class="row" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
+            <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Daily</button>
+            <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1-5" })}>Weekdays</button>
+          </div>
+          <input class="input" style="margin-top:8px" .value=${props.form.agentId} placeholder="Filter by agent" @input=${(e: Event) => props.onFormChange({ agentId: (e.target as HTMLInputElement).value })} />
+        </aside>
 
-      <div class="cron-master-grid" style="margin-top:12px;">
-        <div>
-          ${viewMode === "month"
-            ? html`
-                <div class="cron-master-weekdays">
-                  ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => html`<span>${d}</span>`) }
-                </div>
-                <div class="cron-master-calendar">
-                  ${calendarCells.map((cell) => {
-                    if (!cell.inMonth) {
-                      return html`<span class="cron-master-day cron-master-day--pad"></span>`;
-                    }
-                    const dayJobs = jobsByDay.get(cell.key) ?? [];
-                    const firstAgent = (dayJobs[0]?.agentId || "main").slice(0, 6);
-                    return html`<button
-                      class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
-                      ${cell.key === todayKey ? "is-today" : ""}
-                      ${dayJobs.length > 0 ? "has-jobs" : ""}"
-                      @dragover=${(e: DragEvent) => e.preventDefault()}
-                      @drop=${(e: DragEvent) => {
-                        e.preventDefault();
-                        const id = e.dataTransfer?.getData("text/plain");
-                        const job = jobsFilteredByAgent.find((j) => j.id === id);
-                        props.onFormChange({
-                          scheduleKind: "at",
-                          scheduleAt: toDateTimeLocal(cell.key),
-                          name: job?.name ?? props.form.name,
-                        });
-                      }}
-                      @click=${() =>
-                        props.onFormChange({
-                          scheduleKind: "at",
-                          scheduleAt: toDateTimeLocal(cell.key),
-                        })}
-                    >
-                      <span class="cron-master-day-num">${cell.day}</span>
-                      ${dayJobs.length > 0
-                        ? html`<span class="cron-master-day-badge">${firstAgent}${dayJobs.length > 1 ? ` +${dayJobs.length - 1}` : ""}</span>`
-                        : nothing}
-                    </button>`;
-                  })}
-                </div>
-              `
-            : viewMode === "week"
-              ? html`<div class="cron-master-week-list">
-                  ${weekKeys.map((key) => html`<button class="cron-master-day ${key === selectedDayKey ? "is-selected" : ""}" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key) })}>${key}</button>`)}
-                </div>`
-              : html`<div class="cron-master-day-focus">Focused day view: ${selectedDayKey}</div>`}
-        </div>
-        <div>
-          <div class="card-title" style="font-size:14px;">Daily tasks · ${selectedDayKey}</div>
+        <div class="cron-google-main">
+          <div class="cron-google-week-header">
+            ${workWeekKeys.map((key) => html`<div class="cron-google-weekday-head">${key}</div>`)}
+          </div>
+          <div class="cron-google-week-grid">
+            ${workWeekKeys.map((key) => {
+              const dayJobs = jobsByDay.get(key) ?? [];
+              return html`<div class="cron-google-week-col" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key) })}>
+                ${dayJobs.map((job) => html`<button class="cron-google-event" @click=${(e: Event) => { e.stopPropagation(); props.onFormChange(toCronFormPatchFromJob(job)); }}>
+                  <span class="cron-google-event__title">${job.name}</span>
+                  <span class="cron-google-event__meta">${job.agentId || "main"} · ${job.schedule.kind !== "at" ? "recurring" : "one-time"}</span>
+                </button>`)}
+              </div>`;
+            })}
+          </div>
+
+          <div class="card-title" style="font-size:14px; margin-top:12px;">Daily tasks · ${selectedDayKey}</div>
           <div class="list" style="margin-top:8px;">
             ${selectedDayJobs.length
               ? selectedDayJobs.map((job) => {
                   const recurring = job.schedule.kind !== "at";
-                  return html`<div
-                    class="list-item list-item-clickable"
-                    draggable="true"
-                    @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)}
-                    @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}
-                  >
+                  return html`<div class="list-item list-item-clickable" draggable="true" @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)} @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}>
                     <span>${job.name}</span>
                     <span class="muted">${job.agentId || "main"}</span>
                     <span class="chip ${recurring ? "chip-ok" : ""}">${recurring ? "recurring" : "one-time"}</span>
-                    <button
-                      class="btn"
-                      @click=${(e: Event) => {
-                        e.stopPropagation();
-                        props.onFormChange(toCronFormPatchFromJob(job));
-                      }}
-                    >
-                      Edit
-                    </button>
+                    <button class="btn" @click=${(e: Event) => { e.stopPropagation(); props.onFormChange(toCronFormPatchFromJob(job)); }}>Edit</button>
                   </div>`;
                 })
               : html`<div class="muted">No tasks on this day.</div>`}
           </div>
           <label class="field" style="margin-top:10px;">
             <span>Natural language to action</span>
-            <textarea
-              rows="3"
-              .value=${props.form.payloadText}
-              placeholder="Every weekday at 9am, ask EMC2 to post daily priorities to Telegram"
-              @input=${(e: Event) => props.onFormChange({ payloadText: (e.target as HTMLTextAreaElement).value })}
-            ></textarea>
+            <textarea rows="3" .value=${props.form.payloadText} placeholder="Every weekday at 9am, ask EMC2 to post daily priorities" @input=${(e: Event) => props.onFormChange({ payloadText: (e.target as HTMLTextAreaElement).value })}></textarea>
           </label>
         </div>
       </div>
