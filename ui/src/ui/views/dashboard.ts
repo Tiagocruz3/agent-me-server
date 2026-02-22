@@ -123,51 +123,43 @@ export function renderDashboard(props: DashboardProps) {
     </section>
 
     <section class="card" style="margin-bottom:14px;">
-      <div class="card-title">Agent Quick Access</div>
-      <div class="card-sub">Your configured agents (no defaults)</div>
-      <div class="row" style="justify-content: space-between; align-items:center; margin-top:10px; margin-bottom:10px;">
-        <div class="muted">Create agents you need — nothing preinstalled.</div>
-        <button class="btn primary" @click=${props.onAddAgent}>+ Add Agent</button>
+      <div class="dashboard-workforce-head">
+        <div>
+          <div class="card-title">My Digital Workforce</div>
+          <div class="card-sub">Manage and monitor your AI agents</div>
+        </div>
+        <button class="btn primary" @click=${props.onAddAgent}>+ Create agent</button>
       </div>
-      <div class="dashboard-agent-grid" style="margin-top:10px;">
+
+      <div class="dashboard-workforce-filters" style="margin-top:12px;">
+        <button class="btn">Agent Type: All</button>
+        <button class="btn">Agent Name: All</button>
+        <button class="btn">Filter</button>
+        <button class="btn">Sort</button>
+        <span class="muted">Active Agents ${props.agentCount}</span>
+        <span class="dashboard-workforce-spacer"></span>
+        <input class="input" disabled value="Search" />
+      </div>
+
+      <div class="dashboard-agent-grid dashboard-agent-grid--workforce" style="margin-top:12px;">
         ${props.featuredAgents.map(
           (app) => html`
-            <article class="dashboard-agent-card" style=${`--app-accent:${app.accent}`}>
-              <div class="dashboard-agent-card__top">
-                <div class="dashboard-agent-avatar">${app.icon}</div>
-                <div>
-                  <div class="dashboard-app-card__name">${app.name}</div>
-                  <div class="dashboard-app-card__role">${app.role}</div>
-                </div>
+            <article class="dashboard-agent-card dashboard-agent-card--workforce" style=${`--app-accent:${app.accent}`}>
+              <div class="dashboard-workforce-card-top">
+                <span class="dashboard-workforce-status"><span class="dot"></span>Active</span>
+                <span class="muted">•••</span>
               </div>
+              <div class="dashboard-agent-avatar dashboard-agent-avatar--workforce">${app.icon}</div>
+              <div class="dashboard-app-card__name">${app.name}</div>
+              <div class="dashboard-app-card__role">${app.role}</div>
               <div class="row" style="margin-top:8px;">
-                <button class="btn primary" @click=${() => props.onOpenAppChat(app.id)}>Chat</button>
-                <button class="btn" @click=${() => props.onRunTask(app.id)}>Run</button>
+                <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
+                <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
                 <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
               </div>
             </article>
           `,
         )}
-      </div>
-      ${
-        props.featuredAgents.length === 0
-          ? html`
-              <div class="card-sub" style="margin-top: 10px">
-                No agents yet. Click <strong>Add Agent</strong> to create one with natural language.
-              </div>
-            `
-          : ""
-      }
-    </section>
-
-    <section class="card" style="margin-bottom:14px;">
-      <div class="dashboard-toolbar">
-        <input class="input" disabled value="Search agents, roles, tags..." />
-        <div class="dashboard-toolbar__stats muted">
-          <span>Agents <strong>${props.agentCount}</strong></span>
-          <span>Tasks <strong>${totalTasks}</strong></span>
-          <span>Completion <strong>${taskCompletion}%</strong></span>
-        </div>
       </div>
     </section>
 

@@ -1033,6 +1033,29 @@
   gap: 12px;
 }
 
+.dashboard-workforce-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-workforce-filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dashboard-workforce-filters .input {
+  min-width: 180px;
+}
+
+.dashboard-workforce-spacer {
+  flex: 1;
+}
+
 @media (max-width: 1100px) {
   .dashboard-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1051,11 +1074,43 @@
   gap: 12px;
 }
 
+.dashboard-agent-grid--workforce {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
 .dashboard-agent-card {
   border: 1px solid color-mix(in oklab, var(--app-accent) 50%, var(--border));
   background: color-mix(in oklab, var(--panel) 90%, var(--app-accent) 10%);
   border-radius: 14px;
   padding: 12px;
+}
+
+.dashboard-agent-card--workforce {
+  background: linear-gradient(165deg, #171c2a, #121826);
+  border-color: #303d59;
+}
+
+.dashboard-workforce-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dashboard-workforce-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #9ee8c9;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dashboard-workforce-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3ddc97;
 }
 
 .dashboard-agent-card__top {
@@ -1074,6 +1129,15 @@
   font-size: 20px;
   border: 1px solid var(--border);
   background: color-mix(in oklab, var(--app-accent) 25%, transparent);
+}
+
+.dashboard-agent-avatar--workforce {
+  width: 72px;
+  height: 72px;
+  margin: 4px auto 10px;
+  font-size: 30px;
+  border-color: #43577f;
+  background: radial-gradient(circle at 30% 20%, #2f3f64, #1a2132);
 }
 
 .dashboard-app-grid {
