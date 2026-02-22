@@ -26,6 +26,10 @@ export type DashboardProps = {
   onOpenAppChat: (app: string) => void;
   onOpenAgentModal: (app: string) => void;
   onAddAgent: () => void;
+  agentSearch: string;
+  agentSort: "name" | "id";
+  onAgentSearchChange: (text: string) => void;
+  onAgentSortChange: (sort: "name" | "id") => void;
   onCloseAgentModal: () => void;
   onAgentChatDraftChange: (text: string) => void;
   onAgentTaskDraftChange: (text: string) => void;
@@ -84,6 +88,17 @@ export function renderDashboard(props: DashboardProps) {
         (props.taskResults.filter((item) => item.status === "success").length / totalTasks) * 100,
       )
     : 0;
+  const q = props.agentSearch.trim().toLowerCase();
+  const filteredAgents = [...props.featuredAgents]
+    .filter((a) => {
+      if (!q) {
+        return true;
+      }
+      return `${a.name} ${a.role} ${a.id}`.toLowerCase().includes(q);
+    })
+    .sort((a, b) =>
+      props.agentSort === "id" ? a.id.localeCompare(b.id) : a.name.localeCompare(b.name),
+    );
 
   return html`
     <section class="dashboard-hero card" style="margin-bottom:14px;">
@@ -132,17 +147,29 @@ export function renderDashboard(props: DashboardProps) {
       </div>
 
       <div class="dashboard-workforce-filters" style="margin-top:12px;">
-        <button class="btn">Agent Type: All</button>
-        <button class="btn">Agent Name: All</button>
-        <button class="btn">Filter</button>
-        <button class="btn">Sort</button>
-        <span class="muted">Active Agents ${props.agentCount}</span>
+        <button class="btn" disabled>Agent Type: All</button>
+        <label class="field" style="min-width:160px;">
+          <span>Sort</span>
+          <select
+            .value=${props.agentSort}
+            @change=${(e: Event) => props.onAgentSortChange((e.target as HTMLSelectElement).value as "name" | "id")}
+          >
+            <option value="name">Name</option>
+            <option value="id">ID</option>
+          </select>
+        </label>
+        <span class="muted">Active Agents ${filteredAgents.length}</span>
         <span class="dashboard-workforce-spacer"></span>
-        <input class="input" disabled value="Search" />
+        <input
+          class="input"
+          placeholder="Search agents"
+          .value=${props.agentSearch}
+          @input=${(e: Event) => props.onAgentSearchChange((e.target as HTMLInputElement).value)}
+        />
       </div>
 
       <div class="dashboard-agent-grid dashboard-agent-grid--workforce" style="margin-top:12px;">
-        ${props.featuredAgents.map(
+        ${filteredAgents.map(
           (app) => html`
             <article class="dashboard-agent-card dashboard-agent-card--workforce" style=${`--app-accent:${app.accent}`}>
               <div class="dashboard-workforce-card-top">
@@ -161,6 +188,7 @@ export function renderDashboard(props: DashboardProps) {
           `,
         )}
       </div>
+      ${filteredAgents.length === 0 ? html`<div class="card-sub" style="margin-top:10px;">No agents match your search.</div>` : ""}
     </section>
 
     <section class="card" style="margin-bottom:14px;">

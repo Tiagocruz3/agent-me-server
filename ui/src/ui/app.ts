@@ -134,6 +134,8 @@ export class AgentMeApp extends LitElement {
   @state() dashboardAgentTaskDraft = "";
   @state() dashboardAgentSystemPromptDraft = "";
   @state() dashboardAgentAvatarDraft = "";
+  @state() dashboardAgentSearch = "";
+  @state() dashboardAgentSort: "name" | "id" = "name";
   private eventLogBuffer: EventLogEntry[] = [];
   private toolStreamSyncTimer: number | null = null;
   private sidebarCloseTimer: number | null = null;

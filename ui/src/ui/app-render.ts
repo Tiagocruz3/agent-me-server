@@ -539,6 +539,8 @@ export function renderApp(state: AppViewState) {
                 agentTaskDraft: state.dashboardAgentTaskDraft,
                 agentSystemPromptDraft: state.dashboardAgentSystemPromptDraft,
                 agentAvatarDraft: state.dashboardAgentAvatarDraft,
+                agentSearch: state.dashboardAgentSearch,
+                agentSort: state.dashboardAgentSort,
                 taskResults: (() => {
                   const rows = (Array.isArray(state.agentResults) ? state.agentResults : []).map(
                     (item) => ({
@@ -591,6 +593,12 @@ export function renderApp(state: AppViewState) {
                   state.setTab("chat");
                   state.chatMessage =
                     "Create a new agent from my natural-language request. Ask me any missing details, then return recommended agent id, purpose, system prompt, and tool profile.";
+                },
+                onAgentSearchChange: (text) => {
+                  state.dashboardAgentSearch = text;
+                },
+                onAgentSortChange: (sort) => {
+                  state.dashboardAgentSort = sort;
                 },
                 onOpenAgentModal: (app) => {
                   state.dashboardAgentModal = app;

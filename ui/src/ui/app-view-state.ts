@@ -59,6 +59,8 @@ export type AppViewState = {
   dashboardAgentTaskDraft: string;
   dashboardAgentSystemPromptDraft: string;
   dashboardAgentAvatarDraft: string;
+  dashboardAgentSearch: string;
+  dashboardAgentSort: "name" | "id";
   assistantName: string;
   assistantAvatar: string | null;
   assistantAgentId: string | null;
