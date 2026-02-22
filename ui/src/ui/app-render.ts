@@ -411,7 +411,7 @@ export function renderApp(state: AppViewState) {
             aria-label="Open Chat"
             title="Open Chat"
           >
-            💬 Chat
+            Chat
           </button>
           ${topMenuGroups.map(
             (group) => html`

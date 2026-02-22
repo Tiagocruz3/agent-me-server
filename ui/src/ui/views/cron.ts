@@ -94,46 +94,106 @@ export function renderCron(props: CronProps) {
     props.form.scheduleAt && props.form.scheduleAt.length >= 10
       ? props.form.scheduleAt.slice(0, 10)
       : todayKey;
-  const selectedDayJobs = props.jobs.filter(
+  const agentFilter = props.form.agentId.trim().toLowerCase();
+  const jobsFilteredByAgent = props.jobs.filter((job) => {
+    if (!agentFilter) {
+      return true;
+    }
+    return (job.agentId || "main").toLowerCase().includes(agentFilter);
+  });
+  const selectedDayJobs = jobsFilteredByAgent.filter(
     (job) => typeof job.state?.nextRunAtMs === "number" && toDayKey(job.state.nextRunAtMs) === selectedDayKey,
   );
   const anchor = new Date(`${selectedDayKey}T00:00:00`);
   const calendarCells = monthGrid(anchor);
+  const weekKeys = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(anchor);
+    d.setDate(anchor.getDate() + i);
+    return toDayKey(d.getTime());
+  });
+  const viewMode =
+    props.form.scheduleKind === "every"
+      ? "day"
+      : props.form.scheduleKind === "cron"
+        ? "week"
+        : "month";
 
   return html`
     <section class="card">
       <div class="card-title">Master Scheduler</div>
       <div class="card-sub">Month view, daily queue, recurring task setup, and natural language to action.</div>
+      <div class="cron-master-controls" style="margin-top:10px;">
+        <div class="row" style="gap:8px; flex-wrap:wrap;">
+          <button class="btn ${viewMode === "month" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "at" })}>Month</button>
+          <button class="btn ${viewMode === "week" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "cron" })}>Week</button>
+          <button class="btn ${viewMode === "day" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Day</button>
+        </div>
+        <div class="row" style="gap:8px; flex-wrap:wrap;">
+          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Daily</button>
+          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1-5" })}>Weekdays</button>
+          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1" })}>Weekly</button>
+          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 1 * *" })}>Monthly</button>
+          <input
+            class="input"
+            style="min-width:180px"
+            .value=${props.form.agentId}
+            placeholder="Filter by agent id"
+            @input=${(e: Event) => props.onFormChange({ agentId: (e.target as HTMLInputElement).value })}
+          />
+        </div>
+      </div>
+
       <div class="cron-master-grid" style="margin-top:12px;">
         <div>
           <div class="cron-master-month">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
-          <div class="cron-master-weekdays">
-            ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => html`<span>${d}</span>`) }
-          </div>
-          <div class="cron-master-calendar">
-            ${calendarCells.map((cell) =>
-              !cell.inMonth
-                ? html`<span class="cron-master-day cron-master-day--pad"></span>`
-                : html`<button
-                    class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
-                    ${cell.key === todayKey ? "is-today" : ""}
-                    ${props.jobs.some((j) => typeof j.state?.nextRunAtMs === "number" && toDayKey(j.state.nextRunAtMs) === cell.key) ? "has-jobs" : ""}"
-                    @click=${() =>
-                      props.onFormChange({
-                        scheduleKind: "at",
-                        scheduleAt: toDateTimeLocal(cell.key),
-                      })}
-                  >
-                    ${cell.day}
-                  </button>`,
-            )}
-          </div>
+          ${viewMode === "month"
+            ? html`
+                <div class="cron-master-weekdays">
+                  ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => html`<span>${d}</span>`) }
+                </div>
+                <div class="cron-master-calendar">
+                  ${calendarCells.map((cell) =>
+                    !cell.inMonth
+                      ? html`<span class="cron-master-day cron-master-day--pad"></span>`
+                      : html`<button
+                          class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
+                          ${cell.key === todayKey ? "is-today" : ""}
+                          ${jobsFilteredByAgent.some((j) => typeof j.state?.nextRunAtMs === "number" && toDayKey(j.state.nextRunAtMs) === cell.key) ? "has-jobs" : ""}"
+                          @dragover=${(e: DragEvent) => e.preventDefault()}
+                          @drop=${(e: DragEvent) => {
+                            e.preventDefault();
+                            const id = e.dataTransfer?.getData("text/plain");
+                            const job = jobsFilteredByAgent.find((j) => j.id === id);
+                            props.onFormChange({
+                              scheduleKind: "at",
+                              scheduleAt: toDateTimeLocal(cell.key),
+                              name: job?.name ?? props.form.name,
+                            });
+                          }}
+                          @click=${() =>
+                            props.onFormChange({
+                              scheduleKind: "at",
+                              scheduleAt: toDateTimeLocal(cell.key),
+                            })}
+                        >
+                          ${cell.day}
+                        </button>`,
+                  )}
+                </div>
+              `
+            : viewMode === "week"
+              ? html`<div class="cron-master-week-list">
+                  ${weekKeys.map((key) => html`<button class="cron-master-day ${key === selectedDayKey ? "is-selected" : ""}" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key) })}>${key}</button>`)}
+                </div>`
+              : html`<div class="cron-master-day-focus">Focused day view: ${selectedDayKey}</div>`}
         </div>
         <div>
           <div class="card-title" style="font-size:14px;">Daily tasks · ${selectedDayKey}</div>
           <div class="list" style="margin-top:8px;">
             ${selectedDayJobs.length
-              ? selectedDayJobs.map((job) => html`<div class="list-item"><span>${job.name}</span><span class="muted">${job.agentId || "main"}</span></div>`)
+              ? selectedDayJobs.map(
+                  (job) => html`<div class="list-item" draggable="true" @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)}><span>${job.name}</span><span class="muted">${job.agentId || "main"}</span></div>`,
+                )
               : html`<div class="muted">No tasks on this day.</div>`}
           </div>
           <label class="field" style="margin-top:10px;">
