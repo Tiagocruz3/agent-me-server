@@ -175,7 +175,13 @@ export function renderDashboard(props: DashboardProps) {
             <article class="dashboard-agent-card dashboard-agent-card--workforce" style=${`--app-accent:${app.accent}`}>
               <div class="dashboard-workforce-card-top">
                 <span class="dashboard-workforce-status"><span class="dot"></span>Active</span>
-                <span class="muted">•••</span>
+                <button
+                  class="dashboard-workforce-menu"
+                  title="Agent actions"
+                  @click=${() => props.onOpenAgentModal(app.id)}
+                >
+                  •••
+                </button>
               </div>
               <div class="dashboard-agent-avatar dashboard-agent-avatar--workforce">${app.icon}</div>
               <div class="dashboard-app-card__name">${app.name}</div>

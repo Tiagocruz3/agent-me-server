@@ -1097,6 +1097,22 @@
   margin-bottom: 8px;
 }
 
+.dashboard-workforce-menu {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  border-radius: 8px;
+  width: 28px;
+  height: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dashboard-workforce-menu:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
 .dashboard-workforce-status {
   display: inline-flex;
   align-items: center;

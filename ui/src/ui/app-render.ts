@@ -253,7 +253,7 @@ export function renderApp(state: AppViewState) {
     { label: "Work", tabs: ["sessions", "memory"] as const },
     {
       label: "Control",
-      tabs: ["dashboard", "overview", "channels", "instances", "usage", "cron"] as const,
+      tabs: ["overview", "channels", "instances", "usage", "cron"] as const,
     },
     { label: "Build", tabs: ["agents", "skills", "nodes"] as const },
     { label: "System", tabs: ["config", "debug", "logs"] as const },
