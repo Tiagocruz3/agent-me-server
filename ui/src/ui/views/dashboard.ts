@@ -182,7 +182,7 @@ export function renderDashboard(props: DashboardProps) {
               <div class="dashboard-app-card__role">${app.role}</div>
               <div class="row" style="margin-top:8px; flex-wrap: wrap;">
                 <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
-                <button class="btn" @click=${() => props.onEditAgentProfile(app.id)}>Profile pic</button>
+                <button class="btn" @click=${() => props.onOpenAgentModal(app.id)}>Profile pic</button>
                 <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
                 <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
               </div>
@@ -276,6 +276,33 @@ export function renderDashboard(props: DashboardProps) {
       </div>
     </section>
 
+    ${
+      props.agentModal
+        ? html`
+            <section class="card" style="margin-top:14px; border-color: #6b5cf0;">
+              <div class="card-title">Edit Agent Profile Picture</div>
+              <div class="card-sub">Agent: ${props.agentModal}</div>
+              <label class="field" style="margin-top:10px;">
+                <span>Avatar (emoji, URL, or workspace path)</span>
+                <input
+                  class="input"
+                  .value=${props.agentAvatarDraft}
+                  placeholder="🤖 or https://... or avatars/emc2.png"
+                  @input=${(e: Event) =>
+                    props.onAgentAvatarDraftChange((e.target as HTMLInputElement).value)}
+                />
+              </label>
+              <div class="row" style="margin-top:10px; gap:8px;">
+                <button class="btn primary" @click=${props.onAgentSaveAvatar}>Save avatar</button>
+                <button class="btn" @click=${props.onCloseAgentModal}>Cancel</button>
+                <button class="btn" @click=${() => props.onEditAgentProfile(props.agentModal!)}>
+                  Open full profile
+                </button>
+              </div>
+            </section>
+          `
+        : ""
+    }
 
   `;
 }

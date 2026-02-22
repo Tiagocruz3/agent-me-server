@@ -664,18 +664,18 @@ export function renderApp(state: AppViewState) {
                   ];
                 },
                 onAgentSaveAvatar: () => {
-                  const app = state.dashboardAgentModal ?? "emc2";
+                  const app = state.dashboardAgentModal ?? "main";
                   const text = state.dashboardAgentAvatarDraft.trim();
                   if (!text) {
                     return;
                   }
+                  state.setTab("chat");
+                  state.chatMessage = `[${app}] Update your identity avatar to: ${text}. Confirm when saved.`;
                   state.eventLog = [
+                    { ts: Date.now(), event: `agent.avatar.save.requested:${app}` },
                     ...state.eventLog,
-                    {
-                      ts: Date.now(),
-                      event: `agent.avatar.saved:${app}`,
-                    },
-                  ];
+                  ].slice(0, 200);
+                  state.dashboardAgentModal = null;
                 },
                 onRunTask: (app) => {
                   const appKey: "realestate" | "birdx" | "emc2" =
