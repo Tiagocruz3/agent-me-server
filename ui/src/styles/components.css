@@ -837,6 +837,20 @@
   flex: 0 0 auto;
 }
 
+.cron-google {
+  border-color: #324a73;
+  background: linear-gradient(180deg, rgba(18, 24, 36, 0.95), rgba(14, 19, 30, 0.98));
+}
+
+.cron-google-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
 .cron-master-controls {
   display: grid;
   gap: 8px;

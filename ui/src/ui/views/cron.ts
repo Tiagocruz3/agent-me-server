@@ -129,15 +129,30 @@ export function renderCron(props: CronProps) {
         : "month";
 
   return html`
-    <section class="card">
-      <div class="card-title">Master Scheduler</div>
-      <div class="card-sub">Month view, daily queue, recurring task setup, and natural language to action.</div>
-      <div class="cron-master-controls" style="margin-top:10px;">
-        <div class="row" style="gap:8px; flex-wrap:wrap;">
+    <section class="card cron-google">
+      <div class="cron-google-topbar">
+        <div class="row" style="gap:8px; align-items:center;">
+          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(todayKey) })}>Today</button>
+          <button class="btn" @click=${() => {
+            const d = new Date(anchor);
+            d.setMonth(d.getMonth() - 1);
+            props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(toDayKey(d.getTime())) });
+          }}>◀</button>
+          <button class="btn" @click=${() => {
+            const d = new Date(anchor);
+            d.setMonth(d.getMonth() + 1);
+            props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(toDayKey(d.getTime())) });
+          }}>▶</button>
+          <div class="cron-master-month" style="margin:0;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
+        </div>
+        <div class="row" style="gap:8px;">
           <button class="btn ${viewMode === "month" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "at" })}>Month</button>
           <button class="btn ${viewMode === "week" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "cron" })}>Week</button>
           <button class="btn ${viewMode === "day" ? "primary" : ""}" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Day</button>
         </div>
+      </div>
+      <div class="card-sub">Google-calendar style planner for wakeups and recurring agent runs.</div>
+      <div class="cron-master-controls" style="margin-top:10px;">
         <div class="row" style="gap:8px; flex-wrap:wrap;">
           <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "every", everyAmount: "1", everyUnit: "days" })}>Daily</button>
           <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "cron", cronExpr: "0 9 * * 1-5" })}>Weekdays</button>
@@ -155,7 +170,6 @@ export function renderCron(props: CronProps) {
 
       <div class="cron-master-grid" style="margin-top:12px;">
         <div>
-          <div class="cron-master-month">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
           ${viewMode === "month"
             ? html`
                 <div class="cron-master-weekdays">
