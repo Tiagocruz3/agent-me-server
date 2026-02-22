@@ -112,8 +112,34 @@
 }
 
 .chat-avatar.tool {
-  background: var(--secondary);
-  color: var(--muted);
+  background: linear-gradient(160deg, #111722, #0b0f17);
+  color: #8fb6ff;
+  border: 1px solid #2e3f62;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Tool/terminal message look */
+.chat-group.tool .chat-bubble,
+.chat-group.assistant .chat-bubble[data-kind="tool"] {
+  background: linear-gradient(180deg, #0e141d 0%, #0b1118 100%);
+  border: 1px solid #2a3a59;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 26px rgba(3, 8, 18, 0.5);
+}
+
+.chat-group.tool .chat-bubble::before,
+.chat-group.assistant .chat-bubble[data-kind="tool"]::before {
+  content: "TERMINAL";
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7ea7ff;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(126, 167, 255, 0.25);
 }
 
 /* Image avatar support */
@@ -123,18 +149,21 @@ img.chat-avatar {
   object-position: center;
 }
 
-/* Minimal Bubble Design - dynamic width based on content */
+/* Premium Bubble Design - dynamic width based on content */
 .chat-bubble {
   position: relative;
   display: inline-block;
-  border: 1px solid transparent;
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  padding: 10px 14px;
-  box-shadow: none;
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  border-radius: 14px;
+  padding: 11px 15px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
   transition:
-    background 150ms ease-out,
-    border-color 150ms ease-out;
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
   max-width: 100%;
   word-wrap: break-word;
 }
@@ -250,22 +279,26 @@ img.chat-avatar {
 }
 
 .chat-bubble:hover {
-  background: var(--bg-hover);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* User bubbles have different styling */
+/* User bubbles have distinct premium styling */
 .chat-group.user .chat-bubble {
-  background: var(--accent-subtle);
-  border-color: transparent;
+  background: linear-gradient(145deg, rgba(61, 220, 151, 0.22), rgba(61, 220, 151, 0.1));
+  border-color: rgba(61, 220, 151, 0.4);
+  box-shadow: 0 10px 24px rgba(10, 31, 22, 0.45);
 }
 
 :root[data-theme="light"] .chat-group.user .chat-bubble {
-  border-color: rgba(234, 88, 12, 0.2);
-  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
 }
 
 .chat-group.user .chat-bubble:hover {
-  background: rgba(255, 77, 77, 0.15);
+  background: linear-gradient(145deg, rgba(61, 220, 151, 0.27), rgba(61, 220, 151, 0.14));
 }
 
 /* Streaming animation */
