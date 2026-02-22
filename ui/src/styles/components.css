@@ -1032,6 +1032,12 @@
   box-shadow: 0 10px 24px rgba(22, 12, 58, 0.35);
 }
 
+.cron-day-modal {
+  margin-top: 12px;
+  border-color: #3e5b89;
+  box-shadow: 0 10px 24px rgba(5, 12, 26, 0.35);
+}
+
 .cron-modal-launcher {
   border-color: #2f3f61;
 }

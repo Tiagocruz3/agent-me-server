@@ -137,6 +137,7 @@ export class AgentMeApp extends LitElement {
   @state() dashboardAgentSearch = "";
   @state() dashboardAgentSort: "name" | "id" = "name";
   @state() cronViewMode: "month" | "week" | "day" = "week";
+  @state() cronDayModalKey: string | null = null;
   private eventLogBuffer: EventLogEntry[] = [];
   private toolStreamSyncTimer: number | null = null;
   private sidebarCloseTimer: number | null = null;

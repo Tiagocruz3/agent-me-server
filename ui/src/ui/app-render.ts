@@ -1291,6 +1291,7 @@ export function renderApp(state: AppViewState) {
                 busy: state.cronBusy,
                 form: state.cronForm,
                 viewMode: state.cronViewMode,
+                dayModalKey: state.cronDayModalKey,
                 channels: state.channelsSnapshot?.channelMeta?.length
                   ? state.channelsSnapshot.channelMeta.map((entry) => entry.id)
                   : (state.channelsSnapshot?.channelOrder ?? []),
@@ -1301,6 +1302,12 @@ export function renderApp(state: AppViewState) {
                 onFormChange: (patch) => (state.cronForm = { ...state.cronForm, ...patch }),
                 onViewModeChange: (mode) => {
                   state.cronViewMode = mode;
+                },
+                onOpenDayModal: (dayKey) => {
+                  state.cronDayModalKey = dayKey;
+                },
+                onCloseDayModal: () => {
+                  state.cronDayModalKey = null;
                 },
                 onRefresh: () => state.loadCron(),
                 onAdd: () => addCronJob(state),
