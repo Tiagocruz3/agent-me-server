@@ -895,6 +895,11 @@
   margin-top: 8px;
 }
 
+.cron-google-day-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
 .cron-google-week-col {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -963,6 +968,11 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
+}
+
+.cron-master-calendar--large .cron-master-day {
+  min-height: 96px;
+  justify-content: flex-start;
 }
 
 .cron-master-day {

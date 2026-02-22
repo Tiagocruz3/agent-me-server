@@ -1290,6 +1290,7 @@ export function renderApp(state: AppViewState) {
                 error: state.cronError,
                 busy: state.cronBusy,
                 form: state.cronForm,
+                viewMode: state.cronViewMode,
                 channels: state.channelsSnapshot?.channelMeta?.length
                   ? state.channelsSnapshot.channelMeta.map((entry) => entry.id)
                   : (state.channelsSnapshot?.channelOrder ?? []),
@@ -1298,6 +1299,9 @@ export function renderApp(state: AppViewState) {
                 runsJobId: state.cronRunsJobId,
                 runs: state.cronRuns,
                 onFormChange: (patch) => (state.cronForm = { ...state.cronForm, ...patch }),
+                onViewModeChange: (mode) => {
+                  state.cronViewMode = mode;
+                },
                 onRefresh: () => state.loadCron(),
                 onAdd: () => addCronJob(state),
                 onToggle: (job, enabled) => toggleCronJob(state, job, enabled),

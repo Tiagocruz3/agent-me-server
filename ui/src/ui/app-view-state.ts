@@ -61,6 +61,7 @@ export type AppViewState = {
   dashboardAgentAvatarDraft: string;
   dashboardAgentSearch: string;
   dashboardAgentSort: "name" | "id";
+  cronViewMode: "month" | "week" | "day";
   assistantName: string;
   assistantAvatar: string | null;
   assistantAgentId: string | null;
