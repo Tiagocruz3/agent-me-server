@@ -26,6 +26,7 @@ export type DashboardProps = {
   onOpenAppChat: (app: string) => void;
   onOpenAgentModal: (app: string) => void;
   onAddAgent: () => void;
+  onEditAgentProfile: (app: string) => void;
   agentSearch: string;
   agentSort: "name" | "id";
   onAgentSearchChange: (text: string) => void;
@@ -179,8 +180,9 @@ export function renderDashboard(props: DashboardProps) {
               <div class="dashboard-agent-avatar dashboard-agent-avatar--workforce">${app.icon}</div>
               <div class="dashboard-app-card__name">${app.name}</div>
               <div class="dashboard-app-card__role">${app.role}</div>
-              <div class="row" style="margin-top:8px;">
+              <div class="row" style="margin-top:8px; flex-wrap: wrap;">
                 <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
+                <button class="btn" @click=${() => props.onEditAgentProfile(app.id)}>Profile pic</button>
                 <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
                 <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
               </div>

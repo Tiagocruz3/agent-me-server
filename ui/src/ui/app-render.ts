@@ -594,6 +594,11 @@ export function renderApp(state: AppViewState) {
                   state.chatMessage =
                     "Create a new agent from my natural-language request. Ask me any missing details, then return recommended agent id, purpose, system prompt, and tool profile.";
                 },
+                onEditAgentProfile: (app) => {
+                  state.agentsSelectedId = app || "main";
+                  state.setTab("agents");
+                  state.agentsPanel = "overview";
+                },
                 onAgentSearchChange: (text) => {
                   state.dashboardAgentSearch = text;
                 },
