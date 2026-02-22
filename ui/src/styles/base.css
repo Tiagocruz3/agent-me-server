@@ -1,51 +1,51 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
-  /* Background - Agent Me dark charcoal */
-  --bg: #1f2126;
-  --bg-accent: #22252b;
-  --bg-elevated: #262a31;
-  --bg-hover: #2d323a;
-  --bg-muted: #2d323a;
+  /* Background - Premium graphite */
+  --bg: #111318;
+  --bg-accent: #161922;
+  --bg-elevated: #1b1f2a;
+  --bg-hover: #232938;
+  --bg-muted: #232938;
 
   /* Card / Surface */
-  --card: #252a31;
-  --card-foreground: #f3f4f6;
-  --card-highlight: rgba(255, 255, 255, 0.04);
-  --popover: #252a31;
-  --popover-foreground: #f3f4f6;
+  --card: #171b25;
+  --card-foreground: #f4f7ff;
+  --card-highlight: rgba(255, 255, 255, 0.05);
+  --popover: #171b25;
+  --popover-foreground: #f4f7ff;
 
   /* Panel */
-  --panel: #1f2126;
-  --panel-strong: #252a31;
-  --panel-hover: #2d323a;
-  --chrome: rgba(31, 33, 38, 0.95);
-  --chrome-strong: rgba(31, 33, 38, 0.98);
+  --panel: #111318;
+  --panel-strong: #171b25;
+  --panel-hover: #232938;
+  --chrome: rgba(13, 16, 22, 0.92);
+  --chrome-strong: rgba(13, 16, 22, 0.98);
 
-  /* Text - Slightly warmer */
-  --text: #f3f4f6;
+  /* Text - Crisper premium contrast */
+  --text: #e8ecf8;
   --text-strong: #ffffff;
-  --chat-text: #f3f4f6;
-  --muted: #a3aab5;
-  --muted-strong: #8b94a2;
-  --muted-foreground: #a3aab5;
+  --chat-text: #edf1ff;
+  --muted: #9aa5bc;
+  --muted-strong: #7e8aa3;
+  --muted-foreground: #9aa5bc;
 
   /* Border */
-  --border: #343a44;
-  --border-strong: #48505d;
-  --border-hover: #5a6474;
-  --input: #343a44;
-  --ring: #19c37d;
+  --border: #2c3446;
+  --border-strong: #3b465f;
+  --border-hover: #4d5b78;
+  --input: #2c3446;
+  --ring: #3ddc97;
 
-  /* Accent - Agent Me emerald */
-  --accent: #19c37d;
-  --accent-hover: #13a66b;
-  --accent-muted: #19c37d;
-  --accent-subtle: rgba(25, 195, 125, 0.16);
-  --accent-foreground: #03140d;
-  --accent-glow: rgba(25, 195, 125, 0.3);
-  --primary: #19c37d;
-  --primary-foreground: #03140d;
+  /* Accent - Emerald luxe */
+  --accent: #3ddc97;
+  --accent-hover: #2fc184;
+  --accent-muted: #3ddc97;
+  --accent-subtle: rgba(61, 220, 151, 0.2);
+  --accent-foreground: #03150f;
+  --accent-glow: rgba(61, 220, 151, 0.34);
+  --primary: #3ddc97;
+  --primary-foreground: #03150f;
 
   /* Secondary accent for action button */
   --secondary: #252a31;
@@ -80,19 +80,19 @@
   --theme-switch-x: 50%;
   --theme-switch-y: 50%;
 
-  /* Typography - Space Grotesk for personality */
+  /* Typography - Premium, clean, highly legible */
   --mono:
     "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
-  --font-body: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display:
-    "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  /* Shadows - Richer with subtle color */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-glow: 0 0 30px var(--accent-glow);
+  /* Shadows - Deeper, cinematic */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 18px 36px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-xl: 0 30px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-glow: 0 0 36px var(--accent-glow);
 
   /* Radii - Slightly larger for friendlier feel */
   --radius-sm: 6px;
