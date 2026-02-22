@@ -223,10 +223,24 @@ export function renderCron(props: CronProps) {
             ${selectedDayJobs.length
               ? selectedDayJobs.map((job) => {
                   const recurring = job.schedule.kind !== "at";
-                  return html`<div class="list-item" draggable="true" @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)}>
+                  return html`<div
+                    class="list-item list-item-clickable"
+                    draggable="true"
+                    @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)}
+                    @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}
+                  >
                     <span>${job.name}</span>
                     <span class="muted">${job.agentId || "main"}</span>
                     <span class="chip ${recurring ? "chip-ok" : ""}">${recurring ? "recurring" : "one-time"}</span>
+                    <button
+                      class="btn"
+                      @click=${(e: Event) => {
+                        e.stopPropagation();
+                        props.onFormChange(toCronFormPatchFromJob(job));
+                      }}
+                    >
+                      Edit
+                    </button>
                   </div>`;
                 })
               : html`<div class="muted">No tasks on this day.</div>`}
@@ -629,6 +643,45 @@ function renderJob(job: CronJob, props: CronProps) {
       </div>
     </div>
   `;
+}
+
+function toCronFormPatchFromJob(job: CronJob): Partial<CronFormState> {
+  const schedulePatch: Partial<CronFormState> =
+    job.schedule.kind === "at"
+      ? {
+          scheduleKind: "at",
+          scheduleAt: job.schedule.at.slice(0, 16),
+        }
+      : job.schedule.kind === "every"
+        ? {
+            scheduleKind: "every",
+            everyAmount: String(Math.max(1, Math.round(job.schedule.everyMs / 60000))),
+            everyUnit: "minutes",
+          }
+        : {
+            scheduleKind: "cron",
+            cronExpr: job.schedule.expr,
+            cronTz: job.schedule.tz ?? "",
+          };
+
+  return {
+    name: job.name,
+    description: job.description ?? "",
+    agentId: job.agentId ?? "main",
+    enabled: job.enabled,
+    sessionTarget: job.sessionTarget,
+    wakeMode: job.wakeMode,
+    payloadKind: job.payload.kind,
+    payloadText: job.payload.kind === "systemEvent" ? job.payload.text : job.payload.message,
+    deliveryMode: job.delivery?.mode ?? "announce",
+    deliveryChannel: job.delivery?.channel ?? "last",
+    deliveryTo: job.delivery?.to ?? "",
+    timeoutSeconds:
+      job.payload.kind === "agentTurn" && typeof job.payload.timeoutSeconds === "number"
+        ? String(job.payload.timeoutSeconds)
+        : "",
+    ...schedulePatch,
+  };
 }
 
 function renderJobPayload(job: CronJob) {
