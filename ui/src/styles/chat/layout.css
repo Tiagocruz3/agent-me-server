@@ -147,10 +147,11 @@
   flex-direction: column;
   gap: 12px;
   margin-top: auto; /* Push to bottom of flex container */
-  width: min(760px, 60%);
+  width: clamp(720px, 68vw, 1080px);
+  max-width: calc(100% - 20px);
   align-self: center;
-  padding: 12px 4px 4px;
-  background: linear-gradient(to bottom, transparent, var(--bg) 20%);
+  padding: 12px 4px 6px;
+  background: linear-gradient(to bottom, transparent, color-mix(in oklab, var(--bg) 92%, #070b12 8%) 24%);
   z-index: 10;
   animation: premium-pop 220ms var(--ease-out);
 }

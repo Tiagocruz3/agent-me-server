@@ -119,7 +119,9 @@ export function renderMessageGroup(
       ? "You"
       : normalizedRole === "assistant"
         ? assistantName
-        : normalizedRole;
+        : normalizedRole === "tool"
+          ? `${assistantName} · Tools`
+          : normalizedRole;
   const roleClass =
     normalizedRole === "user" ? "user" : normalizedRole === "assistant" ? "assistant" : "other";
   const timestamp = new Date(group.timestamp).toLocaleTimeString([], {
@@ -260,7 +262,7 @@ function renderGroupedMessage(
   }
 
   return html`
-    <div class="${bubbleClasses}">
+    <div class="${bubbleClasses}" data-kind=${isToolResult ? "tool" : "message"}>
       ${canCopyMarkdown ? renderCopyAsMarkdownButton(markdown!) : nothing}
       ${renderMessageImages(images)}
       ${
