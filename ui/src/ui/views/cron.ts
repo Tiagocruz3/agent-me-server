@@ -306,6 +306,10 @@ export function renderCron(props: CronProps) {
       <details class="cron-modal" style="margin-top:10px;">
         <summary class="btn">Scheduler Status</summary>
         <div class="cron-modal__body">
+          <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="card-title" style="font-size:14px;">Scheduler Status</div>
+            <button class="btn" @click=${(e: Event) => (e.currentTarget as HTMLElement).closest("details")?.removeAttribute("open")}>✕</button>
+          </div>
           <div class="stat-grid">
             <div class="stat"><div class="stat-label">Enabled</div><div class="stat-value">${props.status ? (props.status.enabled ? "Yes" : "No") : "n/a"}</div></div>
             <div class="stat"><div class="stat-label">Jobs</div><div class="stat-value">${props.status?.jobs ?? "n/a"}</div></div>
@@ -321,6 +325,10 @@ export function renderCron(props: CronProps) {
       <details class="cron-modal" style="margin-top:10px;" open>
         <summary class="btn primary">Create / Edit Job</summary>
         <div class="cron-modal__body">
+          <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="card-title" style="font-size:14px;">Create / Edit Job</div>
+            <button class="btn" @click=${(e: Event) => (e.currentTarget as HTMLElement).closest("details")?.removeAttribute("open")}>✕</button>
+          </div>
           <div class="form-grid" style="margin-top: 12px;">
             <label class="field"><span>Name</span><input .value=${props.form.name} @input=${(e: Event) => props.onFormChange({ name: (e.target as HTMLInputElement).value })} /></label>
             <label class="field"><span>Description</span><input .value=${props.form.description} @input=${(e: Event) => props.onFormChange({ description: (e.target as HTMLInputElement).value })} /></label>
@@ -337,6 +345,10 @@ export function renderCron(props: CronProps) {
       <details class="cron-modal" style="margin-top:10px;">
         <summary class="btn">Jobs & Run History</summary>
         <div class="cron-modal__body">
+          <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="card-title" style="font-size:14px;">Jobs & Run History</div>
+            <button class="btn" @click=${(e: Event) => (e.currentTarget as HTMLElement).closest("details")?.removeAttribute("open")}>✕</button>
+          </div>
           <div class="card-sub">Jobs</div>
           ${props.jobs.length === 0 ? html`<div class="muted" style="margin-top: 8px">No jobs yet.</div>` : html`<div class="list" style="margin-top: 8px;">${props.jobs.map((job) => renderJob(job, props))}</div>`}
           <div class="card-sub" style="margin-top:12px;">Run history · ${selectedRunTitle}</div>
