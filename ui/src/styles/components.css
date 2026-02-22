@@ -885,8 +885,28 @@
   background: var(--card);
   color: var(--text);
   border-radius: 10px;
-  height: 40px;
+  min-height: 48px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6px 8px;
+}
+
+.cron-master-day-num {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.cron-master-day-badge {
+  margin-top: 4px;
+  font-size: 10px;
+  border: 1px solid rgba(61, 220, 151, 0.45);
+  border-radius: 999px;
+  padding: 1px 6px;
+  color: #9fe5c9;
 }
 
 .cron-master-day--pad {
