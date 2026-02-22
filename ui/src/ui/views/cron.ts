@@ -54,13 +54,101 @@ function resolveChannelLabel(props: CronProps, channel: string): string {
   return props.channelLabels?.[channel] ?? channel;
 }
 
+function toDayKey(ms: number): string {
+  const d = new Date(ms);
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function toDateTimeLocal(dayKey: string, hour = 9, minute = 0): string {
+  return `${dayKey}T${`${hour}`.padStart(2, "0")}:${`${minute}`.padStart(2, "0")}`;
+}
+
+function monthGrid(anchor: Date): Array<{ key: string; day: number; inMonth: boolean }> {
+  const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+  const startWeekday = first.getDay();
+  const daysInMonth = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0).getDate();
+  const cells: Array<{ key: string; day: number; inMonth: boolean }> = [];
+
+  for (let i = 0; i < startWeekday; i += 1) {
+    cells.push({ key: `pad-${i}`, day: 0, inMonth: false });
+  }
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const d = new Date(anchor.getFullYear(), anchor.getMonth(), day);
+    cells.push({ key: toDayKey(d.getTime()), day, inMonth: true });
+  }
+  return cells;
+}
+
 export function renderCron(props: CronProps) {
   const channelOptions = buildChannelOptions(props);
   const selectedJob =
     props.runsJobId == null ? undefined : props.jobs.find((job) => job.id === props.runsJobId);
   const selectedRunTitle = selectedJob?.name ?? props.runsJobId ?? "(select a job)";
   const orderedRuns = props.runs.toSorted((a, b) => b.ts - a.ts);
+
+  const todayKey = toDayKey(Date.now());
+  const selectedDayKey =
+    props.form.scheduleAt && props.form.scheduleAt.length >= 10
+      ? props.form.scheduleAt.slice(0, 10)
+      : todayKey;
+  const selectedDayJobs = props.jobs.filter(
+    (job) => typeof job.state?.nextRunAtMs === "number" && toDayKey(job.state.nextRunAtMs) === selectedDayKey,
+  );
+  const anchor = new Date(`${selectedDayKey}T00:00:00`);
+  const calendarCells = monthGrid(anchor);
+
   return html`
+    <section class="card">
+      <div class="card-title">Master Scheduler</div>
+      <div class="card-sub">Month view, daily queue, recurring task setup, and natural language to action.</div>
+      <div class="cron-master-grid" style="margin-top:12px;">
+        <div>
+          <div class="cron-master-month">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
+          <div class="cron-master-weekdays">
+            ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => html`<span>${d}</span>`) }
+          </div>
+          <div class="cron-master-calendar">
+            ${calendarCells.map((cell) =>
+              !cell.inMonth
+                ? html`<span class="cron-master-day cron-master-day--pad"></span>`
+                : html`<button
+                    class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
+                    ${cell.key === todayKey ? "is-today" : ""}
+                    ${props.jobs.some((j) => typeof j.state?.nextRunAtMs === "number" && toDayKey(j.state.nextRunAtMs) === cell.key) ? "has-jobs" : ""}"
+                    @click=${() =>
+                      props.onFormChange({
+                        scheduleKind: "at",
+                        scheduleAt: toDateTimeLocal(cell.key),
+                      })}
+                  >
+                    ${cell.day}
+                  </button>`,
+            )}
+          </div>
+        </div>
+        <div>
+          <div class="card-title" style="font-size:14px;">Daily tasks · ${selectedDayKey}</div>
+          <div class="list" style="margin-top:8px;">
+            ${selectedDayJobs.length
+              ? selectedDayJobs.map((job) => html`<div class="list-item"><span>${job.name}</span><span class="muted">${job.agentId || "main"}</span></div>`)
+              : html`<div class="muted">No tasks on this day.</div>`}
+          </div>
+          <label class="field" style="margin-top:10px;">
+            <span>Natural language to action</span>
+            <textarea
+              rows="3"
+              .value=${props.form.payloadText}
+              placeholder="Every weekday at 9am, ask EMC2 to post daily priorities to Telegram"
+              @input=${(e: Event) => props.onFormChange({ payloadText: (e.target as HTMLTextAreaElement).value })}
+            ></textarea>
+          </label>
+        </div>
+      </div>
+    </section>
+
     <section class="grid grid-cols-2">
       <div class="card">
         <div class="card-title">Scheduler</div>

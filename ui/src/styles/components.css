@@ -837,6 +837,60 @@
   flex: 0 0 auto;
 }
 
+.cron-master-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(280px, 1fr);
+  gap: 14px;
+}
+
+.cron-master-month {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.cron-master-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cron-master-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cron-master-day {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 10px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.cron-master-day--pad {
+  border: 1px dashed transparent;
+  background: transparent;
+  pointer-events: none;
+}
+
+.cron-master-day.has-jobs {
+  border-color: rgba(61, 220, 151, 0.45);
+}
+
+.cron-master-day.is-selected {
+  border-color: #7c4dff;
+  background: rgba(124, 77, 255, 0.18);
+}
+
+.cron-master-day.is-today {
+  box-shadow: inset 0 0 0 1px rgba(61, 220, 151, 0.45);
+}
+
 @container (max-width: 560px) {
   .list-item {
     grid-template-columns: 1fr;
