@@ -567,21 +567,29 @@ export function renderAgents(props: AgentsProps) {
                 `
               : agents.map((agent) => {
                   const badge = agentBadgeText(agent.id, defaultId);
-                  const emoji = resolveAgentEmoji(agent, props.agentIdentityById[agent.id] ?? null);
+                  const identity = props.agentIdentityById[agent.id] ?? null;
+                  const emoji = resolveAgentEmoji(agent, identity);
+                  const subtitle =
+                    identity?.theme?.trim() || agent.identity?.theme?.trim() || "Ready for tasks";
                   return html`
                     <button
                       type="button"
                       class="agent-row ${selectedId === agent.id ? "active" : ""}"
                       @click=${() => props.onSelectAgent(agent.id)}
                     >
+                      <div class="agent-row-status">
+                        <span class="agent-row-dot"></span>
+                        <span>Active</span>
+                      </div>
+                      ${badge ? html`<span class="agent-pill">${badge}</span>` : nothing}
                       <div class="agent-avatar">
                         ${emoji || normalizeAgentLabel(agent).slice(0, 1)}
                       </div>
                       <div class="agent-info">
                         <div class="agent-title">${normalizeAgentLabel(agent)}</div>
+                        <div class="agent-sub">${subtitle}</div>
                         <div class="agent-sub mono">${agent.id}</div>
                       </div>
-                      ${badge ? html`<span class="agent-pill">${badge}</span>` : nothing}
                     </button>
                   `;
                 })
@@ -602,6 +610,7 @@ export function renderAgents(props: AgentsProps) {
                 selectedAgent,
                 defaultId,
                 props.agentIdentityById[selectedAgent.id] ?? null,
+                (panel) => props.onSelectPanel(panel),
               )}
               ${renderAgentTabs(props.activePanel, (panel) => props.onSelectPanel(panel))}
               ${
@@ -724,6 +733,7 @@ function renderAgentHeader(
   agent: AgentsListResult["agents"][number],
   defaultId: string | null,
   agentIdentity: AgentIdentityResult | null,
+  onSelectPanel: (panel: AgentsPanel) => void,
 ) {
   const badge = agentBadgeText(agent.id, defaultId);
   const displayName = normalizeAgentLabel(agent);
@@ -743,6 +753,21 @@ function renderAgentHeader(
       <div class="agent-header-meta">
         <div class="mono">${agent.id}</div>
         ${badge ? html`<span class="agent-pill">${badge}</span>` : nothing}
+      </div>
+      <div class="agent-quick-actions">
+        <button class="btn" type="button" @click=${() => onSelectPanel("overview")}>🖼️ Profile</button>
+        <button class="btn" type="button" @click=${() => onSelectPanel("files")}>📝 System Prompt</button>
+        <button class="btn" type="button" @click=${() => onSelectPanel("tools")}>🧬 Clone Setup</button>
+        <button
+          class="btn primary"
+          type="button"
+          @click=${() => {
+            window.history.pushState({}, "", "/chat");
+            window.dispatchEvent(new PopStateEvent("popstate"));
+          }}
+        >
+          ▶ Assign Task
+        </button>
       </div>
     </section>
   `;
