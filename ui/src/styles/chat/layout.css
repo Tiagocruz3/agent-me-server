@@ -410,17 +410,24 @@
 .chat-compose__agent-select-wrap {
   display: inline-flex;
   align-items: center;
+  min-width: 170px;
+  max-width: 240px;
+  flex: 0 0 auto;
 }
 
 .chat-compose__agent-select {
+  width: 100%;
   height: 40px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
-  padding: 0 12px;
-  min-width: 110px;
+  padding: 0 34px 0 12px;
+  min-width: 170px;
   font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 :root[data-theme="light"] .chat-compose__agent-select {
@@ -651,6 +658,18 @@
   .chat-compose {
     grid-template-columns: 1fr;
     width: min(100%, 100%);
+  }
+
+  .chat-compose__actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .chat-compose__agent-select-wrap,
+  .chat-compose__agent-select {
+    min-width: 140px;
+    max-width: 100%;
   }
 
   .chat-controls {
