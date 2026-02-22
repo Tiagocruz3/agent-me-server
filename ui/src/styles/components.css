@@ -951,6 +951,29 @@
   box-shadow: 0 10px 24px rgba(22, 12, 58, 0.35);
 }
 
+.cron-modal-launcher {
+  border-color: #2f3f61;
+}
+
+.cron-modal {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cron-modal > summary {
+  list-style: none;
+}
+
+.cron-modal > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cron-modal__body {
+  margin-top: 10px;
+}
+
 @media (max-width: 980px) {
   .cron-master-grid {
     grid-template-columns: 1fr;
