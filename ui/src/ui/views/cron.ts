@@ -180,6 +180,9 @@ export function renderCron(props: CronProps) {
                 ${dayJobs.length > 0 ? "has-jobs" : ""}"
                 @click=${() => {
                   props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key) });
+                }}
+                @dblclick=${() => {
+                  props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key) });
                   props.onOpenDayModal(cell.key);
                 }}
               >
@@ -201,7 +204,7 @@ export function renderCron(props: CronProps) {
                       return html`<span class="cron-master-day cron-master-day--pad"></span>`;
                     }
                     const dayJobs = jobsByDay.get(cell.key) ?? [];
-                    return html`<button class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""} ${cell.key === todayKey ? "is-today" : ""} ${dayJobs.length > 0 ? "has-jobs" : ""}" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(cell.key); }}>
+                    return html`<button class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""} ${cell.key === todayKey ? "is-today" : ""} ${dayJobs.length > 0 ? "has-jobs" : ""}" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key), name: props.form.name || "New scheduled task" }); }} @dblclick=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(cell.key); }}>
                       <span class="cron-master-day-num">${cell.day}</span>
                       ${dayJobs.slice(0, 2).map((job) => html`<span class="cron-master-day-badge">${job.name.slice(0, 10)}</span>`) }
                     </button>`;
@@ -230,7 +233,7 @@ export function renderCron(props: CronProps) {
                   <div class="cron-google-week-grid">
                     ${workWeekKeys.map((key) => {
                       const dayJobs = jobsByDay.get(key) ?? [];
-                      return html`<div class="cron-google-week-col" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(key); }}>
+                      return html`<div class="cron-google-week-col" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); }} @dblclick=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(key); }}>
                         ${dayJobs.map((job) => html`<button class="cron-google-event" @click=${(e: Event) => { e.stopPropagation(); props.onFormChange(toCronFormPatchFromJob(job)); }}>
                           <span class="cron-google-event__title">${job.name}</span>
                           <span class="cron-google-event__meta">${job.agentId || "main"} · ${job.schedule.kind !== "at" ? "recurring" : "one-time"}</span>
@@ -268,13 +271,13 @@ export function renderCron(props: CronProps) {
             <div class="row" style="justify-content:space-between; align-items:center;">
               <div>
                 <div class="card-title" style="font-size:14px;">Tasks for ${modalDayKey}</div>
-                <div class="card-sub">Select a task or create a new one for this day.</div>
+                <div class="card-sub">${modalDayJobs.length} task${modalDayJobs.length === 1 ? "" : "s"} scheduled. Double-click any day to open this modal.</div>
               </div>
               <button class="btn" @click=${props.onCloseDayModal}>✕</button>
             </div>
             <div class="list" style="margin-top:10px;">
               ${modalDayJobs.length
-                ? modalDayJobs.map((job) => html`<div class="list-item list-item-clickable" @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}><span>${job.name}</span><span class="muted">${job.agentId || "main"}</span></div>`)
+                ? modalDayJobs.map((job) => html`<div class="list-item list-item-clickable" @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}><span>${job.name}</span><span class="muted">Agent: ${job.agentId || "main"}</span></div>`)
                 : html`<div class="muted">No tasks for this day yet.</div>`}
             </div>
             <div class="card-sub" style="margin-top:10px;">Schedule options</div>

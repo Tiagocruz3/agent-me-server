@@ -1015,8 +1015,8 @@
 }
 
 .cron-master-day.is-selected {
-  border-color: #7c4dff;
-  background: rgba(124, 77, 255, 0.18);
+  border-color: #c6ced9;
+  background: rgba(214, 220, 229, 0.42);
 }
 
 .cron-master-day.is-today {
