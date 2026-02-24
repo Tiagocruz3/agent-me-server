@@ -142,7 +142,7 @@ export function renderCron(props: CronProps) {
       <div class="cron-google-topbar">
         <div class="row" style="gap:8px; align-items:center;">
           <button
-            class="btn primary"
+            class="btn primary cron-create-task-btn"
             @click=${async () => {
               props.onFormChange({
                 name: "New scheduled task",
@@ -302,7 +302,7 @@ export function renderCron(props: CronProps) {
             </div>
             <div class="row" style="margin-top:10px; gap:8px;">
               <button
-                class="btn primary"
+                class="btn primary cron-create-task-btn"
                 @click=${async () => {
                   props.onFormChange({
                     name: "New scheduled task",
