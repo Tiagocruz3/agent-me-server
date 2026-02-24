@@ -111,12 +111,14 @@ export function renderDashboard(props: DashboardProps) {
         <div class="card-title">${showAutopilot ? "Autopilot Dashboard" : showResults ? "Task Results Dashboard" : "Agent Dashboard"}</div>
         <div class="card-sub">${showAutopilot ? "Autopilot and emergency controls." : showResults ? "Task results envelope store." : "Power control for your AI workforce."}</div>
       </div>
-      <div class="dashboard-hero__chips">
-        <span class="result-status ${props.connected ? "result-status--success" : "result-status--error"}">
-          ${props.connected ? "Connected" : "Disconnected"}
-        </span>
-        <span class="result-status result-status--running">Autopilot ${props.autopilotMode.toUpperCase()}</span>
-      </div>
+      ${showOverview
+        ? ""
+        : html`<div class="dashboard-hero__chips">
+            <span class="result-status ${props.connected ? "result-status--success" : "result-status--error"}">
+              ${props.connected ? "Connected" : "Disconnected"}
+            </span>
+            <span class="result-status result-status--running">Autopilot ${props.autopilotMode.toUpperCase()}</span>
+          </div>`}
     </section>
 
     ${showOverview
