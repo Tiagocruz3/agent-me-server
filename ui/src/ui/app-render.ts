@@ -255,7 +255,7 @@ export function renderApp(state: AppViewState) {
       label: "Control",
       tabs: ["overview", "channels", "instances", "usage"] as const,
     },
-    { label: "Build", tabs: ["agents", "skills", "nodes"] as const },
+    { label: "Build", tabs: ["skills", "nodes"] as const },
     { label: "System", tabs: ["config", "debug", "logs"] as const },
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
