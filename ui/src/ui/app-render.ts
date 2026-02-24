@@ -303,11 +303,7 @@ export function renderApp(state: AppViewState) {
     <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} shell--nav-collapsed ${state.onboarding ? "shell--onboarding" : ""}">
       <header class="topbar">
         <button class="topbar-left" type="button" @click=${() => state.setTab("chat")} title="Open Chat" aria-label="Open Chat">
-          <img
-            class="topbar-app-icon"
-            src=${basePath ? `${basePath}/apple-touch-icon.png` : "/apple-touch-icon.png"}
-            alt="Agent Me"
-          />
+          <span class="topbar-app-icon" aria-hidden="true">${icons.logo}</span>
           <div class="brand">
             <div class="brand-text">
               <div class="brand-title">AGENT ME</div>
