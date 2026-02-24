@@ -912,6 +912,11 @@
   background: rgba(255, 255, 255, 0.015);
 }
 
+.cron-google-week-col.is-selected {
+  border-color: #c6ced9;
+  background: rgba(214, 220, 229, 0.2);
+}
+
 .cron-google-event {
   width: 100%;
   text-align: left;

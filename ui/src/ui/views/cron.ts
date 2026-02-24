@@ -213,7 +213,7 @@ export function renderCron(props: CronProps) {
                   <div class="cron-google-week-grid">
                     ${workWeekKeys.map((key) => {
                       const dayJobs = jobsByDay.get(key) ?? [];
-                      return html`<div class="cron-google-week-col" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); }} @dblclick=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(key); }}>
+                      return html`<div class="cron-google-week-col ${key === selectedDayKey ? "is-selected" : ""}" @click=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); }} @dblclick=${() => { props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key), name: props.form.name || "New scheduled task" }); props.onOpenDayModal(key); }}>
                         ${dayJobs.map((job) => html`<button class="cron-google-event" @click=${(e: Event) => { e.stopPropagation(); props.onFormChange(toCronFormPatchFromJob(job)); }}>
                           <span class="cron-google-event__title">${job.name}</span>
                           <span class="cron-google-event__meta">${job.agentId || "main"} · ${job.schedule.kind !== "at" ? "recurring" : "one-time"}</span>
