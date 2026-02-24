@@ -332,8 +332,8 @@ export function renderApp(state: AppViewState) {
               ${[
                 {
                   icon: "⚡",
-                  label: "Mission Control Dashboard",
-                  sub: "Power center: KPIs, queue, live activity, app actions",
+                  label: "Agent Dashboard",
+                  sub: "Core AI operations and workforce overview",
                   tab: "dashboard" as const,
                   dashboardView: "overview" as const,
                   isNew: true,
