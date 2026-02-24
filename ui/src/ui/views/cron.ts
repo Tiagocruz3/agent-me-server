@@ -141,7 +141,20 @@ export function renderCron(props: CronProps) {
     <section class="card cron-google">
       <div class="cron-google-topbar">
         <div class="row" style="gap:8px; align-items:center;">
-          <button class="btn primary" @click=${() => props.onFormChange({ name: "New scheduled task", scheduleKind: "at", scheduleAt: toDateTimeLocal(selectedDayKey) })}>Create task</button>
+          <button
+            class="btn primary"
+            @click=${async () => {
+              props.onFormChange({
+                name: "New scheduled task",
+                scheduleKind: "at",
+                scheduleAt: toDateTimeLocal(selectedDayKey),
+                payloadText: props.form.payloadText.trim() || "Reminder",
+              });
+              await props.onAdd();
+            }}
+          >
+            Create task
+          </button>
           <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(todayKey) })}>Today</button>
           <button class="btn" @click=${() => {
             const d = new Date(anchor);
@@ -290,12 +303,16 @@ export function renderCron(props: CronProps) {
             <div class="row" style="margin-top:10px; gap:8px;">
               <button
                 class="btn primary"
-                @click=${() =>
+                @click=${async () => {
                   props.onFormChange({
                     name: "New scheduled task",
                     scheduleKind: "at",
                     scheduleAt: toDateTimeLocal(modalDayKey),
-                  })}
+                    payloadText: props.form.payloadText.trim() || "Reminder",
+                  });
+                  await props.onAdd();
+                  props.onCloseDayModal();
+                }}
               >
                 Create task
               </button>
