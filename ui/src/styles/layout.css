@@ -96,6 +96,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
 }
 
 .topbar-app-icon {

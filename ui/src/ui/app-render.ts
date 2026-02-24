@@ -302,7 +302,7 @@ export function renderApp(state: AppViewState) {
   return html`
     <div class="shell ${isChat ? "shell--chat" : ""} ${chatFocus ? "shell--chat-focus" : ""} shell--nav-collapsed ${state.onboarding ? "shell--onboarding" : ""}">
       <header class="topbar">
-        <div class="topbar-left">
+        <button class="topbar-left" type="button" @click=${() => state.setTab("chat")} title="Open Chat" aria-label="Open Chat">
           <img
             class="topbar-app-icon"
             src=${basePath ? `${basePath}/apple-touch-icon.png` : "/apple-touch-icon.png"}
@@ -314,7 +314,7 @@ export function renderApp(state: AppViewState) {
               <div class="brand-sub">Control Dashboard</div>
             </div>
           </div>
-        </div>
+        </button>
 
         <nav class="topbar-menu" aria-label="Primary">
           <button
