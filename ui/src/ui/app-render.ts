@@ -353,7 +353,7 @@ export function renderApp(state: AppViewState) {
                 },
                 {
                   icon: "🗓️",
-                  label: "Sheducler",
+                  label: "Scheduler",
                   sub: "Run now and prefill schedules into Cron",
                   tab: "cron" as const,
                   isNew: true,
@@ -1362,8 +1362,8 @@ export function renderApp(state: AppViewState) {
             ? html`
                 <section class="card">
                   <div class="card-title">Restore Server</div>
-                  <div class="card-sub">Import an Agent Me backup JSON file and apply config.</div>
-                  <div class="row" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
+                  <div class="card-sub">Import an Agent Me backup JSON file, validate preview, then apply.</div>
+                  <div class="row" style="margin-top:10px; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input
                       class="input"
                       type="file"
@@ -1374,9 +1374,16 @@ export function renderApp(state: AppViewState) {
                         if (!file) {
                           return;
                         }
+                        state.restoreError = null;
+                        state.restoreSuccess = null;
+                        state.restoreDraftRaw = null;
+                        state.restorePreviewSummary = null;
+                        state.restoreFileName = file.name;
                         try {
                           const text = await file.text();
                           const parsed = JSON.parse(text) as {
+                            exportedAt?: string;
+                            source?: string;
                             configRaw?: string;
                             config?: Record<string, unknown>;
                           };
@@ -1386,32 +1393,77 @@ export function renderApp(state: AppViewState) {
                               : parsed.config
                                 ? JSON.stringify(parsed.config, null, 2)
                                 : "";
-                          if (!raw) {
-                            state.lastError = "Backup file missing config payload.";
+                          if (!raw.trim()) {
+                            state.restoreError = "Backup file missing config payload.";
                             return;
                           }
-                          const baseHash = state.configSnapshot?.hash;
-                          if (!baseHash || !state.client || !state.connected) {
-                            state.lastError = "Gateway/config not ready. Reload and retry.";
-                            return;
-                          }
-                          await state.client.request("config.apply", {
-                            raw,
-                            baseHash,
-                            sessionKey: state.applySessionKey,
-                          });
-                          state.lastError = null;
-                          await state.loadConfig();
+                          state.restoreDraftRaw = raw;
+                          state.restorePreviewSummary = `File: ${file.name} · Source: ${parsed.source || "unknown"} · Exported: ${parsed.exportedAt || "unknown"}`;
                         } catch (err) {
-                          state.lastError = String(err);
+                          state.restoreError = `Invalid backup file: ${String(err)}`;
                         } finally {
                           input.value = "";
                         }
                       }}
                     />
+                    <button
+                      class="btn primary"
+                      ?disabled=${state.restoreBusy || !state.restoreDraftRaw}
+                      @click=${async () => {
+                        if (!state.restoreDraftRaw) {
+                          state.restoreError = "Select a valid backup file first.";
+                          return;
+                        }
+                        const baseHash = state.configSnapshot?.hash;
+                        if (!baseHash || !state.client || !state.connected) {
+                          state.restoreError = "Gateway/config not ready. Reload and retry.";
+                          return;
+                        }
+                        state.restoreBusy = true;
+                        state.restoreError = null;
+                        state.restoreSuccess = null;
+                        try {
+                          await state.client.request("config.apply", {
+                            raw: state.restoreDraftRaw,
+                            baseHash,
+                            sessionKey: state.applySessionKey,
+                          });
+                          await state.loadConfig();
+                          state.restoreSuccess =
+                            "Restore applied successfully. Gateway reloaded config.";
+                        } catch (err) {
+                          state.restoreError = `Restore failed: ${String(err)}`;
+                        } finally {
+                          state.restoreBusy = false;
+                        }
+                      }}
+                    >
+                      ${state.restoreBusy ? "Applying…" : "Apply restore"}
+                    </button>
                   </div>
-                  <div class="card-sub" style="margin-top:8px;">Use Backup Server in the Agent Me menu to export a compatible JSON backup.</div>
-                  ${state.lastError ? html`<div class="muted" style="margin-top:8px; color:#ff9c9c;">${state.lastError}</div>` : nothing}
+
+                  ${
+                    state.restorePreviewSummary
+                      ? html`<div class="callout" style="margin-top:10px;">${state.restorePreviewSummary}</div>`
+                      : nothing
+                  }
+                  ${
+                    state.restoreDraftRaw
+                      ? html`<details class="callout" style="margin-top:10px;"><summary>Preview config payload</summary><pre style="max-height:220px; overflow:auto; margin-top:8px;"><code>${state.restoreDraftRaw.slice(0, 6000)}</code></pre></details>`
+                      : nothing
+                  }
+                  ${
+                    state.restoreSuccess
+                      ? html`<div class="callout success" style="margin-top:10px;">${state.restoreSuccess}</div>`
+                      : nothing
+                  }
+                  ${
+                    state.restoreError
+                      ? html`<div class="callout danger" style="margin-top:10px;">${state.restoreError}</div>`
+                      : nothing
+                  }
+
+                  <div class="card-sub" style="margin-top:10px;">Rollback note: keep your latest backup export. If restore result is unexpected, re-import the previous known-good backup file.</div>
                 </section>
               `
             : nothing

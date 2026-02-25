@@ -64,6 +64,12 @@ export type AppViewState = {
   dashboardAgentSort: "name" | "id";
   cronViewMode: "month" | "week" | "day";
   cronDayModalKey: string | null;
+  restoreFileName: string;
+  restoreDraftRaw: string | null;
+  restorePreviewSummary: string | null;
+  restoreError: string | null;
+  restoreSuccess: string | null;
+  restoreBusy: boolean;
   assistantName: string;
   assistantAvatar: string | null;
   assistantAgentId: string | null;
