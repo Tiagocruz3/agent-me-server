@@ -46,6 +46,9 @@ export type DashboardProps = {
   onFixSchema: (app: "realestate" | "birdx" | "emc2") => void;
   onSetAutopilotMode: (mode: "off" | "assisted" | "full") => void;
   onEmergencyStop: () => void;
+  onRetryChat: () => void;
+  onRetryScheduler: () => void;
+  onRetryRestore: () => void;
   dashboardView: "overview" | "autopilot" | "results";
   dashboardNotice: { tone: "success" | "info" | "error"; text: string } | null;
   onClearNotice: () => void;
@@ -144,6 +147,27 @@ export function renderDashboard(props: DashboardProps) {
     ${
       showOverview
         ? html`
+          <section class="card" style="margin-bottom:14px;">
+            <div class="card-title">Operations Log</div>
+            <div class="card-sub">Recent operations with quick retry actions.</div>
+            <div class="list" style="margin-top:10px;">
+              ${(props.recentActivity.length
+                ? props.recentActivity
+                : [{ label: "No activity yet" }]
+              )
+                .slice(0, 4)
+                .map(
+                  (item) =>
+                    html`<div class="list-item"><span>${toDisplayText(item.label)}</span><span class="muted">${item.ts || ""}</span></div>`,
+                )}
+            </div>
+            <div class="row" style="margin-top:10px; gap:8px; flex-wrap:wrap;">
+              <button class="btn" @click=${props.onRetryChat}>Retry Chat</button>
+              <button class="btn" @click=${props.onRetryScheduler}>Retry Scheduler</button>
+              <button class="btn" @click=${props.onRetryRestore}>Retry Restore</button>
+            </div>
+          </section>
+
           <section class="dashboard-kpis" style="margin-bottom:14px;">
             <article class="dashboard-kpi-card card">
               <div class="card-sub">Total Agents</div>

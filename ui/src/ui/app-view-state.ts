@@ -46,6 +46,7 @@ export type AppViewState = {
   themeResolved: "light" | "dark";
   hello: GatewayHelloOk | null;
   lastError: string | null;
+  uiFatalError: string | null;
   eventLog: EventLogEntry[];
   agentResults: Array<{
     id?: string;

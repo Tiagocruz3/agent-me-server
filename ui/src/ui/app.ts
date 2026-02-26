@@ -112,6 +112,13 @@ function resolveOnboardingMode(): boolean {
 
 @customElement("agentme-app")
 export class AgentMeApp extends LitElement {
+  private onWindowError = (event: ErrorEvent) => {
+    this.uiFatalError = event.message || "Unexpected UI error";
+  };
+
+  private onWindowRejection = (event: PromiseRejectionEvent) => {
+    this.uiFatalError = String(event.reason ?? "Unhandled promise rejection");
+  };
   @state() settings: UiSettings = loadSettings();
   @state() password = "";
   @state() tab: Tab = "chat";
@@ -121,6 +128,7 @@ export class AgentMeApp extends LitElement {
   @state() themeResolved: ResolvedTheme = "dark";
   @state() hello: GatewayHelloOk | null = null;
   @state() lastError: string | null = null;
+  @state() uiFatalError: string | null = null;
   @state() eventLog: EventLogEntry[] = [];
   @state() agentResults: Array<{
     id?: string;
@@ -392,6 +400,8 @@ export class AgentMeApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    window.addEventListener("error", this.onWindowError);
+    window.addEventListener("unhandledrejection", this.onWindowRejection);
     handleConnected(this as unknown as Parameters<typeof handleConnected>[0]);
   }
 
@@ -400,6 +410,8 @@ export class AgentMeApp extends LitElement {
   }
 
   disconnectedCallback() {
+    window.removeEventListener("error", this.onWindowError);
+    window.removeEventListener("unhandledrejection", this.onWindowRejection);
     handleDisconnected(this as unknown as Parameters<typeof handleDisconnected>[0]);
     super.disconnectedCallback();
   }
@@ -690,6 +702,11 @@ export class AgentMeApp extends LitElement {
   }
 
   render() {
-    return renderApp(this as unknown as AppViewState);
+    try {
+      return renderApp(this as unknown as AppViewState);
+    } catch (err) {
+      this.uiFatalError = String(err);
+      return renderApp(this as unknown as AppViewState);
+    }
   }
 }

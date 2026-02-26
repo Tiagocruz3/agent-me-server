@@ -521,6 +521,11 @@ export function renderApp(state: AppViewState) {
           </div>
           <div class="page-meta">
             ${state.lastError ? html`<div class="pill danger">${state.lastError}</div>` : nothing}
+            ${
+              state.uiFatalError
+                ? html`<button class="pill danger" @click=${() => (state.uiFatalError = null)} title="Dismiss UI error">UI error: ${state.uiFatalError.slice(0, 120)}</button>`
+                : nothing
+            }
             ${isChat ? renderChatControls(state) : nothing}
             ${
               isModalTab
@@ -887,6 +892,22 @@ export function renderApp(state: AppViewState) {
                     taskResultSchemaInstruction(app),
                   ].join("\n\n");
                   void state.handleSendChat(prompt);
+                },
+                onRetryChat: () => {
+                  state.setTab("chat");
+                  state.dashboardNotice = { tone: "info", text: "Retry path opened: chat." };
+                },
+                onRetryScheduler: () => {
+                  state.setTab("cron");
+                  void state.loadCron();
+                  state.dashboardNotice = {
+                    tone: "info",
+                    text: "Retry path opened: scheduler refresh started.",
+                  };
+                },
+                onRetryRestore: () => {
+                  state.setTab("restore");
+                  state.dashboardNotice = { tone: "info", text: "Retry path opened: restore." };
                 },
                 onSetAutopilotMode: (mode) => {
                   state.applySettings({
