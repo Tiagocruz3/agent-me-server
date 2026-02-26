@@ -622,10 +622,18 @@ export function renderApp(state: AppViewState) {
                   }
                   return rows;
                 })(),
+                dashboardNotice: state.dashboardNotice,
+                onClearNotice: () => {
+                  state.dashboardNotice = null;
+                },
                 onOpenTab: (tab) => state.setTab(tab),
                 onOpenAppChat: (app) => {
                   state.setTab("chat");
                   state.chatMessage = `[${app}] Open agent chat and summarize current status.`;
+                  state.dashboardNotice = {
+                    tone: "info",
+                    text: `${app}: opened in chat composer.`,
+                  };
                 },
                 onAddAgent: () => {
                   state.setTab("chat");
@@ -809,6 +817,7 @@ export function renderApp(state: AppViewState) {
                         });
                     }
 
+                    state.dashboardNotice = { tone: "success", text: `${appKey} task queued.` };
                     void state.handleSendChat(prompt);
                   });
                 },
@@ -854,6 +863,10 @@ export function renderApp(state: AppViewState) {
                       deliveryMode: "announce",
                     };
                     state.setTab("cron");
+                    state.dashboardNotice = {
+                      tone: "success",
+                      text: `${appKey} schedule prefilled in Scheduler.`,
+                    };
                   });
                 },
                 onViewResult: (app) => {

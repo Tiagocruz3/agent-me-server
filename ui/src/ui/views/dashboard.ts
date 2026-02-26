@@ -47,6 +47,8 @@ export type DashboardProps = {
   onSetAutopilotMode: (mode: "off" | "assisted" | "full") => void;
   onEmergencyStop: () => void;
   dashboardView: "overview" | "autopilot" | "results";
+  dashboardNotice: { tone: "success" | "info" | "error"; text: string } | null;
+  onClearNotice: () => void;
 };
 
 function toDisplayText(value: unknown): string {
@@ -96,6 +98,18 @@ export function renderDashboard(props: DashboardProps) {
     .toSorted((a, b) =>
       props.agentSort === "id" ? a.id.localeCompare(b.id) : a.name.localeCompare(b.name),
     );
+
+  const statsForAgent = (agentId: string) => {
+    const relevant = props.taskResults.filter((r) => {
+      const key = `${r.appId} ${r.app}`.toLowerCase();
+      return key.includes(agentId.toLowerCase());
+    });
+    const latest = relevant[0];
+    return {
+      runs: relevant.length,
+      lastStatus: latest?.status ?? "idle",
+    };
+  };
   const showOverview = props.dashboardView === "overview";
   const showAutopilot = props.dashboardView === "autopilot";
   const showResults = props.dashboardView === "results";
@@ -117,6 +131,15 @@ export function renderDashboard(props: DashboardProps) {
           </div>`
       }
     </section>
+
+    ${
+      props.dashboardNotice
+        ? html`<div class="callout ${props.dashboardNotice.tone}" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span>${props.dashboardNotice.text}</span>
+          <button class="btn" @click=${props.onClearNotice}>Dismiss</button>
+        </div>`
+        : nothing
+    }
 
     ${
       showOverview
@@ -178,9 +201,14 @@ export function renderDashboard(props: DashboardProps) {
                     <button class="dashboard-agent-avatar dashboard-agent-avatar--workforce" title="Manage agent" @click=${() => props.onEditAgentProfile(app.id)}>${app.icon}</button>
                     <div class="dashboard-app-card__name">${app.name}</div>
                     <div class="dashboard-app-card__role">${app.role}</div>
+                    <div class="row" style="margin-top:6px; gap:6px; justify-content:center;">
+                      <span class="chip">Runs: ${statsForAgent(app.id).runs}</span>
+                      <span class="chip">Last: ${statsForAgent(app.id).lastStatus}</span>
+                    </div>
                     <div class="row" style="margin-top:8px; flex-wrap: wrap; justify-content:center;">
                       <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open</button>
                       <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
+                      <button class="btn" @click=${() => props.onRunTask(app.id)}>Run</button>
                     </div>
                   </article>
                 `,
