@@ -904,6 +904,28 @@
   gap: 8px;
   margin-top: 8px;
 }
+
+.cron-time-slot {
+  border: 1px solid rgba(93, 113, 150, 0.35);
+  border-radius: 8px;
+  padding: 6px;
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 8px;
+  align-items: start;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.cron-time-slot__label {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.cron-time-slot__events {
+  min-height: 24px;
+}
 .cron-google-week-col {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -2089,7 +2111,9 @@
 
 .agent-row.active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(61, 220, 151, 0.35), 0 16px 32px rgba(6, 16, 13, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(61, 220, 151, 0.35),
+    0 16px 32px rgba(6, 16, 13, 0.42);
 }
 
 .agent-row-status {
