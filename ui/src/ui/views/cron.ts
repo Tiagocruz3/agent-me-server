@@ -149,37 +149,47 @@ export function renderCron(props: CronProps) {
         </div>
       </div>
       <div class="card-sub">Google-calendar style planner for wakeups and recurring agent runs.</div>
-      <div class="cron-google-shell" style="margin-top:12px;">
-        <aside class="cron-google-sidebar">
-          <div class="cron-master-month" style="margin-top:12px;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
-          <div class="cron-master-weekdays">
-            ${["S", "M", "T", "W", "T", "F", "S"].map((d) => html`<span>${d}</span>`)}
-          </div>
-          <div class="cron-master-calendar">
-            ${calendarCells.map((cell) => {
-              if (!cell.inMonth) {
-                return html`
-                  <span class="cron-master-day cron-master-day--pad"></span>
-                `;
-              }
-              const dayJobs = jobsByDay.get(cell.key) ?? [];
-              return html`<button
-                class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
-                ${cell.key === todayKey ? "is-today" : ""}
-                ${dayJobs.length > 0 ? "has-jobs" : ""}"
-                @click=${() => {
-                  props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key) });
-                }}
-                @dblclick=${() => {
-                  props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(cell.key) });
-                  props.onOpenDayModal(cell.key);
-                }}
-              >
-                <span class="cron-master-day-num">${cell.day}</span>
-              </button>`;
-            })}
-          </div>
-        </aside>
+      <div class="cron-google-shell ${viewMode === "month" ? "cron-google-shell--month" : ""}" style="margin-top:12px;">
+        ${
+          viewMode === "month"
+            ? nothing
+            : html`<aside class="cron-google-sidebar">
+                <div class="cron-master-month" style="margin-top:12px;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
+                <div class="cron-master-weekdays">
+                  ${["S", "M", "T", "W", "T", "F", "S"].map((d) => html`<span>${d}</span>`)}
+                </div>
+                <div class="cron-master-calendar">
+                  ${calendarCells.map((cell) => {
+                    if (!cell.inMonth) {
+                      return html`
+                        <span class="cron-master-day cron-master-day--pad"></span>
+                      `;
+                    }
+                    const dayJobs = jobsByDay.get(cell.key) ?? [];
+                    return html`<button
+                      class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
+                      ${cell.key === todayKey ? "is-today" : ""}
+                      ${dayJobs.length > 0 ? "has-jobs" : ""}"
+                      @click=${() => {
+                        props.onFormChange({
+                          scheduleKind: "at",
+                          scheduleAt: toDateTimeLocal(cell.key),
+                        });
+                      }}
+                      @dblclick=${() => {
+                        props.onFormChange({
+                          scheduleKind: "at",
+                          scheduleAt: toDateTimeLocal(cell.key),
+                        });
+                        props.onOpenDayModal(cell.key);
+                      }}
+                    >
+                      <span class="cron-master-day-num">${cell.day}</span>
+                    </button>`;
+                  })}
+                </div>
+              </aside>`
+        }
 
         <div class="cron-google-main">
           ${
