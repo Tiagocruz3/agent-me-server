@@ -406,7 +406,6 @@ export function renderApp(state: AppViewState) {
                       event.preventDefault();
                       event.stopPropagation();
                       const host = (event.currentTarget as HTMLElement)?.closest(".topbar-menu");
-                      closeAllTopMenus(host);
 
                       if ("action" in item && item.action === "backup-export") {
                         const backupPayload = {
@@ -427,6 +426,7 @@ export function renderApp(state: AppViewState) {
                         a.click();
                         a.remove();
                         URL.revokeObjectURL(a.href);
+                        closeAllTopMenus(host);
                         return;
                       }
 
@@ -445,6 +445,8 @@ export function renderApp(state: AppViewState) {
                           state.setTab(item.tab);
                         }
                       }
+
+                      closeAllTopMenus(host);
                     }}
                   >
                     <span class="topbar-menu__item-label">
@@ -480,8 +482,8 @@ export function renderApp(state: AppViewState) {
                           const host = (event.currentTarget as HTMLElement)?.closest(
                             ".topbar-menu",
                           );
-                          closeAllTopMenus(host);
                           state.setTab(tab);
+                          closeAllTopMenus(host);
                         }}
                       >
                         <span class="topbar-menu__item-label">${titleForTab(tab)}</span>
