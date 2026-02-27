@@ -50,8 +50,9 @@
 /* Chat thread - scrollable middle section, transparent */
 .chat-thread {
   flex: 1 1 0; /* Grow, shrink, and use 0 base for proper scrolling */
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding: 12px 8px 22px;
   margin: 0 -4px;
   min-height: 0; /* Allow shrinking for flex scroll behavior */
@@ -136,6 +137,26 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   flex-shrink: 0;
+}
+
+.chat-thread {
+  scrollbar-width: auto;
+}
+
+.chat-thread::-webkit-scrollbar {
+  width: 12px;
+}
+
+.chat-thread::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.chat-thread::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
+  background-clip: padding-box;
 }
 
 /* Chat compose - sticky at bottom */
