@@ -71,11 +71,6 @@ export function renderCron(props: CronProps) {
     }
     return (job.agentId || "main").toLowerCase().includes(agentFilter);
   });
-  const selectedDayJobs = jobsFilteredByAgent.filter(
-    (job) =>
-      typeof job.state?.nextRunAtMs === "number" &&
-      toDayKey(job.state.nextRunAtMs) === selectedDayKey,
-  );
   const modalDayKey = props.dayModalKey ?? selectedDayKey;
   const modalDayJobs = jobsFilteredByAgent.filter(
     (job) =>
@@ -332,38 +327,7 @@ export function renderCron(props: CronProps) {
                 `
           }
 
-          <details class="channel-config" style="margin-top:12px;" ?open=${viewMode !== "month"}>
-            <summary class="channel-config__summary">
-              <span>Daily tasks · ${selectedDayKey}</span>
-              <span class="muted">${selectedDayJobs.length} items</span>
-            </summary>
-            <div class="channel-config__body">
-              <div class="list" style="margin-top:0;">
-                ${
-                  selectedDayJobs.length
-                    ? selectedDayJobs.map((job) => {
-                        const recurring = job.schedule.kind !== "at";
-                        return html`<div class="list-item list-item-clickable" draggable="true" @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)} @click=${() => props.onFormChange(toCronFormPatchFromJob(job))}>
-                        <span>${job.name}</span>
-                        <span class="muted">${job.agentId || "main"}</span>
-                        <span class="chip ${recurring ? "chip-ok" : ""}">${recurring ? "recurring" : "one-time"}</span>
-                        <button class="btn" @click=${(e: Event) => {
-                          e.stopPropagation();
-                          props.onFormChange(toCronFormPatchFromJob(job));
-                        }}>Edit</button>
-                      </div>`;
-                      })
-                    : html`
-                        <div class="muted">No tasks on this day.</div>
-                      `
-                }
-              </div>
-              <label class="field" style="margin-top:10px;">
-                <span>Natural language to action</span>
-                <textarea rows="3" .value=${props.form.payloadText} placeholder="Every weekday at 9am, ask EMC2 to post daily priorities" @input=${(e: Event) => props.onFormChange({ payloadText: (e.target as HTMLTextAreaElement).value })}></textarea>
-              </label>
-            </div>
-          </details>
+
         </div>
       </div>
     </section>
