@@ -111,32 +111,15 @@ function generateAttachmentId(): string {
   return `att-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function handlePaste(e: ClipboardEvent, props: ChatProps) {
-  const items = e.clipboardData?.items;
-  if (!items || !props.onAttachmentsChange) {
+function appendImageFiles(files: File[], props: ChatProps) {
+  if (!props.onAttachmentsChange || files.length === 0) {
     return;
   }
 
-  const imageItems: DataTransferItem[] = [];
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (item.type.startsWith("image/")) {
-      imageItems.push(item);
-    }
-  }
-
-  if (imageItems.length === 0) {
-    return;
-  }
-
-  e.preventDefault();
-
-  for (const item of imageItems) {
-    const file = item.getAsFile();
-    if (!file) {
+  for (const file of files) {
+    if (!file.type.startsWith("image/")) {
       continue;
     }
-
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       const dataUrl = reader.result as string;
@@ -150,6 +133,32 @@ function handlePaste(e: ClipboardEvent, props: ChatProps) {
     });
     reader.readAsDataURL(file);
   }
+}
+
+function handlePaste(e: ClipboardEvent, props: ChatProps) {
+  const items = e.clipboardData?.items;
+  if (!items || !props.onAttachmentsChange) {
+    return;
+  }
+
+  const imageFiles: File[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item.type.startsWith("image/")) {
+      continue;
+    }
+    const file = item.getAsFile();
+    if (file) {
+      imageFiles.push(file);
+    }
+  }
+
+  if (imageFiles.length === 0) {
+    return;
+  }
+
+  e.preventDefault();
+  appendImageFiles(imageFiles, props);
 }
 
 function renderAttachmentPreview(props: ChatProps) {
@@ -224,13 +233,14 @@ export function renderChat(props: ChatProps) {
   })();
   const composePlaceholder = props.connected
     ? hasAttachments
-      ? "Add a message or paste more images..."
-      : "Message (↩ to send, Shift+↩ for line breaks, paste images)"
+      ? "Add a message or paste/upload more images..."
+      : "Message (↩ to send, Shift+↩ for line breaks, paste/upload images)"
     : "Connect to the gateway to start chatting…";
 
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
   const chatItems = buildChatItems(props);
+  let uploadInputEl: HTMLInputElement | null = null;
   const thread = html`
     <div
       class="chat-thread"
@@ -455,6 +465,30 @@ export function renderChat(props: ChatProps) {
             ></textarea>
           </label>
           <div class="chat-compose__actions">
+            <input
+              ${ref((el) => {
+                uploadInputEl = el as HTMLInputElement;
+              })}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              @change=${(e: Event) => {
+                const input = e.target as HTMLInputElement;
+                const files = Array.from(input.files ?? []);
+                appendImageFiles(files, props);
+                input.value = "";
+              }}
+            />
+            <button
+              class="btn"
+              type="button"
+              ?disabled=${!props.connected}
+              @click=${() => uploadInputEl?.click()}
+              title="Upload image"
+            >
+              ${icons.paperclip} Upload
+            </button>
             <button
               class="btn"
               ?disabled=${!props.connected || (!canAbort && props.sending)}
