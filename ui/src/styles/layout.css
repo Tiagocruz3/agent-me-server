@@ -358,7 +358,9 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
-  height: 32px;
+  min-height: 32px;
+  height: auto;
+  line-height: 1.2;
   box-sizing: border-box;
 }
 
@@ -785,11 +787,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
+  padding: 0 4px;
+  max-height: none;
 }
 
 .content--chat .content-header > div:first-child {
-  text-align: left;
+  display: none;
 }
 
 .content--chat .page-meta {
