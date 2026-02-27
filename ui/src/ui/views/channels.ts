@@ -82,9 +82,17 @@ export function renderChannels(props: ChannelsProps) {
           </div>`
           : nothing
       }
-      <pre class="code-block" style="margin-top: 12px;">
+      <details class="channel-config" style="margin-top: 12px;">
+        <summary class="channel-config__summary">
+          <span>Raw snapshot</span>
+          <span class="muted">expand</span>
+        </summary>
+        <div class="channel-config__body">
+          <pre class="code-block" style="margin-top: 0; max-height: 340px; overflow: auto;">
 ${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "No snapshot yet."}
-      </pre>
+          </pre>
+        </div>
+      </details>
     </section>
   `;
 }

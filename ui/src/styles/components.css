@@ -884,6 +884,33 @@
   color: #fff !important;
 }
 
+.channel-config {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.channel-config__summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+.channel-config__summary::-webkit-details-marker {
+  display: none;
+}
+
+.channel-config__body {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+  max-height: 420px;
+  overflow: auto;
+}
+
 .cron-google-week-header {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
