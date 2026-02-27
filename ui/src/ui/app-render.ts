@@ -399,11 +399,13 @@ export function renderApp(state: AppViewState) {
                 const active = "tab" in item && item.tab ? state.tab === item.tab : false;
                 return html`
                   <button
+                    type="button"
                     class="topbar-menu__item ${active ? "is-active" : ""}"
                     role="menuitem"
                     @click=${async (event: Event) => {
                       const host = (event.currentTarget as HTMLElement)?.closest(".topbar-menu");
                       closeAllTopMenus(host);
+
                       if ("action" in item && item.action === "backup-export") {
                         const backupPayload = {
                           exportedAt: new Date().toISOString(),
@@ -425,12 +427,18 @@ export function renderApp(state: AppViewState) {
                         URL.revokeObjectURL(a.href);
                         return;
                       }
+
                       if ("tab" in item && item.tab) {
                         if (item.tab === "dashboard") {
-                          state.dashboardView =
+                          const targetView =
                             ("dashboardView" in item && item.dashboardView) || "overview";
+                          state.dashboardView = targetView;
+                          state.setTab("dashboard");
+                          // Re-assert view after tab refresh for reliability.
+                          state.dashboardView = targetView;
+                        } else {
+                          state.setTab(item.tab);
                         }
-                        state.setTab(item.tab);
                       }
                     }}
                   >
