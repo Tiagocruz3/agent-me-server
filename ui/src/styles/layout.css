@@ -237,7 +237,9 @@
 }
 
 .topbar-chat-cta.is-active {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 12px 24px rgba(124, 77, 255, 0.5);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 12px 24px rgba(124, 77, 255, 0.5);
 }
 
 .topbar-menu__group {
@@ -723,7 +725,7 @@
 .content--chat {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
   overflow: hidden;
   padding-bottom: 0;
 }
@@ -737,8 +739,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  padding: 4px 8px;
+  gap: 12px;
+  padding: 2px 6px;
   overflow: hidden;
   transform-origin: top center;
   transition:
