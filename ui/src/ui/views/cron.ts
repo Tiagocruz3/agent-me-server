@@ -1,4 +1,4 @@
-import { html, nothing } from "lit";
+import { html } from "lit";
 import type { ChannelUiMetaEntry, CronJob, CronRunLogEntry, CronStatus } from "../types.ts";
 import type { CronFormState } from "../ui-types.ts";
 import { formatCronSchedule, formatNextRun } from "../presenter.ts";
@@ -144,7 +144,7 @@ export function renderCron(props: CronProps) {
       <div class="cron-google-shell ${viewMode === "month" ? "cron-google-shell--month" : ""}" style="margin-top:12px;">
         ${
           viewMode === "month"
-            ? nothing
+            ? html``
             : html`<aside class="cron-google-sidebar">
                 <button class="btn primary" style="width:100%; margin-top:6px;" @click=${() => {
                   props.onFormChange({
@@ -228,7 +228,7 @@ export function renderCron(props: CronProps) {
                     }}>Save</button>
                   </div>
                 </section>`
-              : nothing
+              : html``
           }
           ${
             viewMode === "month"
@@ -434,12 +434,12 @@ export function renderCron(props: CronProps) {
                   ? html`
                       <div class="muted">No jobs yet.</div>
                     `
-                  : nothing
+                  : html``
               }
             </div>
           </section>
         `
-        : nothing
+        : html``
     }
 
 
