@@ -292,55 +292,54 @@ export function renderApp(state: AppViewState) {
           <div class="topbar-status"><span class="statusDot"></span><span>Disconnected</span></div>
         </header>
         <main class="content launchpad-screen">
-          <div class="launchpad-search" aria-hidden="true">
-            <span>⌕</span>
-            <span>Search</span>
-          </div>
-          <section class="launchpad-grid" style="margin-top:20px;">
-            ${[
-              { icon: "💬", label: "Chat", onClick: () => state.setTab("chat") },
-              {
-                icon: "⚡",
-                label: "Dashboard",
-                onClick: () => {
-                  state.dashboardView = "overview";
-                  state.setTab("dashboard");
+          <section class="card launchpad-card">
+            <div class="card-title">Agent Me Launchpad</div>
+            <div class="card-sub">Quick access tiles (login screen disabled as requested).</div>
+            <div class="launchpad-grid" style="margin-top:12px;">
+              ${[
+                { icon: "💬", label: "Chat", onClick: () => state.setTab("chat") },
+                {
+                  icon: "⚡",
+                  label: "Dashboard",
+                  onClick: () => {
+                    state.dashboardView = "overview";
+                    state.setTab("dashboard");
+                  },
                 },
-              },
-              { icon: "🗓️", label: "Scheduler", onClick: () => state.setTab("cron") },
-              {
-                icon: "🛡️",
-                label: "Autopilot",
-                onClick: () => {
-                  state.dashboardView = "autopilot";
-                  state.setTab("dashboard");
+                { icon: "🗓️", label: "Scheduler", onClick: () => state.setTab("cron") },
+                {
+                  icon: "🛡️",
+                  label: "Autopilot",
+                  onClick: () => {
+                    state.dashboardView = "autopilot";
+                    state.setTab("dashboard");
+                  },
                 },
-              },
-              {
-                icon: "📦",
-                label: "Results",
-                onClick: () => {
-                  state.dashboardView = "results";
-                  state.setTab("dashboard");
+                {
+                  icon: "📦",
+                  label: "Results",
+                  onClick: () => {
+                    state.dashboardView = "results";
+                    state.setTab("dashboard");
+                  },
                 },
-              },
-              { icon: "📡", label: "Channels", onClick: () => state.setTab("channels") },
-              { icon: "👥", label: "Sessions", onClick: () => state.setTab("sessions") },
-              { icon: "🧠", label: "Memory", onClick: () => state.setTab("memory") },
-              { icon: "🧰", label: "Skills", onClick: () => state.setTab("skills") },
-              { icon: "🤖", label: "Nodes", onClick: () => state.setTab("nodes") },
-              { icon: "⚙️", label: "Config", onClick: () => state.setTab("config") },
-              { icon: "📜", label: "Logs", onClick: () => state.setTab("logs") },
-            ].map(
-              (item) =>
-                html`<button class="launchpad-tile" type="button" @click=${item.onClick}><span class="launchpad-tile__plate"><span class="launchpad-tile__icon">${item.icon}</span></span><span class="launchpad-tile__label">${item.label}</span></button>`,
-            )}
+                { icon: "📡", label: "Channels", onClick: () => state.setTab("channels") },
+                { icon: "👥", label: "Sessions", onClick: () => state.setTab("sessions") },
+                { icon: "🧠", label: "Memory", onClick: () => state.setTab("memory") },
+                { icon: "🧰", label: "Skills", onClick: () => state.setTab("skills") },
+                { icon: "🤖", label: "Nodes", onClick: () => state.setTab("nodes") },
+                { icon: "⚙️", label: "Config", onClick: () => state.setTab("config") },
+                { icon: "📜", label: "Logs", onClick: () => state.setTab("logs") },
+              ].map(
+                (item) =>
+                  html`<button class="launchpad-tile" type="button" @click=${item.onClick}><span class="launchpad-tile__icon">${item.icon}</span><span class="launchpad-tile__label">${item.label}</span></button>`,
+              )}
+            </div>
+            <div class="row" style="margin-top:12px; gap:8px;">
+              <button class="btn primary" type="button" @click=${() => state.connect()}>Reconnect</button>
+              ${state.lastError ? html`<span class="muted">${state.lastError}</span>` : nothing}
+            </div>
           </section>
-          <div class="launchpad-dots" aria-hidden="true"><span class="is-active"></span><span></span></div>
-          <div class="launchpad-dock">
-            <button class="btn primary" type="button" @click=${() => state.connect()}>Reconnect</button>
-            ${state.lastError ? html`<span class="muted">${state.lastError}</span>` : nothing}
-          </div>
         </main>
       </div>
     `;
