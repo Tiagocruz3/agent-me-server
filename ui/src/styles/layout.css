@@ -1337,3 +1337,50 @@
   overflow: auto;
   z-index: 270;
 }
+
+.launchpad-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.launchpad-card {
+  width: min(980px, 100%);
+}
+
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.launchpad-tile {
+  border: 1px solid rgba(61, 220, 151, 0.26);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(20, 28, 42, 0.95), rgba(14, 22, 34, 0.98));
+  color: var(--text);
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.launchpad-tile:hover {
+  border-color: rgba(61, 220, 151, 0.55);
+  transform: translateY(-1px);
+}
+
+.launchpad-tile__icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.launchpad-tile__label {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}

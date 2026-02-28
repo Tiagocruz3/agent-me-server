@@ -79,7 +79,6 @@ import { renderDebug } from "./views/debug.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderInstances } from "./views/instances.ts";
-import { renderLoginView } from "./views/login.ts";
 import { renderLogs } from "./views/logs.ts";
 import { renderMemory } from "./views/memory.ts";
 import { renderNodes } from "./views/nodes.ts";
@@ -292,15 +291,55 @@ export function renderApp(state: AppViewState) {
           </div>
           <div class="topbar-status"><span class="statusDot"></span><span>Disconnected</span></div>
         </header>
-        <main class="content">
-          ${renderLoginView({
-            settings: state.settings,
-            password: state.password,
-            lastError: state.lastError,
-            onSettingsChange: (next) => state.applySettings(next),
-            onPasswordChange: (next) => (state.password = next),
-            onConnect: () => state.connect(),
-          })}
+        <main class="content launchpad-screen">
+          <section class="card launchpad-card">
+            <div class="card-title">Agent Me Launchpad</div>
+            <div class="card-sub">Quick access tiles (login screen disabled as requested).</div>
+            <div class="launchpad-grid" style="margin-top:12px;">
+              ${[
+                { icon: "💬", label: "Chat", onClick: () => state.setTab("chat") },
+                {
+                  icon: "⚡",
+                  label: "Dashboard",
+                  onClick: () => {
+                    state.dashboardView = "overview";
+                    state.setTab("dashboard");
+                  },
+                },
+                { icon: "🗓️", label: "Scheduler", onClick: () => state.setTab("cron") },
+                {
+                  icon: "🛡️",
+                  label: "Autopilot",
+                  onClick: () => {
+                    state.dashboardView = "autopilot";
+                    state.setTab("dashboard");
+                  },
+                },
+                {
+                  icon: "📦",
+                  label: "Results",
+                  onClick: () => {
+                    state.dashboardView = "results";
+                    state.setTab("dashboard");
+                  },
+                },
+                { icon: "📡", label: "Channels", onClick: () => state.setTab("channels") },
+                { icon: "👥", label: "Sessions", onClick: () => state.setTab("sessions") },
+                { icon: "🧠", label: "Memory", onClick: () => state.setTab("memory") },
+                { icon: "🧰", label: "Skills", onClick: () => state.setTab("skills") },
+                { icon: "🤖", label: "Nodes", onClick: () => state.setTab("nodes") },
+                { icon: "⚙️", label: "Config", onClick: () => state.setTab("config") },
+                { icon: "📜", label: "Logs", onClick: () => state.setTab("logs") },
+              ].map(
+                (item) =>
+                  html`<button class="launchpad-tile" type="button" @click=${item.onClick}><span class="launchpad-tile__icon">${item.icon}</span><span class="launchpad-tile__label">${item.label}</span></button>`,
+              )}
+            </div>
+            <div class="row" style="margin-top:12px; gap:8px;">
+              <button class="btn primary" type="button" @click=${() => state.connect()}>Reconnect</button>
+              ${state.lastError ? html`<span class="muted">${state.lastError}</span>` : nothing}
+            </div>
+          </section>
         </main>
       </div>
     `;
