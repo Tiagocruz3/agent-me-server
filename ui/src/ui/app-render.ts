@@ -592,54 +592,14 @@ export function renderApp(state: AppViewState) {
                     icon: a.identity?.emoji || "🤖",
                   })),
                 },
-                agentModal: state.dashboardAgentModal,
-                agentAvatarDraft: state.dashboardAgentAvatarDraft,
                 agentSearch: state.dashboardAgentSearch,
                 agentSort: state.dashboardAgentSort,
-                taskResults: (() => {
-                  const rows = (Array.isArray(state.agentResults) ? state.agentResults : []).map(
-                    (item) => ({
-                      app:
-                        item.appId === "realestate"
-                          ? "Realestate"
-                          : item.appId === "birdx"
-                            ? "Bird X"
-                            : "Agent Me",
-                      appId: item.appId,
-                      summary: item.summary,
-                      ts: item.ts ? new Date(item.ts).toLocaleTimeString() : "",
-                      status: item.status,
-                      schemaMismatch: false,
-                    }),
-                  );
-                  if (rows.length === 0) {
-                    const fallback = (Array.isArray(state.chatMessages) ? state.chatMessages : [])
-                      .filter(
-                        (m) =>
-                          m &&
-                          typeof m === "object" &&
-                          (m as { role?: string }).role === "assistant",
-                      )
-                      .slice(-5)
-                      .toReversed()
-                      .map((m) => {
-                        const parsed = extractDashboardTaskResult(
-                          (m as { content?: unknown }).content,
-                        );
-                        return {
-                          app: parsed.app,
-                          appId: parsed.appId,
-                          summary: parsed.summary,
-                          ts: "",
-                          status: parsed.status,
-                          schemaMismatch: parsed.schemaMismatch,
-                        };
-                      });
-                    return fallback;
-                  }
-                  return rows;
-                })(),
+                taskResults: [],
                 dashboardNotice: state.dashboardNotice,
+                // Editing state
+                editingAgentId: state.dashboardEditingAgentId,
+                editingAgentName: state.dashboardEditingAgentName,
+                editingAgentAvatar: state.dashboardEditingAgentAvatar,
                 onClearNotice: () => {
                   state.dashboardNotice = null;
                 },
@@ -649,40 +609,35 @@ export function renderApp(state: AppViewState) {
                   state.chatMessage =
                     "Create a new agent from my natural-language request. Ask me any missing details, then return recommended agent id, purpose, system prompt, and tool profile.";
                 },
-                onEditAgentProfile: (app) => {
-                  state.agentsSelectedId = app || "main";
-                  state.setTab("agents");
-                  state.agentsPanel = "overview";
-                },
-                onEditAgentAvatar: (agentId, _currentAvatar) => {
-                  state.dashboardAgentModal = agentId;
-                  state.dashboardAgentAvatarDraft = "";
-                },
                 onAgentSearchChange: (text) => {
                   state.dashboardAgentSearch = text;
                 },
                 onAgentSortChange: (sort) => {
                   state.dashboardAgentSort = sort;
                 },
-                onCloseAgentModal: () => {
-                  state.dashboardAgentModal = null;
+                onStartEditAgent: (agentId, currentName, currentAvatar) => {
+                  state.dashboardEditingAgentId = agentId;
+                  state.dashboardEditingAgentName = currentName;
+                  state.dashboardEditingAgentAvatar = currentAvatar;
                 },
-                onAgentAvatarDraftChange: (text) => {
-                  state.dashboardAgentAvatarDraft = text;
+                onCancelEditAgent: () => {
+                  state.dashboardEditingAgentId = null;
+                  state.dashboardEditingAgentName = "";
+                  state.dashboardEditingAgentAvatar = "";
                 },
-                onAgentSaveAvatar: () => {
-                  const app = state.dashboardAgentModal ?? "main";
-                  const text = state.dashboardAgentAvatarDraft.trim();
-                  if (!text) {
-                    return;
-                  }
+                onSaveAgent: (agentId, newName, newAvatar) => {
+                  // Save agent changes via chat command
                   state.setTab("chat");
-                  state.chatMessage = `[${app}] Update your identity avatar to: ${text}. Confirm when saved.`;
-                  state.eventLog = [
-                    { ts: Date.now(), event: `agent.avatar.save.requested:${app}` },
-                    ...state.eventLog,
-                  ].slice(0, 200);
-                  state.dashboardAgentModal = null;
+                  state.chatMessage = `[${agentId}] Update your identity: name="${newName}"${newAvatar !== "🤖" ? ` avatar="${newAvatar}"` : ""}. Confirm when saved.`;
+                  state.dashboardEditingAgentId = null;
+                  state.dashboardEditingAgentName = "";
+                  state.dashboardEditingAgentAvatar = "";
+                },
+                onEditingNameChange: (v) => {
+                  state.dashboardEditingAgentName = v;
+                },
+                onEditingAvatarChange: (v) => {
+                  state.dashboardEditingAgentAvatar = v;
                 },
               })
             : nothing

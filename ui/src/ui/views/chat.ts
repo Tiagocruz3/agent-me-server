@@ -74,8 +74,11 @@ export type ChatProps = {
 const COMPACTION_TOAST_DURATION_MS = 5000;
 
 function adjustTextareaHeight(el: HTMLTextAreaElement) {
+  // Reset to auto to measure actual content
   el.style.height = "auto";
-  el.style.height = `${el.scrollHeight}px`;
+  // Set minimum height of 24px (matches CSS), max 200px
+  const newHeight = Math.max(24, Math.min(el.scrollHeight, 200));
+  el.style.height = `${newHeight}px`;
 }
 
 function renderCompactionIndicator(status: CompactionIndicatorStatus | null | undefined) {

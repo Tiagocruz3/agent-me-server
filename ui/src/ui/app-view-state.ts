@@ -63,6 +63,10 @@ export type AppViewState = {
   dashboardAgentSearch: string;
   dashboardAgentSort: "name" | "id";
   dashboardNotice: { tone: "success" | "info" | "error"; text: string } | null;
+  // Dashboard agent editing state
+  dashboardEditingAgentId: string | null;
+  dashboardEditingAgentName: string;
+  dashboardEditingAgentAvatar: string;
   cronViewMode: "month" | "week" | "day";
   cronDayModalKey: string | null;
   restoreFileName: string;

@@ -10,19 +10,21 @@ export type DashboardProps = {
   agentsList: { agents: AgentApp[]; count: number } | null;
   agentSearch: string;
   agentSort: "name" | "id";
-  agentModal: string | null;
-  agentAvatarDraft: string;
-  onEditAgentAvatar: (agentId: string, currentAvatar: string) => void;
-  onClearNotice: () => void;
-  onOpenTab: (tab: string) => void;
+  // Agent editing state
+  editingAgentId: string | null;
+  editingAgentName: string;
+  editingAgentAvatar: string;
   onAddAgent: () => void;
   onAgentSearchChange: (v: string) => void;
   onAgentSortChange: (v: "name" | "id") => void;
-  onEditAgentProfile: (agentId: string) => void;
-  onEditAgentAvatar: (agentId: string, currentAvatar: string) => void;
-  onAgentAvatarDraftChange: (v: string) => void;
-  onAgentSaveAvatar: () => void;
-  onCloseAgentModal: () => void;
+  onClearNotice: () => void;
+  onOpenTab: (tab: string) => void;
+  // Agent editing callbacks
+  onStartEditAgent: (agentId: string, currentName: string, currentAvatar: string) => void;
+  onCancelEditAgent: () => void;
+  onSaveAgent: (agentId: string, newName: string, newAvatar: string) => void;
+  onEditingNameChange: (v: string) => void;
+  onEditingAvatarChange: (v: string) => void;
 };
 
 export function renderDashboard(props: DashboardProps) {
@@ -113,17 +115,55 @@ export function renderDashboard(props: DashboardProps) {
                   "#ef4444",
                   "#3b82f6",
                 ][idx % 6];
+                const isEditing = props.editingAgentId === app.id;
+
+                if (isEditing) {
+                  return html`
+                    <article class="agent-card agent-card--editing" style="--agent-accent: ${accentColor}">
+                      <div class="agent-card__edit-form">
+                        <label class="field" style="margin: 0 0 12px 0;">
+                          <span>Avatar</span>
+                          <input 
+                            class="input" 
+                            .value=${props.editingAgentAvatar}
+                            placeholder="🤖 or URL"
+                            @input=${(e: Event) => props.onEditingAvatarChange((e.target as HTMLInputElement).value)}
+                          />
+                        </label>
+                        <label class="field" style="margin: 0 0 12px 0;">
+                          <span>Name</span>
+                          <input 
+                            class="input" 
+                            .value=${props.editingAgentName}
+                            placeholder="Agent name"
+                            @input=${(e: Event) => props.onEditingNameChange((e.target as HTMLInputElement).value)}
+                          />
+                        </label>
+                        <div class="row" style="gap: 8px;">
+                          <button class="btn primary" @click=${() => props.onSaveAgent(app.id, props.editingAgentName, props.editingAgentAvatar)}>Save</button>
+                          <button class="btn" @click=${props.onCancelEditAgent}>Cancel</button>
+                        </div>
+                      </div>
+                    </article>
+                  `;
+                }
+
                 return html`
-            <article class="agent-card" @click=${() => props.onEditAgentProfile(app.id)} style="--agent-accent: ${accentColor}">
+            <article class="agent-card" style="--agent-accent: ${accentColor}">
               <button class="agent-card__star" type="button" @click=${(e: Event) => {
                 e.stopPropagation();
-              }} title="Favorite">
-                ⭐
+                props.onStartEditAgent(app.id, app.name, app.icon);
+              }} title="Edit agent">
+                ✏️
               </button>
-              <div class="agent-card__avatar-wrap">
+              <div class="agent-card__avatar-wrap" @click=${(e: Event) => {
+                e.stopPropagation();
+                props.onStartEditAgent(app.id, app.name, app.icon);
+              }}>
                 <div class="agent-card__avatar">
                   ${app.icon}
                 </div>
+                <div class="agent-card__avatar-edit-overlay">Change</div>
                 ${
                   isDefault
                     ? html`
@@ -132,7 +172,10 @@ export function renderDashboard(props: DashboardProps) {
                     : nothing
                 }
               </div>
-              <h3 class="agent-card__name">${app.name}</h3>
+              <h3 class="agent-card__name" @click=${(e: Event) => {
+                e.stopPropagation();
+                props.onStartEditAgent(app.id, app.name, app.icon);
+              }}>${app.name}</h3>
               <p class="agent-card__role">${app.role}</p>
             </article>
           `;
@@ -140,34 +183,5 @@ export function renderDashboard(props: DashboardProps) {
         }
       </div>
     </section>
-
-    ${
-      props.agentModal
-        ? html`
-            <section class="card" style="margin-top:14px; border-color: #6b5cf0;">
-              <div class="card-title">Edit Agent Profile Picture</div>
-              <div class="card-sub">Agent: ${props.agentModal}</div>
-              <label class="field" style="margin-top:10px;">
-                <span>Avatar (emoji, URL, or workspace path)</span>
-                <input
-                  class="input"
-                  .value=${props.agentAvatarDraft}
-                  placeholder="🤖 or https://... or avatars/emc2.png"
-                  @input=${(e: Event) =>
-                    props.onAgentAvatarDraftChange((e.target as HTMLInputElement).value)}
-                />
-              </label>
-              <div class="row" style="margin-top:10px; gap:8px;">
-                <button class="btn primary" @click=${props.onAgentSaveAvatar}>Save avatar</button>
-                <button class="btn" @click=${props.onCloseAgentModal}>Cancel</button>
-                <button class="btn" @click=${() => props.onEditAgentProfile(props.agentModal!)}>
-                  Open full profile
-                </button>
-              </div>
-            </section>
-          `
-        : nothing
-    }
-
   `;
 }

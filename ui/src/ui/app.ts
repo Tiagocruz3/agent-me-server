@@ -145,6 +145,10 @@ export class AgentMeApp extends LitElement {
   @state() dashboardAgentSearch = "";
   @state() dashboardAgentSort: "name" | "id" = "name";
   @state() dashboardNotice: { tone: "success" | "info" | "error"; text: string } | null = null;
+  // Dashboard agent editing state
+  @state() dashboardEditingAgentId: string | null = null;
+  @state() dashboardEditingAgentName = "";
+  @state() dashboardEditingAgentAvatar = "";
   @state() cronViewMode: "month" | "week" | "day" = "week";
   @state() cronDayModalKey: string | null = null;
   @state() restoreFileName = "";
