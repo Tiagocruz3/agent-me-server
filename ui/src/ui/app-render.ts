@@ -69,6 +69,7 @@ const debouncedLoadUsage = (state: UsageState) => {
   usageDateDebounceTimeout = window.setTimeout(() => void loadUsage(state), 400);
 };
 import { confirmInApp, promptInApp } from "./in-app-dialog.ts";
+import { renderAgentsDashboard } from "./views/agents-dashboard.ts";
 import { renderAgents } from "./views/agents.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
@@ -79,7 +80,6 @@ import { renderDebug } from "./views/debug.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderInstances } from "./views/instances.ts";
-import { renderLoginView } from "./views/login.ts";
 import { renderLogs } from "./views/logs.ts";
 import { renderMemory } from "./views/memory.ts";
 import { renderNodes } from "./views/nodes.ts";
@@ -269,7 +269,7 @@ export function renderApp(state: AppViewState) {
   const isModalTab = !isChat;
   const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding);
   const topMenuGroups = [
-    { label: "Work", tabs: ["sessions", "memory"] as const },
+    { label: "Work", tabs: ["agents", "sessions", "memory"] as const },
     {
       label: "Control",
       tabs: ["overview", "channels", "instances", "usage"] as const,
@@ -279,32 +279,24 @@ export function renderApp(state: AppViewState) {
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
 
-  if (!state.connected && !state.onboarding) {
-    return html`
-      <div class="shell shell--chat shell--nav-collapsed">
-        <header class="topbar">
-          <div class="topbar-brand">
-            <img class="app-logo" src="/agentme-logo.jpg" alt="Agent Me" />
-            <div>
-              <strong>Agent Me</strong>
-              <small>Control Dashboard</small>
-            </div>
+  // Show disconnected banner instead of blocking overlay
+  const disconnectedBanner =
+    !state.connected && !state.onboarding
+      ? html`
+    <div style="position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90vw;width:400px;">
+      <section class="card" style="text-align:center;padding:20px 24px;border:1px solid rgba(239,68,68,0.4);background:rgba(20,24,31,0.95);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+          <span style="font-size:24px;">🔌</span>
+          <div style="text-align:left;">
+            <div style="font-weight:600;font-size:14px;color:#fff;">Disconnected</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);">Connection lost</div>
           </div>
-          <div class="topbar-status"><span class="statusDot"></span><span>Disconnected</span></div>
-        </header>
-        <main class="content">
-          ${renderLoginView({
-            settings: state.settings,
-            password: state.password,
-            lastError: state.lastError,
-            onSettingsChange: (next) => state.applySettings(next),
-            onPasswordChange: (next) => (state.password = next),
-            onConnect: () => state.connect(),
-          })}
-        </main>
-      </div>
-    `;
-  }
+          <button class="btn primary" type="button" @click=${() => state.connect()} style="margin-left:auto;padding:6px 14px;font-size:12px;">Reconnect</button>
+        </div>
+      </section>
+    </div>
+  `
+      : nothing;
   const autopilotMode: "off" | "assisted" | "full" =
     state.settings.autopilotMode ?? (state.settings.chatFocusMode ? "assisted" : "off");
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
@@ -2243,6 +2235,7 @@ export function renderApp(state: AppViewState) {
       </main>
       ${renderExecApprovalPrompt(state)}
       ${renderGatewayUrlConfirmation(state)}
+      ${disconnectedBanner}
     </div>
   `;
 }

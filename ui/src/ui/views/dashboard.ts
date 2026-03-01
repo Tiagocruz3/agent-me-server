@@ -191,18 +191,28 @@ export function renderDashboard(props: DashboardProps) {
             </article>
           </section>
 
-          <section class="card dashboard-ai-directory" style="margin-bottom:14px;">
-            <div class="dashboard-workforce-head">
+          <!-- AI Agents Profile Cards -->
+          <section class="card" style="margin-bottom:14px;">
+            <div class="agents-dashboard__header-content" style="margin-bottom: 16px;">
               <div>
-                <div class="card-title">AI Agent</div>
-                <div class="card-sub">Find your AI Agent quickly and assign tasks fast.</div>
+                <div class="card-title">AI Agents</div>
+                <div class="card-sub">Manage your AI workforce — ${props.agentCount} agent${props.agentCount !== 1 ? "s" : ""} configured</div>
               </div>
-              <button class="btn primary" @click=${props.onAddAgent}>+ Create task</button>
+              <div class="agents-dashboard__header-actions">
+                <button class="btn primary" @click=${props.onAddAgent}>
+                  <span style="margin-right: 4px;">+</span> Add Agent
+                </button>
+              </div>
             </div>
 
-            <div class="dashboard-workforce-filters dashboard-workforce-filters--directory" style="margin-top:12px;">
-              <input class="input" placeholder="Search for AI Agent..." .value=${props.agentSearch} @input=${(e: Event) => props.onAgentSearchChange((e.target as HTMLInputElement).value)} />
-              <label class="field" style="min-width:130px;">
+            <div class="agents-dashboard__filters" style="margin-bottom: 12px;">
+              <input 
+                class="input agents-dashboard__search" 
+                placeholder="Search agents by name or ID..." 
+                .value=${props.agentSearch}
+                @input=${(e: Event) => props.onAgentSearchChange((e.target as HTMLInputElement).value)}
+              />
+              <label class="field" style="min-width: 130px; margin: 0;">
                 <span>Sort</span>
                 <select .value=${props.agentSort} @change=${(e: Event) => props.onAgentSortChange((e.target as HTMLSelectElement).value as "name" | "id")}>
                   <option value="name">Name</option>
@@ -211,40 +221,79 @@ export function renderDashboard(props: DashboardProps) {
               </label>
             </div>
 
-            <div class="dashboard-agent-tags" style="margin-top:10px;">
-              ${["All Agents", "Business", "Coach", "Education", "Health", "Specialist"].map((tag, idx) => html`<button class="btn ${idx === 0 ? "primary" : ""}" ?disabled=${idx !== 0}>${tag}</button>`)}
-            </div>
-
-            <div class="dashboard-agent-grid dashboard-agent-grid--workforce" style="margin-top:12px;">
-              ${filteredAgents.map(
-                (app) => html`
-                  <article class="dashboard-agent-card dashboard-agent-card--workforce dashboard-agent-card--directory" style=${`--app-accent:${app.accent}`}>
-                    <div class="dashboard-workforce-card-top">
-                      <span class="dashboard-workforce-status"><span class="dot"></span>Active</span>
+            <div class="agents-dashboard__grid">
+              ${
+                filteredAgents.length === 0
+                  ? html`
+                <div class="card agents-dashboard__empty" style="grid-column: 1 / -1; text-align: center; padding: 48px 32px;">
+                  <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+                  <div class="card-title">No agents found</div>
+                  <div class="card-sub" style="margin-bottom: 20px;">
+                    ${props.agentSearch ? "No agents match your search." : "Get started by creating your first AI agent."}
+                  </div>
+                  ${!props.agentSearch ? html`<button class="btn primary" @click=${props.onAddAgent}>Create First Agent</button>` : ""}
+                </div>
+              `
+                  : filteredAgents.map((app) => {
+                      const stats = statsForAgent(app.id);
+                      const isDefault = app.id === "main";
+                      return html`
+                  <article class="agent-profile-card">
+                    <div class="agent-profile-card__header">
+                      <div class="agent-profile-card__avatar">${app.icon}</div>
+                      <div class="agent-profile-card__status" style="--status-color: #22c55e">
+                        <span class="agent-profile-card__status-dot"></span>
+                        Active
+                      </div>
+                      ${
+                        isDefault
+                          ? html`
+                              <span class="agent-profile-card__badge">Default</span>
+                            `
+                          : ""
+                      }
                     </div>
-                    <button class="dashboard-agent-avatar dashboard-agent-avatar--workforce" title="Manage agent" @click=${() => props.onEditAgentProfile(app.id)}>${app.icon}</button>
-                    <div class="dashboard-app-card__name">${app.name}</div>
-                    <div class="dashboard-app-card__role">${app.role}</div>
-                    <div class="row" style="margin-top:6px; gap:6px; justify-content:center;">
-                      <span class="chip">Runs: ${statsForAgent(app.id).runs}</span>
-                      <span class="chip">Last: ${statsForAgent(app.id).lastStatus}</span>
+                    
+                    <div class="agent-profile-card__body">
+                      <h3 class="agent-profile-card__name">${app.name}</h3>
+                      <p class="agent-profile-card__role">${app.role}</p>
+                      <code class="agent-profile-card__id">${app.id}</code>
                     </div>
-                    <div class="row" style="margin-top:8px; flex-wrap: wrap; justify-content:center;">
-                      <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open</button>
-                      <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
-                      <button class="btn" @click=${() => props.onRunTask(app.id)}>Run</button>
+                    
+                    <div class="agent-profile-card__stats">
+                      <div class="agent-profile-card__stat">
+                        <span class="agent-profile-card__stat-value">${stats.runs}</span>
+                        <span class="agent-profile-card__stat-label">Runs</span>
+                      </div>
+                      <div class="agent-profile-card__stat">
+                        <span class="agent-profile-card__stat-value">${stats.lastStatus}</span>
+                        <span class="agent-profile-card__stat-label">Status</span>
+                      </div>
+                      <div class="agent-profile-card__stat">
+                        <span class="agent-profile-card__stat-value">GPT</span>
+                        <span class="agent-profile-card__stat-label">Model</span>
+                      </div>
+                    </div>
+                    
+                    <div class="agent-profile-card__actions">
+                      <button class="btn btn--sm" @click=${() => props.onOpenAppChat(app.id)} title="Chat">
+                        💬
+                      </button>
+                      <button class="btn btn--sm" @click=${() => props.onEditAgentProfile(app.id)} title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn--sm" @click=${() => props.onScheduleTask(app.id)} title="Schedule">
+                        📅
+                      </button>
+                      <button class="btn btn--sm" @click=${() => props.onRunTask(app.id)} title="Run">
+                        ▶️
+                      </button>
                     </div>
                   </article>
-                `,
-              )}
+                `;
+                    })
+              }
             </div>
-            ${
-              filteredAgents.length === 0
-                ? html`
-                    <div class="card-sub" style="margin-top: 10px">No agents match your search.</div>
-                  `
-                : ""
-            }
           </section>
         `
         : ""

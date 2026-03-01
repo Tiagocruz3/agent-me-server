@@ -5,12 +5,217 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Agent Me Control</title>
     <meta name="color-scheme" content="dark light" />
+    <meta
+      name="description"
+      content="Agente Me Server - Premium operator-first AI agent platform"
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Critical CSS - Background effects load immediately */
+      body {
+        margin: 0;
+        background: #0b0f17;
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      /* Particle Canvas */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.6;
+      }
+
+      /* Background Grid */
+      .bg-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.4;
+      }
+
+      .bg-grid::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(61, 220, 151, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(61, 220, 151, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 70%);
+      }
+
+      /* Floating Orbs */
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .orb-green {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(61, 220, 151, 0.15) 0%, transparent 70%);
+        top: -200px;
+        right: -100px;
+        animation: float 20s ease-in-out infinite;
+      }
+
+      .orb-purple {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+        bottom: -150px;
+        left: -100px;
+        animation: float 25s ease-in-out infinite reverse;
+      }
+
+      .orb-blue {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 15s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        33% {
+          transform: translate(30px, -30px) rotate(120deg);
+        }
+        66% {
+          transform: translate(-20px, 20px) rotate(240deg);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.5;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+      }
+
+      agentme-app {
+        position: relative;
+        z-index: 10;
+      }
+    </style>
   </head>
   <body>
+    <!-- Animated Background Elements -->
+    <canvas id="particle-canvas"></canvas>
+    <div class="bg-grid"></div>
+    <div class="orb orb-green"></div>
+    <div class="orb orb-purple"></div>
+    <div class="orb orb-blue"></div>
+
+    <!-- Main App -->
     <agentme-app></agentme-app>
+
+    <!-- Particle Animation Script -->
+    <script>
+      (function () {
+        const canvas = document.getElementById("particle-canvas");
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        let animationId;
+        let particles = [];
+
+        const resize = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        };
+
+        resize();
+        window.addEventListener("resize", resize);
+
+        // Create particles
+        const particleCount = 50;
+        for (let i = 0; i < particleCount; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2 + 1,
+            opacity: Math.random() * 0.5 + 0.1,
+          });
+        }
+
+        const animate = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          particles.forEach((particle, i) => {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            if (particle.x < 0) particle.x = canvas.width;
+            if (particle.x > canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = canvas.height;
+            if (particle.y > canvas.height) particle.y = 0;
+
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(61, 220, 151, ${particle.opacity})`;
+            ctx.fill();
+
+            particles.slice(i + 1).forEach((other) => {
+              const dx = particle.x - other.x;
+              const dy = particle.y - other.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+
+              if (distance < 150) {
+                ctx.beginPath();
+                ctx.moveTo(particle.x, particle.y);
+                ctx.lineTo(other.x, other.y);
+                ctx.strokeStyle = `rgba(61, 220, 151, ${0.1 * (1 - distance / 150)})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+              }
+            });
+          });
+
+          animationId = requestAnimationFrame(animate);
+        };
+
+        animate();
+      })();
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

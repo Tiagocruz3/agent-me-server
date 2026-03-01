@@ -234,7 +234,7 @@ export function renderChat(props: ChatProps) {
   const composePlaceholder = props.connected
     ? hasAttachments
       ? "Add a message or paste/upload more images..."
-      : "Message (↩ to send, Shift+↩ for line breaks, paste/upload images)"
+      : "Reply..."
     : "Connect to the gateway to start chatting…";
 
   const splitRatio = props.splitRatio ?? 0.6;
@@ -464,7 +464,7 @@ export function renderChat(props: ChatProps) {
               placeholder=${composePlaceholder}
             ></textarea>
           </label>
-          <div class="chat-compose__actions">
+          <div class="chat-compose__toolbar">
             <input
               ${ref((el) => {
                 uploadInputEl = el as HTMLInputElement;
@@ -480,46 +480,70 @@ export function renderChat(props: ChatProps) {
                 input.value = "";
               }}
             />
-            <button
-              class="btn"
-              type="button"
-              ?disabled=${!props.connected}
-              @click=${() => uploadInputEl?.click()}
-              title="Upload image"
-            >
-              ${icons.paperclip} Upload
-            </button>
-            <button
-              class="btn"
-              ?disabled=${!props.connected || (!canAbort && props.sending)}
-              @click=${canAbort ? props.onAbort : props.onNewSession}
-            >
-              ${canAbort ? "Stop" : "New session"}
-            </button>
-            <label class="chat-compose__agent-select-wrap" title="Active agent">
-              <select
-                class="chat-compose__agent-select"
-                .value=${activeAgentId}
+            <div class="chat-compose__toolbar-left">
+              <button
+                class="btn"
+                type="button"
                 ?disabled=${!props.connected}
-                @change=${(e: Event) => {
-                  const selectedAgent = (e.target as HTMLSelectElement).value || "main";
-                  const nextSession =
-                    selectedAgent === "main" ? "main" : `agent:${selectedAgent}:main`;
-                  props.onSessionKeyChange(nextSession);
-                }}
+                @click=${() => uploadInputEl?.click()}
+                title="Upload image"
               >
-                ${agentOptions.map((entry) => html`<option value=${entry.id}>${entry.label}</option>`)}
-              </select>
-            </label>
-            <button
-              class="btn primary"
-              ?disabled=${!props.connected}
-              @click=${props.onSend}
-            >
-              ${isBusy ? "Queue" : "Send"}<kbd class="btn-kbd">↵</kbd>
-            </button>
+                ${icons.plus}
+              </button>
+              <button
+                class="btn"
+                type="button"
+                ?disabled=${!props.connected}
+                @click=${() => uploadInputEl?.click()}
+                title="Attach file"
+              >
+                ${icons.paperclip}
+              </button>
+            </div>
+            <div class="chat-compose__toolbar-right">
+              <span class="chat-compose__agent-name">${props.assistantName}</span>
+              <label class="chat-compose__agent-select-wrap" title="Active agent">
+                <select
+                  class="chat-compose__agent-select"
+                  .value=${activeAgentId}
+                  ?disabled=${!props.connected}
+                  @change=${(e: Event) => {
+                    const selectedAgent = (e.target as HTMLSelectElement).value || "main";
+                    const nextSession =
+                      selectedAgent === "main" ? "main" : `agent:${selectedAgent}:main`;
+                    props.onSessionKeyChange(nextSession);
+                  }}
+                >
+                  ${agentOptions.map((entry) => html`<option value=${entry.id}>${entry.label}</option>`)}
+                </select>
+              </label>
+              ${
+                isBusy
+                  ? html`
+                    <button
+                      class="btn primary stop"
+                      ?disabled=${!props.connected}
+                      @click=${props.onAbort}
+                      title="Stop generating"
+                    >
+                      ${icons.square}
+                    </button>
+                  `
+                  : html`
+                    <button
+                      class="btn primary"
+                      ?disabled=${!props.connected}
+                      @click=${props.onSend}
+                      title="Send message"
+                    >
+                      ${icons.send}
+                    </button>
+                  `
+              }
+            </div>
           </div>
         </div>
+        <p class="chat-compose__disclaimer">AI can make mistakes. Please double-check responses.</p>
       </div>
     </section>
   `;

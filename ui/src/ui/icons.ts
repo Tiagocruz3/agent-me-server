@@ -190,6 +190,28 @@ export const icons = {
       />
     </svg>
   `,
+  send: html`
+    <svg viewBox="0 0 24 24">
+      <line x1="22" x2="11" y1="2" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  `,
+  square: html`
+    <svg viewBox="0 0 24 24">
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+    </svg>
+  `,
+  plus: html`
+    <svg viewBox="0 0 24 24">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  `,
+  refresh: html`
+    <svg viewBox="0 0 24 24">
+      <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" />
+    </svg>
+  `,
   globe: html`
     <svg viewBox="0 0 24 24">
       <circle cx="12" cy="12" r="10" />
