@@ -12,6 +12,7 @@ export type SessionsProps = {
   limit: string;
   includeGlobal: boolean;
   includeUnknown: boolean;
+  searchQuery: string;
   basePath: string;
   onFiltersChange: (next: {
     activeMinutes: string;
@@ -19,6 +20,7 @@ export type SessionsProps = {
     includeGlobal: boolean;
     includeUnknown: boolean;
   }) => void;
+  onSearchChange: (query: string) => void;
   onRefresh: () => void;
   onPatch: (
     key: string,
@@ -107,75 +109,144 @@ function resolveThinkLevelPatchValue(value: string, isBinary: boolean): string |
   return value;
 }
 
+function resolveSessionGroups(rows: GatewaySessionRow[]) {
+  const now = Date.now();
+  const todayStart = new Date(now).setHours(0, 0, 0, 0);
+  const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+  const weekStart = todayStart - 7 * 24 * 60 * 60 * 1000;
+
+  const groups: Record<string, GatewaySessionRow[]> = {
+    Today: [],
+    Yesterday: [],
+    "This week": [],
+    Older: [],
+  };
+
+  for (const row of rows) {
+    const ts = row.updatedAt ?? 0;
+    if (ts >= todayStart) {
+      groups.Today.push(row);
+    } else if (ts >= yesterdayStart) {
+      groups.Yesterday.push(row);
+    } else if (ts >= weekStart) {
+      groups["This week"].push(row);
+    } else {
+      groups.Older.push(row);
+    }
+  }
+
+  return Object.entries(groups).filter(([, items]) => items.length > 0);
+}
+
+function filterSessions(rows: GatewaySessionRow[], query: string): GatewaySessionRow[] {
+  if (!query.trim()) {
+    return rows;
+  }
+  const lower = query.trim().toLowerCase();
+  return rows.filter((row) => {
+    const key = row.key.toLowerCase();
+    const label = (row.label || "").toLowerCase();
+    const displayName = (row.displayName || "").toLowerCase();
+    const kind = row.kind.toLowerCase();
+    return (
+      key.includes(lower) ||
+      label.includes(lower) ||
+      displayName.includes(lower) ||
+      kind.includes(lower)
+    );
+  });
+}
+
 export function renderSessions(props: SessionsProps) {
-  const rows = props.result?.sessions ?? [];
+  const allRows = props.result?.sessions ?? [];
+  const filteredRows = filterSessions(allRows, props.searchQuery);
+  const groups = resolveSessionGroups(filteredRows);
+  const hasFilters =
+    props.activeMinutes || props.limit || props.includeGlobal || props.includeUnknown;
+
   return html`
-    <section class="card">
-      <div class="row" style="justify-content: space-between;">
+    <section class="card sessions-card">
+      <div class="sessions-header">
         <div>
           <div class="card-title">Sessions</div>
-          <div class="card-sub">Active session keys and per-session overrides.</div>
+          <div class="card-sub">
+            ${props.result ? `${props.result.count} total sessions` : "Active session keys and per-session overrides."}
+          </div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
           ${props.loading ? "Loading…" : "Refresh"}
         </button>
       </div>
 
-      <div class="filters" style="margin-top: 14px;">
-        <label class="field">
-          <span>Active within (minutes)</span>
+      <div class="sessions-toolbar">
+        <div class="sessions-search">
           <input
-            .value=${props.activeMinutes}
-            @input=${(e: Event) =>
-              props.onFiltersChange({
-                activeMinutes: (e.target as HTMLInputElement).value,
-                limit: props.limit,
-                includeGlobal: props.includeGlobal,
-                includeUnknown: props.includeUnknown,
-              })}
+            class="sessions-search__input"
+            type="search"
+            placeholder="Search sessions..."
+            .value=${props.searchQuery}
+            @input=${(e: Event) => props.onSearchChange((e.target as HTMLInputElement).value)}
           />
-        </label>
-        <label class="field">
-          <span>Limit</span>
-          <input
-            .value=${props.limit}
-            @input=${(e: Event) =>
-              props.onFiltersChange({
-                activeMinutes: props.activeMinutes,
-                limit: (e.target as HTMLInputElement).value,
-                includeGlobal: props.includeGlobal,
-                includeUnknown: props.includeUnknown,
-              })}
-          />
-        </label>
-        <label class="field checkbox">
-          <span>Include global</span>
-          <input
-            type="checkbox"
-            .checked=${props.includeGlobal}
-            @change=${(e: Event) =>
-              props.onFiltersChange({
-                activeMinutes: props.activeMinutes,
-                limit: props.limit,
-                includeGlobal: (e.target as HTMLInputElement).checked,
-                includeUnknown: props.includeUnknown,
-              })}
-          />
-        </label>
-        <label class="field checkbox">
-          <span>Include unknown</span>
-          <input
-            type="checkbox"
-            .checked=${props.includeUnknown}
-            @change=${(e: Event) =>
-              props.onFiltersChange({
-                activeMinutes: props.activeMinutes,
-                limit: props.limit,
-                includeGlobal: props.includeGlobal,
-                includeUnknown: (e.target as HTMLInputElement).checked,
-              })}
-          />
-        </label>
+        </div>
+        <details class="sessions-filters" ?open=${hasFilters}>
+          <summary class="sessions-filters__summary">Filters</summary>
+          <div class="sessions-filters__body">
+            <label class="field">
+              <span>Active within (minutes)</span>
+              <input
+                .value=${props.activeMinutes}
+                @input=${(e: Event) =>
+                  props.onFiltersChange({
+                    activeMinutes: (e.target as HTMLInputElement).value,
+                    limit: props.limit,
+                    includeGlobal: props.includeGlobal,
+                    includeUnknown: props.includeUnknown,
+                  })}
+              />
+            </label>
+            <label class="field">
+              <span>Limit</span>
+              <input
+                .value=${props.limit}
+                @input=${(e: Event) =>
+                  props.onFiltersChange({
+                    activeMinutes: props.activeMinutes,
+                    limit: (e.target as HTMLInputElement).value,
+                    includeGlobal: props.includeGlobal,
+                    includeUnknown: props.includeUnknown,
+                  })}
+              />
+            </label>
+            <label class="field checkbox">
+              <span>Include global</span>
+              <input
+                type="checkbox"
+                .checked=${props.includeGlobal}
+                @change=${(e: Event) =>
+                  props.onFiltersChange({
+                    activeMinutes: props.activeMinutes,
+                    limit: props.limit,
+                    includeGlobal: (e.target as HTMLInputElement).checked,
+                    includeUnknown: props.includeUnknown,
+                  })}
+              />
+            </label>
+            <label class="field checkbox">
+              <span>Include unknown</span>
+              <input
+                type="checkbox"
+                .checked=${props.includeUnknown}
+                @change=${(e: Event) =>
+                  props.onFiltersChange({
+                    activeMinutes: props.activeMinutes,
+                    limit: props.limit,
+                    includeGlobal: props.includeGlobal,
+                    includeUnknown: (e.target as HTMLInputElement).checked,
+                  })}
+              />
+            </label>
+          </div>
+        </details>
       </div>
 
       ${
@@ -188,39 +259,31 @@ export function renderSessions(props: SessionsProps) {
         ${props.result ? `Store: ${props.result.path}` : ""}
       </div>
 
-      <div class="table" style="margin-top: 16px;">
-        <div class="table-head">
-          <div>Key</div>
-          <div>Label</div>
-          <div>Kind</div>
-          <div>Updated</div>
-          <div>Tokens</div>
-          <div>Thinking</div>
-          <div>Verbose</div>
-          <div>Reasoning</div>
-          <div>Actions</div>
-        </div>
+      <div class="sessions-list">
         ${
-          rows.length === 0
+          filteredRows.length === 0
             ? html`
-                <div class="muted">No sessions found.</div>
+                <div class="sessions-empty">No sessions found.</div>
               `
-            : rows.map((row) =>
-                renderRow(row, props.basePath, props.onPatch, props.onDelete, props.loading),
-              )
+            : groups.map(([groupName, rows]) => renderGroup(groupName, rows, props))
         }
       </div>
     </section>
   `;
 }
 
-function renderRow(
-  row: GatewaySessionRow,
-  basePath: string,
-  onPatch: SessionsProps["onPatch"],
-  onDelete: SessionsProps["onDelete"],
-  disabled: boolean,
-) {
+function renderGroup(groupName: string, rows: GatewaySessionRow[], props: SessionsProps) {
+  return html`
+    <div class="sessions-group">
+      <div class="sessions-group__heading">${groupName}</div>
+      <div class="sessions-group__items">
+        ${rows.map((row) => renderSessionCard(row, props))}
+      </div>
+    </div>
+  `;
+}
+
+function renderSessionCard(row: GatewaySessionRow, props: SessionsProps) {
   const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : "n/a";
   const rawThinking = row.thinkingLevel ?? "";
   const isBinaryThinking = isBinaryThinkingProvider(row.modelProvider);
@@ -238,81 +301,112 @@ function renderRow(
   const showDisplayName = Boolean(displayName && displayName !== row.key && displayName !== label);
   const canLink = row.kind !== "global";
   const chatUrl = canLink
-    ? `${pathForTab("chat", basePath)}?session=${encodeURIComponent(row.key)}`
+    ? `${pathForTab("chat", props.basePath)}?session=${encodeURIComponent(row.key)}`
     : null;
+  const titleText = label || displayName || row.key;
 
   return html`
-    <div class="table-row">
-      <div class="mono session-key-cell">
-        ${canLink ? html`<a href=${chatUrl} class="session-link">${row.key}</a>` : row.key}
-        ${showDisplayName ? html`<span class="muted session-key-display-name">${displayName}</span>` : nothing}
+    <div class="session-card">
+      <div class="session-card__main">
+        <div class="session-card__identity">
+          <div class="session-card__title-row">
+            <span class="session-card__title" title=${titleText}>${titleText}</span>
+            <span class="session-card__kind-badge ${row.kind}">${row.kind}</span>
+          </div>
+          <div class="session-card__key">${row.key}</div>
+          ${
+            showDisplayName
+              ? html`<div class="session-card__display-name muted">${displayName}</div>`
+              : nothing
+          }
+        </div>
+        <div class="session-card__meta">
+          <div class="session-card__meta-item">
+            <span class="session-card__meta-label">Updated</span>
+            <span class="session-card__meta-value">${updated}</span>
+          </div>
+          <div class="session-card__meta-item">
+            <span class="session-card__meta-label">Tokens</span>
+            <span class="session-card__meta-value">${formatSessionTokens(row)}</span>
+          </div>
+        </div>
       </div>
-      <div>
-        <input
-          .value=${row.label ?? ""}
-          ?disabled=${disabled}
-          placeholder="(optional)"
-          @change=${(e: Event) => {
-            const value = (e.target as HTMLInputElement).value.trim();
-            onPatch(row.key, { label: value || null });
-          }}
-        />
+
+      <div class="session-card__settings">
+        <label class="field session-card__field">
+          <span>Label</span>
+          <input
+            .value=${row.label ?? ""}
+            ?disabled=${props.loading}
+            placeholder="(optional)"
+            @change=${(e: Event) => {
+              const value = (e.target as HTMLInputElement).value.trim();
+              props.onPatch(row.key, { label: value || null });
+            }}
+          />
+        </label>
+        <label class="field session-card__field">
+          <span>Thinking</span>
+          <select
+            ?disabled=${props.loading}
+            @change=${(e: Event) => {
+              const value = (e.target as HTMLSelectElement).value;
+              props.onPatch(row.key, {
+                thinkingLevel: resolveThinkLevelPatchValue(value, isBinaryThinking),
+              });
+            }}
+          >
+            ${thinkLevels.map(
+              (level) =>
+                html`<option value=${level} ?selected=${thinking === level}>
+                  ${level || "inherit"}
+                </option>`,
+            )}
+          </select>
+        </label>
+        <label class="field session-card__field">
+          <span>Verbose</span>
+          <select
+            ?disabled=${props.loading}
+            @change=${(e: Event) => {
+              const value = (e.target as HTMLSelectElement).value;
+              props.onPatch(row.key, { verboseLevel: value || null });
+            }}
+          >
+            ${verboseLevels.map(
+              (level) =>
+                html`<option value=${level.value} ?selected=${verbose === level.value}>
+                  ${level.label}
+                </option>`,
+            )}
+          </select>
+        </label>
+        <label class="field session-card__field">
+          <span>Reasoning</span>
+          <select
+            ?disabled=${props.loading}
+            @change=${(e: Event) => {
+              const value = (e.target as HTMLSelectElement).value;
+              props.onPatch(row.key, { reasoningLevel: value || null });
+            }}
+          >
+            ${reasoningLevels.map(
+              (level) =>
+                html`<option value=${level} ?selected=${reasoning === level}>
+                  ${level || "inherit"}
+                </option>`,
+            )}
+          </select>
+        </label>
       </div>
-      <div>${row.kind}</div>
-      <div>${updated}</div>
-      <div>${formatSessionTokens(row)}</div>
-      <div>
-        <select
-          ?disabled=${disabled}
-          @change=${(e: Event) => {
-            const value = (e.target as HTMLSelectElement).value;
-            onPatch(row.key, {
-              thinkingLevel: resolveThinkLevelPatchValue(value, isBinaryThinking),
-            });
-          }}
+
+      <div class="session-card__actions">
+        ${canLink ? html`<a class="btn" href=${chatUrl} title="Open chat">Open chat</a>` : nothing}
+        <button
+          class="btn danger"
+          ?disabled=${props.loading}
+          @click=${() => props.onDelete(row.key)}
         >
-          ${thinkLevels.map(
-            (level) =>
-              html`<option value=${level} ?selected=${thinking === level}>
-                ${level || "inherit"}
-              </option>`,
-          )}
-        </select>
-      </div>
-      <div>
-        <select
-          ?disabled=${disabled}
-          @change=${(e: Event) => {
-            const value = (e.target as HTMLSelectElement).value;
-            onPatch(row.key, { verboseLevel: value || null });
-          }}
-        >
-          ${verboseLevels.map(
-            (level) =>
-              html`<option value=${level.value} ?selected=${verbose === level.value}>
-                ${level.label}
-              </option>`,
-          )}
-        </select>
-      </div>
-      <div>
-        <select
-          ?disabled=${disabled}
-          @change=${(e: Event) => {
-            const value = (e.target as HTMLSelectElement).value;
-            onPatch(row.key, { reasoningLevel: value || null });
-          }}
-        >
-          ${reasoningLevels.map(
-            (level) =>
-              html`<option value=${level} ?selected=${reasoning === level}>
-                ${level || "inherit"}
-              </option>`,
-          )}
-        </select>
-      </div>
-      <div>
-        <button class="btn danger" ?disabled=${disabled} @click=${() => onDelete(row.key)}>
           Delete
         </button>
       </div>

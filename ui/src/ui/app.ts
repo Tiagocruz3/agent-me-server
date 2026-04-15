@@ -171,6 +171,7 @@ export class AgentMeApp extends LitElement {
   @state() chatMessage = "";
   @state() chatMessages: unknown[] = [];
   @state() chatToolMessages: unknown[] = [];
+  @state() chatHistoryRenderLimit = 50;
   @state() chatStream: string | null = null;
   @state() chatStreamStartedAt: number | null = null;
   @state() chatRunId: string | null = null;
@@ -182,6 +183,7 @@ export class AgentMeApp extends LitElement {
   @state() chatManualRefreshInFlight = false;
   // Sidebar state for tool output viewing
   @state() sidebarOpen = false;
+  @state() sidebarView: "markdown" | "history" = "markdown";
   @state() sidebarContent: string | null = null;
   @state() sidebarError: string | null = null;
   @state() splitRatio = this.settings.splitRatio;
@@ -277,6 +279,7 @@ export class AgentMeApp extends LitElement {
   @state() sessionsFilterLimit = "120";
   @state() sessionsIncludeGlobal = true;
   @state() sessionsIncludeUnknown = false;
+  @state() sessionsSearchQuery = "";
 
   @state() usageLoading = false;
   @state() usageResult: import("./types.js").SessionsUsageResult | null = null;
@@ -654,13 +657,14 @@ export class AgentMeApp extends LitElement {
   }
 
   // Sidebar handlers for tool output viewing
-  handleOpenSidebar(content: string) {
+  handleOpenSidebar(content: string, view: "markdown" | "history" = "markdown") {
     if (this.sidebarCloseTimer != null) {
       window.clearTimeout(this.sidebarCloseTimer);
       this.sidebarCloseTimer = null;
     }
     this.sidebarContent = content;
     this.sidebarError = null;
+    this.sidebarView = view;
     this.sidebarOpen = true;
   }
 

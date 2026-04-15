@@ -31,6 +31,8 @@ export type ChatProps = {
   compactionStatus?: CompactionIndicatorStatus | null;
   messages: unknown[];
   toolMessages: unknown[];
+  historyRenderLimit: number;
+  onLoadMoreHistory?: () => void;
   stream: string | null;
   streamStartedAt: number | null;
   assistantAvatarUrl?: string | null;
@@ -45,9 +47,11 @@ export type ChatProps = {
   focusMode: boolean;
   // Sidebar state
   sidebarOpen?: boolean;
+  sidebarView?: "markdown" | "history";
   sidebarContent?: string | null;
   sidebarError?: string | null;
   splitRatio?: number;
+  onHistorySessionClick?: (sessionKey: string) => void;
   assistantName: string;
   assistantAvatar: string | null;
   agentChoices?: Array<{ id: string; label: string }>;
@@ -69,6 +73,9 @@ export type ChatProps = {
   onCloseSidebar?: () => void;
   onSplitRatioChange?: (ratio: number) => void;
   onChatScroll?: (event: Event) => void;
+  // Message actions
+  onRegenerate?: (messageText: string) => void;
+  onLike?: (messageId: string, liked: boolean) => void;
 };
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
@@ -244,80 +251,118 @@ export function renderChat(props: ChatProps) {
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
   const chatItems = buildChatItems(props);
   let uploadInputEl: HTMLInputElement | null = null;
+
+  const welcomePrompts = [
+    "Explain a complex topic simply",
+    "Help me brainstorm ideas",
+    "Write and edit some code",
+    "Summarize a long document",
+  ];
+
   const thread = html`
-    <div
-      class="chat-thread"
-      role="log"
-      aria-live="polite"
-      @scroll=${props.onChatScroll}
-    >
-      ${
-        props.loading
-          ? html`
-              <div class="muted">Loading chat…</div>
-            `
-          : nothing
-      }
-      ${
-        !props.loading && chatItems.length === 0
-          ? html`
-              <div class="chat-welcome">
-                <div class="chat-welcome__icon">
-                  <img class="chat-welcome__icon-image" src="/logo.png" alt="Agent Me" />
-                </div>
-                <h2 class="chat-welcome__title">How can I help you today?</h2>
-                <div class="chat-welcome__status">
-                  <div class="chat-welcome__status-avatar">
-                    <img src="/apple-touch-icon.png" alt="Agent Me" />
+    <div class="chat-thread" role="log" aria-live="polite" @scroll=${props.onChatScroll}>
+      <div class="chat-thread-inner">
+        ${
+          props.loading
+            ? html`
+                <div class="muted" style="text-align: center; margin-top: 48px">Loading chat…</div>
+              `
+            : nothing
+        }
+        ${
+          !props.loading && chatItems.length === 0
+            ? html`
+                <div class="chat-welcome">
+                  <div class="chat-welcome__icon">
+                    <img class="chat-welcome__icon-image" src="/logo.png" alt="Agent Me" />
                   </div>
-                  <div>
-                    <div class="chat-welcome__status-name">${assistantIdentity.name}</div>
-                    <div class="chat-welcome__status-sub">Connected via Agent Me</div>
+                  <h2 class="chat-welcome__title">How can I help you today?</h2>
+                  <div class="chat-welcome__status">
+                    <div class="chat-welcome__status-avatar">
+                      <img src="/apple-touch-icon.png" alt="Agent Me" />
+                    </div>
+                    <div>
+                      <div class="chat-welcome__status-name">${assistantIdentity.name}</div>
+                      <div class="chat-welcome__status-sub">Connected via Agent Me</div>
+                    </div>
+                  </div>
+                  <div class="chat-welcome__prompts">
+                    ${welcomePrompts.map(
+                      (prompt) => html`
+                        <button
+                          class="chat-welcome__prompt"
+                          type="button"
+                          ?disabled=${!props.connected}
+                          @click=${() => {
+                            props.onDraftChange(prompt);
+                            setTimeout(() => props.onSend(), 0);
+                          }}
+                        >
+                          ${prompt}
+                        </button>
+                      `,
+                    )}
                   </div>
                 </div>
-              </div>
-            `
-          : nothing
-      }
-      ${repeat(
-        chatItems,
-        (item) => item.key,
-        (item) => {
-          if (item.kind === "divider") {
-            return html`
-              <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
-                <span class="chat-divider__line"></span>
-                <span class="chat-divider__label">${item.label}</span>
-                <span class="chat-divider__line"></span>
-              </div>
-            `;
-          }
+              `
+            : nothing
+        }
+        ${repeat(
+          chatItems,
+          (item) => item.key,
+          (item) => {
+            if (item.kind === "divider") {
+              return html`
+                <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
+                  <span class="chat-divider__line"></span>
+                  <span class="chat-divider__label">${item.label}</span>
+                  <span class="chat-divider__line"></span>
+                </div>
+              `;
+            }
 
-          if (item.kind === "reading-indicator") {
-            return renderReadingIndicatorGroup(assistantIdentity);
-          }
+            if (item.kind === "reading-indicator") {
+              return renderReadingIndicatorGroup(assistantIdentity);
+            }
 
-          if (item.kind === "stream") {
-            return renderStreamingGroup(
-              item.text,
-              item.startedAt,
-              props.onOpenSidebar,
-              assistantIdentity,
-            );
-          }
+            if (item.kind === "stream") {
+              return renderStreamingGroup(
+                item.text,
+                item.startedAt,
+                props.onOpenSidebar,
+                assistantIdentity,
+              );
+            }
 
-          if (item.kind === "group") {
-            return renderMessageGroup(item, {
-              onOpenSidebar: props.onOpenSidebar,
-              showReasoning,
-              assistantName: props.assistantName,
-              assistantAvatar: assistantIdentity.avatar,
-            });
-          }
+            if (item.kind === "load-more") {
+              return html`
+                <div class="chat-load-more">
+                  <button
+                    class="btn"
+                    type="button"
+                    @click=${() => props.onLoadMoreHistory?.()}
+                  >
+                    Load earlier messages (${item.hiddenCount} hidden)
+                  </button>
+                </div>
+              `;
+            }
 
-          return nothing;
-        },
-      )}
+            if (item.kind === "group") {
+              return renderMessageGroup(item, {
+                onOpenSidebar: props.onOpenSidebar,
+                showReasoning,
+                assistantName: props.assistantName,
+                assistantAvatar: assistantIdentity.avatar,
+                onRegenerate: props.onRegenerate,
+                onLike: props.onLike,
+              });
+            }
+
+            return nothing;
+          },
+        )}
+      </div>
     </div>
   `;
 
@@ -355,6 +400,127 @@ export function renderChat(props: ChatProps) {
           style="flex: ${sidebarOpen ? `0 0 ${splitRatio * 100}%` : "1 1 100%"}"
         >
           ${thread}
+
+          <div class="chat-compose">
+            <div class="chat-compose-inner">
+              ${renderAttachmentPreview(props)}
+              <div class="chat-compose__row">
+                <label class="field chat-compose__field">
+                  <span>Message</span>
+                  <span class="chat-compose__agent-pill">Talking to ${props.assistantName}</span>
+                  <textarea
+                    ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
+                    .value=${props.draft}
+                    ?disabled=${!props.connected}
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (e.key !== "Enter") {
+                        return;
+                      }
+                      if (e.isComposing || e.keyCode === 229) {
+                        return;
+                      }
+                      if (e.shiftKey) {
+                        return;
+                      }
+                      if (!props.connected) {
+                        return;
+                      }
+                      e.preventDefault();
+                      if (canCompose) {
+                        props.onSend();
+                      }
+                    }}
+                    @input=${(e: Event) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      adjustTextareaHeight(target);
+                      props.onDraftChange(target.value);
+                    }}
+                    @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
+                    placeholder=${composePlaceholder}
+                  ></textarea>
+                </label>
+                <div class="chat-compose__toolbar">
+                  <input
+                    ${ref((el) => {
+                      uploadInputEl = el as HTMLInputElement;
+                    })}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    hidden
+                    @change=${(e: Event) => {
+                      const input = e.target as HTMLInputElement;
+                      const files = Array.from(input.files ?? []);
+                      appendImageFiles(files, props);
+                      input.value = "";
+                    }}
+                  />
+                  <div class="chat-compose__toolbar-left">
+                    <button
+                      class="btn"
+                      type="button"
+                      ?disabled=${!props.connected}
+                      @click=${() => uploadInputEl?.click()}
+                      title="Upload image"
+                    >
+                      ${icons.plus}
+                    </button>
+                    <button
+                      class="btn"
+                      type="button"
+                      ?disabled=${!props.connected}
+                      @click=${() => uploadInputEl?.click()}
+                      title="Attach file"
+                    >
+                      ${icons.paperclip}
+                    </button>
+                  </div>
+                  <div class="chat-compose__toolbar-right">
+                    <span class="chat-compose__agent-name">${props.assistantName}</span>
+                    <label class="chat-compose__agent-select-wrap" title="Active agent">
+                      <select
+                        class="chat-compose__agent-select"
+                        .value=${activeAgentId}
+                        ?disabled=${!props.connected}
+                        @change=${(e: Event) => {
+                          const selectedAgent = (e.target as HTMLSelectElement).value || "main";
+                          const nextSession =
+                            selectedAgent === "main" ? "main" : `agent:${selectedAgent}:main`;
+                          props.onSessionKeyChange(nextSession);
+                        }}
+                      >
+                        ${agentOptions.map((entry) => html`<option value=${entry.id}>${entry.label}</option>`)}
+                      </select>
+                    </label>
+                    ${
+                      isBusy
+                        ? html`
+                          <button
+                            class="btn primary stop"
+                            ?disabled=${!props.connected}
+                            @click=${props.onAbort}
+                            title="Stop generating"
+                          >
+                            ${icons.square}
+                          </button>
+                        `
+                        : html`
+                          <button
+                            class="btn primary"
+                            ?disabled=${!props.connected}
+                            @click=${props.onSend}
+                            title="Send message"
+                          >
+                            ${icons.send}
+                          </button>
+                        `
+                    }
+                  </div>
+                </div>
+              </div>
+              <p class="chat-compose__disclaimer">AI can make mistakes. Please double-check responses.</p>
+            </div>
+          </div>
         </div>
 
         ${
@@ -365,17 +531,27 @@ export function renderChat(props: ChatProps) {
                 @resize=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.splitRatio)}
               ></resizable-divider>
               <div class="chat-sidebar">
-                ${renderMarkdownSidebar({
-                  content: props.sidebarContent ?? null,
-                  error: props.sidebarError ?? null,
-                  onClose: props.onCloseSidebar!,
-                  onViewRawText: () => {
-                    if (!props.sidebarContent || !props.onOpenSidebar) {
-                      return;
-                    }
-                    props.onOpenSidebar(`\`\`\`\n${props.sidebarContent}\n\`\`\``);
-                  },
-                })}
+                ${
+                  props.sidebarView === "history"
+                    ? renderChatHistorySidebar({
+                        sessions: props.sessions,
+                        currentSessionKey: props.sessionKey,
+                        onSessionClick: props.onHistorySessionClick,
+                        onClose: props.onCloseSidebar!,
+                        onNewSession: props.onNewSession,
+                      })
+                    : renderMarkdownSidebar({
+                        content: props.sidebarContent ?? null,
+                        error: props.sidebarError ?? null,
+                        onClose: props.onCloseSidebar!,
+                        onViewRawText: () => {
+                          if (!props.sidebarContent || !props.onOpenSidebar) {
+                            return;
+                          }
+                          props.onOpenSidebar(`\`\`\`\n${props.sidebarContent}\n\`\`\``);
+                        },
+                      })
+                }
               </div>
             `
             : nothing
@@ -420,135 +596,73 @@ export function renderChat(props: ChatProps) {
         props.showNewMessages
           ? html`
             <button
-              class="btn chat-new-messages"
+              class="btn chat-jump-to-bottom"
               type="button"
               @click=${props.onScrollToBottom}
+              aria-label="Jump to latest messages"
             >
-              New messages ${icons.arrowDown}
+              ${icons.arrowDown}
             </button>
           `
           : nothing
       }
+    </section>
+  `;
+}
 
-      <div class="chat-compose">
-        ${renderAttachmentPreview(props)}
-        <div class="chat-compose__row">
-          <label class="field chat-compose__field">
-            <span>Message</span>
-            <span class="chat-compose__agent-pill">Talking to ${props.assistantName}</span>
-            <textarea
-              ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
-              .value=${props.draft}
-              ?disabled=${!props.connected}
-              @keydown=${(e: KeyboardEvent) => {
-                if (e.key !== "Enter") {
-                  return;
-                }
-                if (e.isComposing || e.keyCode === 229) {
-                  return;
-                }
-                if (e.shiftKey) {
-                  return;
-                } // Allow Shift+Enter for line breaks
-                if (!props.connected) {
-                  return;
-                }
-                e.preventDefault();
-                if (canCompose) {
-                  props.onSend();
-                }
-              }}
-              @input=${(e: Event) => {
-                const target = e.target as HTMLTextAreaElement;
-                adjustTextareaHeight(target);
-                props.onDraftChange(target.value);
-              }}
-              @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
-              placeholder=${composePlaceholder}
-            ></textarea>
-          </label>
-          <div class="chat-compose__toolbar">
-            <input
-              ${ref((el) => {
-                uploadInputEl = el as HTMLInputElement;
-              })}
-              type="file"
-              accept="image/*"
-              multiple
-              hidden
-              @change=${(e: Event) => {
-                const input = e.target as HTMLInputElement;
-                const files = Array.from(input.files ?? []);
-                appendImageFiles(files, props);
-                input.value = "";
-              }}
-            />
-            <div class="chat-compose__toolbar-left">
-              <button
-                class="btn"
-                type="button"
-                ?disabled=${!props.connected}
-                @click=${() => uploadInputEl?.click()}
-                title="Upload image"
-              >
-                ${icons.plus}
-              </button>
-              <button
-                class="btn"
-                type="button"
-                ?disabled=${!props.connected}
-                @click=${() => uploadInputEl?.click()}
-                title="Attach file"
-              >
-                ${icons.paperclip}
-              </button>
-            </div>
-            <div class="chat-compose__toolbar-right">
-              <span class="chat-compose__agent-name">${props.assistantName}</span>
-              <label class="chat-compose__agent-select-wrap" title="Active agent">
-                <select
-                  class="chat-compose__agent-select"
-                  .value=${activeAgentId}
-                  ?disabled=${!props.connected}
-                  @change=${(e: Event) => {
-                    const selectedAgent = (e.target as HTMLSelectElement).value || "main";
-                    const nextSession =
-                      selectedAgent === "main" ? "main" : `agent:${selectedAgent}:main`;
-                    props.onSessionKeyChange(nextSession);
-                  }}
-                >
-                  ${agentOptions.map((entry) => html`<option value=${entry.id}>${entry.label}</option>`)}
-                </select>
-              </label>
-              ${
-                isBusy
-                  ? html`
-                    <button
-                      class="btn primary stop"
-                      ?disabled=${!props.connected}
-                      @click=${props.onAbort}
-                      title="Stop generating"
-                    >
-                      ${icons.square}
-                    </button>
+function renderChatHistorySidebar(props: {
+  sessions: SessionsListResult | null;
+  currentSessionKey: string;
+  onSessionClick?: (sessionKey: string) => void;
+  onClose: () => void;
+  onNewSession: () => void;
+}) {
+  const rows = (props.sessions?.sessions ?? []).slice(0, 30);
+  const currentKey = props.currentSessionKey;
+
+  return html`
+    <div class="sidebar-panel">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Chat History</div>
+        <button @click=${props.onClose} class="btn" title="Close sidebar">
+          ${icons.x}
+        </button>
+      </div>
+      <div class="sidebar-content">
+        <div class="chat-history-sidebar">
+          <button
+            class="btn primary chat-history-sidebar__new"
+            type="button"
+            @click=${props.onNewSession}
+          >
+            New chat
+          </button>
+          <div class="chat-history-sidebar__list">
+            ${
+              rows.length === 0
+                ? html`
+                    <div class="muted">No recent sessions.</div>
                   `
-                  : html`
+                : rows.map((row) => {
+                    const isActive = row.key === currentKey;
+                    const title = row.label?.trim() || row.displayName?.trim() || row.key;
+                    return html`
                     <button
-                      class="btn primary"
-                      ?disabled=${!props.connected}
-                      @click=${props.onSend}
-                      title="Send message"
+                      class="chat-history-sidebar__item ${isActive ? "is-active" : ""}"
+                      type="button"
+                      ?disabled=${isActive}
+                      @click=${() => props.onSessionClick?.(row.key)}
                     >
-                      ${icons.send}
+                      <div class="chat-history-sidebar__name">${title}</div>
+                      <div class="chat-history-sidebar__key">${row.key}</div>
                     </button>
-                  `
-              }
-            </div>
+                  `;
+                  })
+            }
           </div>
         </div>
-        <p class="chat-compose__disclaimer">AI can make mistakes. Please double-check responses.</p>
       </div>
-    </section>
+    </div>
   `;
 }
 
@@ -599,16 +713,13 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
   const items: ChatItem[] = [];
   const history = Array.isArray(props.messages) ? props.messages : [];
   const tools = Array.isArray(props.toolMessages) ? props.toolMessages : [];
-  const historyStart = Math.max(0, history.length - CHAT_HISTORY_RENDER_LIMIT);
+  const limit = Math.max(10, Math.min(props.historyRenderLimit, CHAT_HISTORY_RENDER_LIMIT));
+  const historyStart = Math.max(0, history.length - limit);
   if (historyStart > 0) {
     items.push({
-      kind: "message",
-      key: "chat:history:notice",
-      message: {
-        role: "system",
-        content: `Showing last ${CHAT_HISTORY_RENDER_LIMIT} messages (${historyStart} hidden).`,
-        timestamp: Date.now(),
-      },
+      kind: "load-more",
+      key: "chat:history:load-more",
+      hiddenCount: historyStart,
     });
   }
   for (let i = historyStart; i < history.length; i++) {

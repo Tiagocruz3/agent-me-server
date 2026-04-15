@@ -85,6 +85,7 @@ export type AppViewState = {
   chatAttachments: ChatAttachment[];
   chatMessages: unknown[];
   chatToolMessages: unknown[];
+  chatHistoryRenderLimit: number;
   chatStream: string | null;
   chatStreamStartedAt: number | null;
   chatRunId: string | null;
@@ -97,6 +98,7 @@ export type AppViewState = {
   nodes: Array<Record<string, unknown>>;
   chatNewMessagesBelow: boolean;
   sidebarOpen: boolean;
+  sidebarView: "markdown" | "history";
   sidebarContent: string | null;
   sidebarError: string | null;
   splitRatio: number;
@@ -177,6 +179,7 @@ export type AppViewState = {
   sessionsFilterLimit: string;
   sessionsIncludeGlobal: boolean;
   sessionsIncludeUnknown: boolean;
+  sessionsSearchQuery: string;
   usageLoading: boolean;
   usageResult: SessionsUsageResult | null;
   usageCostSummary: CostUsageSummary | null;

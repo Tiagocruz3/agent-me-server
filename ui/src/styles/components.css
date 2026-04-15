@@ -2631,6 +2631,279 @@
 }
 
 /* ============================================
+   Sessions - Card based list
+   ============================================ */
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sessions-toolbar {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sessions-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sessions-search__input {
+  flex: 1;
+  min-width: 240px;
+  max-width: 400px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input);
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.sessions-search__input:focus {
+  border-color: var(--ring);
+  box-shadow: var(--focus-ring);
+}
+
+.sessions-filters {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+}
+
+.sessions-filters__summary {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.sessions-filters__summary::-webkit-details-marker {
+  display: none;
+}
+
+.sessions-filters__body {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.sessions-filters__body .field {
+  min-width: 180px;
+  flex: 1;
+}
+
+.sessions-filters__body .field.checkbox {
+  flex: 0 0 auto;
+  min-width: auto;
+}
+
+.sessions-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sessions-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--muted);
+}
+
+.sessions-group__heading {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sessions-group__items {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.session-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
+}
+
+.session-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.session-card__main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.session-card__identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.session-card__title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.session-card__key {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.session-card__display-name {
+  font-size: 12px;
+}
+
+.session-card__kind-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.session-card__kind-badge.direct {
+  color: var(--accent);
+  border-color: rgba(61, 220, 151, 0.35);
+  background: rgba(61, 220, 151, 0.1);
+}
+
+.session-card__kind-badge.global {
+  color: var(--info);
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.session-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.session-card__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-card__meta-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.session-card__meta-value {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.session-card__settings {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.session-card__field {
+  gap: 4px;
+}
+
+.session-card__field span {
+  font-size: 11px;
+}
+
+.session-card__field input,
+.session-card__field select {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.session-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.session-card__actions .btn {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .sessions-group__items {
+    grid-template-columns: 1fr;
+  }
+
+  .session-card__main {
+    flex-direction: column;
+  }
+
+  .session-card__meta {
+    flex-direction: row;
+    text-align: left;
+  }
+}
+
+/* ============================================
    Light Theme Overrides
    ============================================ */
 

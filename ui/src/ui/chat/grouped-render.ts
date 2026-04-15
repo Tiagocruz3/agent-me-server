@@ -2,8 +2,8 @@ import { html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { AssistantIdentity } from "../assistant-identity.ts";
 import type { MessageGroup } from "../types/chat-types.ts";
+import { icons } from "../icons.ts";
 import { toSanitizedMarkdownHtml } from "../markdown.ts";
-import { renderCopyAsMarkdownButton } from "./copy-as-markdown.ts";
 import {
   extractTextCached,
   extractThinkingCached,
@@ -30,19 +30,16 @@ function extractImages(message: unknown): ImageBlock[] {
       const b = block as Record<string, unknown>;
 
       if (b.type === "image") {
-        // Handle source object format (from sendChatMessage)
         const source = b.source as Record<string, unknown> | undefined;
         if (source?.type === "base64" && typeof source.data === "string") {
           const data = source.data;
           const mediaType = (source.media_type as string) || "image/png";
-          // If data is already a data URL, use it directly
           const url = data.startsWith("data:") ? data : `data:${mediaType};base64,${data}`;
           images.push({ url });
         } else if (typeof b.url === "string") {
           images.push({ url: b.url });
         }
       } else if (b.type === "image_url") {
-        // OpenAI format
         const imageUrl = b.image_url as Record<string, unknown> | undefined;
         if (typeof imageUrl?.url === "string") {
           images.push({ url: imageUrl.url });
@@ -56,10 +53,10 @@ function extractImages(message: unknown): ImageBlock[] {
 
 export function renderReadingIndicatorGroup(assistant?: AssistantIdentity) {
   return html`
-    <div class="chat-group assistant">
+    <div class="chat-turn assistant">
       ${renderAvatar("assistant", assistant)}
-      <div class="chat-group-messages">
-        <div class="chat-bubble chat-reading-indicator" aria-hidden="true">
+      <div class="chat-turn-content">
+        <div class="chat-reading-indicator" aria-hidden="true">
           <span class="chat-reading-indicator__dots">
             <span></span><span></span><span></span>
           </span>
@@ -75,16 +72,10 @@ export function renderStreamingGroup(
   onOpenSidebar?: (content: string) => void,
   assistant?: AssistantIdentity,
 ) {
-  const timestamp = new Date(startedAt).toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-  const name = assistant?.name ?? "Assistant";
-
   return html`
-    <div class="chat-group assistant">
+    <div class="chat-turn assistant">
       ${renderAvatar("assistant", assistant)}
-      <div class="chat-group-messages">
+      <div class="chat-turn-content">
         ${renderGroupedMessage(
           {
             role: "assistant",
@@ -94,9 +85,10 @@ export function renderStreamingGroup(
           { isStreaming: true, showReasoning: false },
           onOpenSidebar,
         )}
-        <div class="chat-group-footer">
-          <span class="chat-sender-name">${name}</span>
-          <span class="chat-group-timestamp">${timestamp}</span>
+        <div class="chat-streaming-indicator" aria-hidden="true">
+          <span class="chat-streaming-indicator__dot"></span>
+          <span class="chat-streaming-indicator__dot"></span>
+          <span class="chat-streaming-indicator__dot"></span>
         </div>
       </div>
     </div>
@@ -110,32 +102,46 @@ export function renderMessageGroup(
     showReasoning: boolean;
     assistantName?: string;
     assistantAvatar?: string | null;
+    onRegenerate?: (messageText: string) => void;
+    onLike?: (messageId: string, liked: boolean) => void;
   },
 ) {
   const normalizedRole = normalizeRoleForGrouping(group.role);
   const assistantName = opts.assistantName ?? "Assistant";
-  const who =
-    normalizedRole === "user"
-      ? "You"
-      : normalizedRole === "assistant"
-        ? assistantName
-        : normalizedRole === "tool"
-          ? `${assistantName} · Tools`
-          : normalizedRole;
   const roleClass =
     normalizedRole === "user" ? "user" : normalizedRole === "assistant" ? "assistant" : "other";
-  const timestamp = new Date(group.timestamp).toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+
+  if (roleClass === "user") {
+    return html`
+      <div class="chat-turn user">
+        <div class="chat-turn-messages">
+          ${group.messages.map((item, index) =>
+            renderGroupedMessage(
+              item.message,
+              {
+                isStreaming: group.isStreaming && index === group.messages.length - 1,
+                showReasoning: opts.showReasoning,
+              },
+              opts.onOpenSidebar,
+            ),
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  // Assistant or other role
+  const firstMessage = group.messages[0]?.message;
+  const messageId = extractMessageId(firstMessage);
+  const markdown = extractAssistantMarkdown(group, opts.showReasoning);
 
   return html`
-    <div class="chat-group ${roleClass}">
+    <div class="chat-turn ${roleClass}">
       ${renderAvatar(group.role, {
         name: assistantName,
         avatar: opts.assistantAvatar ?? null,
       })}
-      <div class="chat-group-messages">
+      <div class="chat-turn-content">
         ${group.messages.map((item, index) =>
           renderGroupedMessage(
             item.message,
@@ -146,13 +152,30 @@ export function renderMessageGroup(
             opts.onOpenSidebar,
           ),
         )}
-        <div class="chat-group-footer">
-          <span class="chat-sender-name">${who}</span>
-          <span class="chat-group-timestamp">${timestamp}</span>
-        </div>
+        ${renderActionRow({ markdown, messageId, onRegenerate: opts.onRegenerate, onLike: opts.onLike })}
       </div>
     </div>
   `;
+}
+
+function extractMessageId(message: unknown): string {
+  const m = message as Record<string, unknown>;
+  return typeof m.id === "string" ? m.id : typeof m.messageId === "string" ? m.messageId : "";
+}
+
+function extractAssistantMarkdown(group: MessageGroup, showReasoning: boolean): string {
+  const parts: string[] = [];
+  for (const item of group.messages) {
+    const text = extractTextCached(item.message) ?? "";
+    if (text.trim()) {
+      parts.push(text.trim());
+    }
+    const thinking = showReasoning ? extractThinkingCached(item.message) : null;
+    if (thinking?.trim()) {
+      parts.push(formatReasoningMarkdown(thinking));
+    }
+  }
+  return parts.join("\n\n");
 }
 
 function renderAvatar(role: string, assistant?: Pick<AssistantIdentity, "name" | "avatar">) {
@@ -191,9 +214,7 @@ function renderAvatar(role: string, assistant?: Pick<AssistantIdentity, "name" |
 }
 
 function isAvatarUrl(value: string): boolean {
-  return (
-    /^https?:\/\//i.test(value) || /^data:image\//i.test(value) || value.startsWith("/") // Relative paths from avatar endpoint
-  );
+  return /^https?:\/\//i.test(value) || /^data:image\//i.test(value) || value.startsWith("/");
 }
 
 function renderMessageImages(images: ImageBlock[]) {
@@ -213,6 +234,81 @@ function renderMessageImages(images: ImageBlock[]) {
           />
         `,
       )}
+    </div>
+  `;
+}
+
+function renderActionRow(props: {
+  markdown: string;
+  messageId: string;
+  onRegenerate?: (messageText: string) => void;
+  onLike?: (messageId: string, liked: boolean) => void;
+}) {
+  const hasContent = props.markdown.trim().length > 0;
+  if (!hasContent) {
+    return nothing;
+  }
+
+  return html`
+    <div class="chat-action-row">
+      <button
+        class="chat-action-btn"
+        type="button"
+        title="Copy"
+        aria-label="Copy response"
+        @click=${async (e: Event) => {
+          const btn = e.currentTarget as HTMLButtonElement;
+          try {
+            await navigator.clipboard.writeText(props.markdown);
+            btn.dataset.copied = "1";
+            setTimeout(() => delete btn.dataset.copied, 1500);
+          } catch {
+            // ignore
+          }
+        }}
+      >
+        ${icons.copy}
+      </button>
+      <button
+        class="chat-action-btn"
+        type="button"
+        title="Regenerate"
+        aria-label="Regenerate response"
+        ?disabled=${!props.onRegenerate}
+        @click=${() => props.onRegenerate?.(props.markdown)}
+      >
+        ${icons.refresh}
+      </button>
+      <button
+        class="chat-action-btn"
+        type="button"
+        title="Good response"
+        aria-label="Good response"
+        ?disabled=${!props.onLike}
+        @click=${(e: Event) => {
+          const btn = e.currentTarget as HTMLButtonElement;
+          const liked = btn.dataset.liked !== "true";
+          btn.dataset.liked = String(liked);
+          props.onLike?.(props.messageId, liked);
+        }}
+      >
+        ${icons.thumbsUp}
+      </button>
+      <button
+        class="chat-action-btn"
+        type="button"
+        title="Bad response"
+        aria-label="Bad response"
+        ?disabled=${!props.onLike}
+        @click=${(e: Event) => {
+          const btn = e.currentTarget as HTMLButtonElement;
+          const liked = btn.dataset.liked !== "false";
+          btn.dataset.liked = String(!liked);
+          props.onLike?.(props.messageId, false);
+        }}
+      >
+        ${icons.thumbsDown}
+      </button>
     </div>
   `;
 }
@@ -242,14 +338,9 @@ function renderGroupedMessage(
   const markdownBase = extractedText?.trim() ? extractedText : null;
   const reasoningMarkdown = extractedThinking ? formatReasoningMarkdown(extractedThinking) : null;
   const markdown = markdownBase;
-  const canCopyMarkdown = role === "assistant" && Boolean(markdown?.trim());
 
-  const bubbleClasses = [
-    "chat-bubble",
-    canCopyMarkdown ? "has-copy" : "",
-    opts.isStreaming ? "streaming" : "",
-    "fade-in",
-  ]
+  const isUser = normalizeRoleForGrouping(role) === "user";
+  const bubbleClasses = ["chat-bubble", opts.isStreaming ? "streaming" : "", "fade-in"]
     .filter(Boolean)
     .join(" ");
 
@@ -261,22 +352,31 @@ function renderGroupedMessage(
     return nothing;
   }
 
+  // For assistant messages, render plain content without bubble
+  if (!isUser) {
+    return html`
+      <div class="chat-content fade-in">
+        ${renderMessageImages(images)}
+        ${
+          reasoningMarkdown
+            ? html`<div class="chat-thinking">${unsafeHTML(toSanitizedMarkdownHtml(reasoningMarkdown))}</div>`
+            : nothing
+        }
+        ${
+          markdown
+            ? html`<div class="chat-text">${unsafeHTML(toSanitizedMarkdownHtml(markdown))}</div>`
+            : nothing
+        }
+        ${toolCards.map((card) => renderToolCardSidebar(card, onOpenSidebar))}
+      </div>
+    `;
+  }
+
+  // User messages use bubble
   return html`
     <div class="${bubbleClasses}" data-kind=${isToolResult ? "tool" : "message"}>
-      ${canCopyMarkdown ? renderCopyAsMarkdownButton(markdown!) : nothing}
       ${renderMessageImages(images)}
-      ${
-        reasoningMarkdown
-          ? html`<div class="chat-thinking">${unsafeHTML(
-              toSanitizedMarkdownHtml(reasoningMarkdown),
-            )}</div>`
-          : nothing
-      }
-      ${
-        markdown
-          ? html`<div class="chat-text">${unsafeHTML(toSanitizedMarkdownHtml(markdown))}</div>`
-          : nothing
-      }
+      ${markdown ? html`<div class="chat-text">${unsafeHTML(toSanitizedMarkdownHtml(markdown))}</div>` : nothing}
       ${toolCards.map((card) => renderToolCardSidebar(card, onOpenSidebar))}
     </div>
   `;

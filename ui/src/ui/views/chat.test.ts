@@ -25,6 +25,7 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
     compactionStatus: null,
     messages: [],
     toolMessages: [],
+    historyRenderLimit: 50,
     stream: null,
     streamStartedAt: null,
     assistantAvatarUrl: null,
@@ -119,39 +120,33 @@ describe("chat view", () => {
         createProps({
           canAbort: true,
           onAbort,
+          sending: true,
         }),
       ),
       container,
     );
 
-    const stopButton = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.trim() === "Stop",
-    );
-    expect(stopButton).not.toBeUndefined();
+    const stopButton = container.querySelector(".btn.stop") as HTMLButtonElement | null;
+    expect(stopButton).not.toBeNull();
     stopButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onAbort).toHaveBeenCalledTimes(1);
-    expect(container.textContent).not.toContain("New session");
   });
 
-  it("shows a new session button when aborting is unavailable", () => {
+  it("shows a send button when aborting is unavailable", () => {
     const container = document.createElement("div");
-    const onNewSession = vi.fn();
     render(
       renderChat(
         createProps({
           canAbort: false,
-          onNewSession,
         }),
       ),
       container,
     );
 
-    const newSessionButton = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.trim() === "New session",
-    );
-    expect(newSessionButton).not.toBeUndefined();
-    newSessionButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(onNewSession).toHaveBeenCalledTimes(1);
-    expect(container.textContent).not.toContain("Stop");
+    const sendButton = container.querySelector(
+      ".btn.primary:not(.stop)",
+    ) as HTMLButtonElement | null;
+    expect(sendButton).not.toBeNull();
+    expect(container.querySelector(".btn.stop")).toBeNull();
   });
 });
