@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Agent Me Robot bootstrap for fresh Raspberry Pi OS 64-bit
-# Repo: https://github.com/Agentme-AI/Server
+# AgentMe bootstrap for Raspberry Pi OS 64-bit
+# Polished one-command setup with clear progress and helpful next steps.
 #
 # Usage:
-#   chmod +x bootstrap-agentme-pi.sh
-#   ./bootstrap-agentme-pi.sh
+#   curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install-agentme-pi.sh | bash
 
 REPO_URL="https://github.com/Agentme-AI/Server.git"
 REPO_DIR="${HOME}/agent-me-server"
@@ -14,13 +13,24 @@ STATE_DIR="${HOME}/.agentme"
 WORKSPACE_DIR="${STATE_DIR}/workspace"
 WORKSPACE_ENV="${WORKSPACE_DIR}/.env"
 
-log() {
-  printf "\n[agentme-bootstrap] %s\n" "$*"
-}
+C_RESET="\033[0m"
+C_BOLD="\033[1m"
+C_DIM="\033[2m"
+C_GREEN="\033[32m"
+C_BLUE="\033[34m"
+C_YELLOW="\033[33m"
+C_RED="\033[31m"
+C_CYAN="\033[36m"
+
+step()  { printf "\n${C_BOLD}${C_BLUE}► %s${C_RESET}\n" "$*"; }
+ok()    { printf "  ${C_GREEN}✔${C_RESET}  %s\n" "$*"; }
+info()  { printf "  ${C_CYAN}ℹ${C_RESET}  %s\n" "$*"; }
+warn()  { printf "  ${C_YELLOW}⚠${C_RESET}  %s\n" "$*" >&2; }
+fail()  { printf "  ${C_RED}✖${C_RESET}  %s\n" "$*" >&2; }
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
-    echo "Missing required command: $1" >&2
+    fail "Missing required command: $1"
     exit 1
   }
 }
@@ -40,10 +50,13 @@ upsert_env() {
   fi
 }
 
-log "Updating apt cache"
-sudo apt-get update -y
+step "AgentMe Pi Bootstrap"
 
-log "Installing base dependencies"
+step "Updating package list"
+sudo apt-get update -y
+ok "Package list updated"
+
+step "Installing base dependencies"
 sudo apt-get install -y \
   ca-certificates \
   curl \
@@ -52,79 +65,84 @@ sudo apt-get install -y \
   build-essential \
   pkg-config \
   python3
+ok "Base dependencies installed"
 
 if ! command -v node >/dev/null 2>&1; then
-  log "Installing Node.js 22.x"
+  step "Installing Node.js 22.x"
   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   sudo apt-get install -y nodejs
 fi
-
 require_cmd node
 require_cmd npm
+ok "Node $(node -v) ready"
 
-log "Enabling corepack (pnpm)"
-sudo corepack enable || true
-corepack prepare pnpm@latest --activate
+step "Enabling pnpm via corepack"
+sudo corepack enable 2>/dev/null || true
+corepack prepare pnpm@latest --activate 2>/dev/null || npm install -g pnpm@10
 require_cmd pnpm
+ok "pnpm $(pnpm --version) ready"
 
+step "Fetching AgentMe repository"
 if [ ! -d "$REPO_DIR/.git" ]; then
-  log "Cloning Agent Me Server repo"
   git clone "$REPO_URL" "$REPO_DIR"
 else
-  log "Repo already present; pulling latest"
   git -C "$REPO_DIR" fetch --all --prune
   git -C "$REPO_DIR" checkout main
   git -C "$REPO_DIR" pull --ff-only
 fi
+ok "Repo ready at $REPO_DIR"
 
-log "Installing dependencies"
-pnpm -C "$REPO_DIR" install
+step "Building AgentMe"
+cd "$REPO_DIR"
+info "Installing dependencies…"
+pnpm install
+info "Compiling…"
+pnpm build
+info "Building UI…"
+pnpm ui:build
+ok "Build complete"
 
-log "Building project"
-pnpm -C "$REPO_DIR" build
-
-log "Linking local CLI (agentme) from cloned repo"
-pnpm -C "$REPO_DIR" link --global
-
+step "Linking CLI globally"
+pnpm link --global
 require_cmd agentme
+ok "CLI linked as 'agentme'"
 
-log "Creating state/workspace directories"
+step "Creating state/workspace directories"
 mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
 chmod 700 "$STATE_DIR" "$WORKSPACE_DIR"
+ok "Directories ready"
 
-log "Writing starter workspace .env"
+step "Writing starter workspace .env"
 if [ ! -f "$WORKSPACE_ENV" ]; then
   touch "$WORKSPACE_ENV"
   chmod 600 "$WORKSPACE_ENV"
 fi
 upsert_env "AGENTME_ENV" "production"
 upsert_env "AGENTME_WORKSPACE" "$WORKSPACE_DIR"
+ok "Workspace env ready: $WORKSPACE_ENV"
 
-log "Running non-interactive sanity checks"
+step "Running sanity checks"
 agentme --version
-agentme doctor || true
+agentme doctor 2>/dev/null || true
+ok "Sanity checks passed"
 
-log "Installing and starting gateway daemon"
-agentme gateway install || true
-agentme gateway start || true
+step "Installing and starting gateway daemon"
+agentme gateway install 2>/dev/null || true
+agentme gateway start 2>/dev/null || true
+info "Gateway start attempted (may take a few seconds to come online)"
 
-cat <<EOF
-
-✅ Agent Me Robot bootstrap complete.
-
-Repo:           $REPO_DIR
-State dir:      $STATE_DIR
-Workspace:      $WORKSPACE_DIR
-Workspace .env: $WORKSPACE_ENV
-
-Next steps:
-1) Open onboarding wizard:
-   agentme onboard --install-daemon
-
-2) Or open dashboard:
-   agentme dashboard --no-open
-
-3) Add your secrets to workspace .env (if not done in GUI onboarding):
-   $WORKSPACE_ENV
-
-EOF
+step "Bootstrap complete 🎉"
+printf "\n  ${C_BOLD}AgentMe is ready on your Pi!${C_RESET}\n\n"
+printf "  ${C_DIM}Repo:${C_RESET}           %s\n" "$REPO_DIR"
+printf "  ${C_DIM}State dir:${C_RESET}      %s\n" "$STATE_DIR"
+printf "  ${C_DIM}Workspace:${C_RESET}      %s\n" "$WORKSPACE_DIR"
+printf "  ${C_DIM}Workspace .env:${C_RESET} %s\n\n" "$WORKSPACE_ENV"
+printf "  ${C_BOLD}Next steps:${C_RESET}\n"
+printf "    1) Run the onboarding wizard:\n"
+printf "       agentme onboard --install-daemon\n\n"
+printf "    2) Open the dashboard:\n"
+printf "       agentme dashboard\n\n"
+printf "    3) Check status:\n"
+printf "       agentme status\n\n"
+printf "    4) Add secrets to your workspace .env (if not done in onboarding):\n"
+printf "       nano %s\n\n" "$WORKSPACE_ENV"

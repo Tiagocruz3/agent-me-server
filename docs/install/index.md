@@ -1,144 +1,58 @@
 ---
-summary: "Install AgentMe — installer script, npm/pnpm, from source, Docker, and more"
-read_when:
-  - You need an install method other than the Getting Started quickstart
-  - You want to deploy to a cloud platform
-  - You need to update, migrate, or uninstall
+summary: "Install AgentMe in one command — macOS, Linux, WSL2, and Raspberry Pi"
 title: "Install"
 ---
 
-# Install
+# Install AgentMe
 
-Already followed [Getting Started](/start/getting-started)? You're all set — this page is for alternative install methods, platform-specific instructions, and maintenance.
+## One-line install (macOS / Linux / WSL2)
 
-## System requirements
+```bash
+curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install.sh | bash
+```
 
-- **[Node 22+](/install/node)** (the [installer script](#install-methods) will install it if missing)
-- macOS, Linux, or Windows
-- `pnpm` only if you build from source
+That’s it. The script handles Node, dependencies, build, and background service automatically.
 
 <Note>
-On Windows, we strongly recommend running AgentMe under [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+On Windows, run this inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
 </Note>
 
-## Install methods
+## One-line install (Raspberry Pi)
 
-<Tip>
-The **installer script** is the recommended way to install AgentMe. It handles Node detection, installation, and onboarding in one step.
-</Tip>
+```bash
+curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install-agentme-pi.sh | bash
+```
 
-<AccordionGroup>
-  <Accordion title="Installer script" icon="rocket" defaultOpen>
-    Downloads the CLI, installs it globally via npm, and launches the onboarding wizard.
+## What the installer does
 
-    <Tabs>
-      <Tab title="macOS / Linux / WSL2">
-        ```bash
-        curl -fsSL https://agentme.ai/install.sh | bash
-        ```
-      </Tab>
-      <Tab title="Windows (PowerShell)">
-        ```powershell
-        iwr -useb https://agentme.ai/install.ps1 | iex
-        ```
-      </Tab>
-    </Tabs>
+1. **Checks your system** — installs Node 22+, Git, and build tools if missing.
+2. **Clones the repo** to `~/agent-me-server` (or updates it if already present).
+3. **Builds the app** — installs dependencies and compiles the UI.
+4. **Installs the `agentme` command** — adds a wrapper to `~/.local/bin` and updates your PATH.
+5. **Writes a safe default config** — loopback-only, with a fresh auth token.
+6. **Starts the background service** — systemd on Linux, LaunchAgent on macOS.
+7. **Probes the gateway** — confirms everything is healthy.
 
-    That's it — the script handles Node detection, installation, and onboarding.
+## Installer options
 
-    To skip onboarding and just install the binary:
+```bash
+curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install.sh | bash -s -- --help
+```
 
-    <Tabs>
-      <Tab title="macOS / Linux / WSL2">
-        ```bash
-        curl -fsSL https://agentme.ai/install.sh | bash -s -- --no-onboard
-        ```
-      </Tab>
-      <Tab title="Windows (PowerShell)">
-        ```powershell
-        & ([scriptblock]::Create((iwr -useb https://agentme.ai/install.ps1))) -NoOnboard
-        ```
-      </Tab>
-    </Tabs>
-
-    For all flags, env vars, and CI/automation options, see [Installer internals](/install/installer).
-
-  </Accordion>
-
-  <Accordion title="npm / pnpm" icon="package">
-    If you already have Node 22+ and prefer to manage the install yourself:
-
-    <Tabs>
-      <Tab title="npm">
-        ```bash
-        npm install -g agentme@latest
-        agentme onboard --install-daemon
-        ```
-
-        <Accordion title="sharp build errors?">
-          If you have libvips installed globally (common on macOS via Homebrew) and `sharp` fails, force prebuilt binaries:
-
-          ```bash
-          SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g agentme@latest
-          ```
-
-          If you see `sharp: Please add node-gyp to your dependencies`, either install build tooling (macOS: Xcode CLT + `npm install -g node-gyp`) or use the env var above.
-        </Accordion>
-      </Tab>
-      <Tab title="pnpm">
-        ```bash
-        pnpm add -g agentme@latest
-        pnpm approve-builds -g        # approve agentme, node-llama-cpp, sharp, etc.
-        agentme onboard --install-daemon
-        ```
-
-        <Note>
-        pnpm requires explicit approval for packages with build scripts. After the first install shows the "Ignored build scripts" warning, run `pnpm approve-builds -g` and select the listed packages.
-        </Note>
-      </Tab>
-    </Tabs>
-
-  </Accordion>
-
-  <Accordion title="From source" icon="github">
-    For contributors or anyone who wants to run from a local checkout.
-
-    <Steps>
-      <Step title="Clone and build">
-        Clone the [AgentMe repo](https://github.com/agentme/agentme) and build:
-
-        ```bash
-        git clone https://github.com/agentme/agentme.git
-        cd agentme
-        pnpm install
-        pnpm ui:build
-        pnpm build
-        ```
-      </Step>
-      <Step title="Link the CLI">
-        Make the `agentme` command available globally:
-
-        ```bash
-        pnpm link --global
-        ```
-
-        Alternatively, skip the link and run commands via `pnpm agentme ...` from inside the repo.
-      </Step>
-      <Step title="Run onboarding">
-        ```bash
-        agentme onboard --install-daemon
-        ```
-      </Step>
-    </Steps>
-
-    For deeper development workflows, see [Setup](/start/setup).
-
-  </Accordion>
-</AccordionGroup>
+| Flag             | Description                                   |
+| ---------------- | --------------------------------------------- |
+| `-u`, `--update` | Update an existing install                    |
+| `--no-service`   | Skip the background service install           |
+| `--force-config` | Overwrite existing config with fresh defaults |
+| `--port <port>`  | Gateway port (default: `18789`)               |
+| `--ref <ref>`    | Git ref to checkout (default: `main`)         |
 
 ## Other install methods
 
 <CardGroup cols={2}>
+  <Card title="npm / pnpm" href="/install/node" icon="package">
+    If you already have Node 22+ and prefer to manage the install yourself.
+  </Card>
   <Card title="Docker" href="/install/docker" icon="container">
     Containerized or headless deployments.
   </Card>
@@ -148,64 +62,31 @@ The **installer script** is the recommended way to install AgentMe. It handles N
   <Card title="Ansible" href="/install/ansible" icon="server">
     Automated fleet provisioning.
   </Card>
-  <Card title="Bun" href="/install/bun" icon="zap">
-    CLI-only usage via the Bun runtime.
-  </Card>
 </CardGroup>
 
 ## After install
 
-Verify everything is working:
-
 ```bash
-agentme doctor         # check for config issues
-agentme status         # gateway status
-agentme dashboard      # open the browser UI
+agentme dashboard   # Open the web UI
+agentme status      # Check gateway health
+agentme doctor      # Diagnose issues
+agentme onboard     # Run the setup wizard
 ```
 
-If you need custom runtime paths, use:
+## Troubleshooting
 
-- `AGENTME_HOME` for home-directory based internal paths
-- `AGENTME_STATE_DIR` for mutable state location
-- `AGENTME_CONFIG_PATH` for config file location
+### `agentme: command not found`
 
-See [Environment vars](/help/environment) for precedence and full details.
-
-## Troubleshooting: `agentme` not found
-
-<Accordion title="PATH diagnosis and fix">
-  Quick diagnosis:
+If the install succeeded but `agentme` isn't found in a new terminal, your shell may need its PATH refreshed:
 
 ```bash
-node -v
-npm -v
-npm prefix -g
-echo "$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-If `$(npm prefix -g)/bin` (macOS/Linux) or `$(npm prefix -g)` (Windows) is **not** in your `$PATH`, your shell can't find global npm binaries (including `agentme`).
+Then add that line to your shell startup file (`~/.zshrc` or `~/.bashrc`) to make it permanent.
 
-Fix — add it to your shell startup file (`~/.zshrc` or `~/.bashrc`):
+### Need more help?
 
-```bash
-export PATH="$(npm prefix -g)/bin:$PATH"
-```
-
-On Windows, add the output of `npm prefix -g` to your PATH.
-
-Then open a new terminal (or `rehash` in zsh / `hash -r` in bash).
-</Accordion>
-
-## Update / uninstall
-
-<CardGroup cols={3}>
-  <Card title="Updating" href="/install/updating" icon="refresh-cw">
-    Keep AgentMe up to date.
-  </Card>
-  <Card title="Migrating" href="/install/migrating" icon="arrow-right">
-    Move to a new machine.
-  </Card>
-  <Card title="Uninstall" href="/install/uninstall" icon="trash-2">
-    Remove AgentMe completely.
-  </Card>
-</CardGroup>
+- [Node.js setup & PATH fixes](/install/node)
+- [Updating AgentMe](/install/updating)
+- [Uninstalling](/install/uninstall)

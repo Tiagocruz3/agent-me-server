@@ -35,31 +35,39 @@ If you want a personal, single-user assistant that feels local, fast, and always
 
 ## Installation
 
-### Prerequisites
+### One-line install (recommended)
 
-- **Node.js** ≥ 22
-- **npm**, **pnpm**, or **bun**
+**macOS / Linux / WSL2**
 
-### Quick Install
+```bash
+curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install.sh | bash
+```
+
+**Raspberry Pi**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/agentme/agentme/main/scripts/install-agentme-pi.sh | bash
+```
+
+That’s it. The script installs Node 22+, dependencies, builds the app, writes a safe default config, and starts the background service automatically.
+
+### Install from npm
+
+If you already have Node 22+ and prefer npm:
 
 ```bash
 npm install -g agentme@latest
-
 agentme onboard --install-daemon
 ```
 
-The wizard installs the Gateway daemon (launchd/systemd user service) so it stays running.
-
-### From Source
+### Install from source manually
 
 ```bash
 git clone https://github.com/Agentme-AI/Server.git
 cd Server
-
 pnpm install
 pnpm ui:build
 pnpm build
-
 pnpm agentme onboard --install-daemon
 ```
 
