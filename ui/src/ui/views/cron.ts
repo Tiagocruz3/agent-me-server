@@ -2,6 +2,7 @@ import { html } from "lit";
 import type { ChannelUiMetaEntry, CronJob, CronRunLogEntry, CronStatus } from "../types.ts";
 import type { CronFormState } from "../ui-types.ts";
 import { formatCronSchedule, formatNextRun } from "../presenter.ts";
+import "../../components/react-calendar-host";
 
 export type CronProps = {
   basePath: string;
@@ -97,284 +98,55 @@ export function renderCron(props: CronProps) {
     arr.push(job);
     jobsByDay.set(key, arr);
   }
-  const viewMode = "month" as const;
+  const calendarData: Array<{
+    day: Date;
+    events: Array<{ id: number; name: string; time: string; datetime: string }>;
+  }> = [];
+  for (const [key, dayJobs] of jobsByDay.entries()) {
+    const [y, m, d] = key.split("-").map(Number);
+    calendarData.push({
+      day: new Date(y, m - 1, d),
+      events: dayJobs.map((job, idx) => {
+        const nextRun =
+          typeof job.state?.nextRunAtMs === "number" ? new Date(job.state.nextRunAtMs) : null;
+        return {
+          id: idx + 1,
+          name: job.name,
+          time: nextRun
+            ? nextRun.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+          datetime: nextRun ? nextRun.toISOString() : "",
+        };
+      }),
+    });
+  }
 
   return html`
-    <section class="card cron-google">
-      <div class="cron-google-topbar">
-        <div class="row" style="gap:8px; align-items:center;">
-          <button
-            class="btn primary cron-create-task-btn"
-            @click=${async () => {
-              props.onFormChange({
-                name: "New scheduled task",
-                scheduleKind: "at",
-                scheduleAt: toDateTimeLocal(selectedDayKey),
-                payloadText: props.form.payloadText.trim() || "Reminder",
-              });
-              props.onAdd();
-            }}
-          >
-            Create task
-          </button>
-          <button class="btn" @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(todayKey) })}>Today</button>
-          <button class="btn" @click=${() => {
-            const d = new Date(anchor);
-            d.setMonth(d.getMonth() - 1);
-            props.onFormChange({
-              scheduleKind: "at",
-              scheduleAt: toDateTimeLocal(toDayKey(d.getTime())),
-            });
-          }}>◀</button>
-          <button class="btn" @click=${() => {
-            const d = new Date(anchor);
-            d.setMonth(d.getMonth() + 1);
-            props.onFormChange({
-              scheduleKind: "at",
-              scheduleAt: toDateTimeLocal(toDayKey(d.getTime())),
-            });
-          }}>▶</button>
-          <div class="cron-master-month" style="margin:0;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
-        </div>
-        <div class="row" style="gap:8px;">
-          <span class="chip chip-ok">Month</span>
-        </div>
-      </div>
-      <div class="card-sub">Planner for wakeups and recurring agent runs.</div>
-      <div class="cron-google-shell ${viewMode === "month" ? "cron-google-shell--month" : ""}" style="margin-top:12px;">
-        ${
-          viewMode === "month"
-            ? html``
-            : html`<aside class="cron-google-sidebar">
-                <button class="btn primary" style="width:100%; margin-top:6px;" @click=${() => {
-                  props.onFormChange({
-                    name: props.form.name || "New scheduled task",
-                    scheduleKind: "at",
-                    scheduleAt: toDateTimeLocal(selectedDayKey),
-                  });
-                  props.onOpenDayModal(selectedDayKey);
-                }}>+ Create</button>
-                <div class="cron-master-month" style="margin-top:10px;">${anchor.toLocaleString([], { month: "long", year: "numeric" })}</div>
-                <div class="cron-master-weekdays">
-                  ${["S", "M", "T", "W", "T", "F", "S"].map((d) => html`<span>${d}</span>`)}
-                </div>
-                <div class="cron-master-calendar">
-                  ${calendarCells.map((cell) => {
-                    if (!cell.inMonth) {
-                      return html`
-                        <span class="cron-master-day cron-master-day--pad"></span>
-                      `;
-                    }
-                    const dayJobs = jobsByDay.get(cell.key) ?? [];
-                    return html`<button
-                      class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""}
-                      ${cell.key === todayKey ? "is-today" : ""}
-                      ${dayJobs.length > 0 ? "has-jobs" : ""}"
-                      @click=${() => {
-                        props.onFormChange({
-                          scheduleKind: "at",
-                          scheduleAt: toDateTimeLocal(cell.key),
-                        });
-                      }}
-                      @dblclick=${() => {
-                        props.onFormChange({
-                          scheduleKind: "at",
-                          scheduleAt: toDateTimeLocal(cell.key),
-                        });
-                        props.onOpenDayModal(cell.key);
-                      }}
-                    >
-                      <span class="cron-master-day-num">${cell.day}</span>
-                    </button>`;
-                  })}
-                </div>
-                <div class="cron-sidebar-calendars">
-                  <div class="muted" style="font-size:11px; margin-top:10px;">My calendars</div>
-                  <div class="cron-sidebar-chip">Agent Me Ops</div>
-                  <div class="cron-sidebar-chip">Automations</div>
-                </div>
-              </aside>`
-        }
-
-        <div class="cron-google-main">
-          ${
-            viewMode !== "month"
-              ? html`<section class="cron-quick-create">
-                  <div class="cron-quick-create__title">Quick event</div>
-                  <div class="cron-quick-create__row">
-                    <input
-                      class="cron-quick-create__input"
-                      .value=${props.form.name || ""}
-                      placeholder="Add title"
-                      @input=${(e: Event) => props.onFormChange({ name: (e.target as HTMLInputElement).value })}
-                    />
-                    <input
-                      class="cron-quick-create__input"
-                      type="datetime-local"
-                      .value=${props.form.scheduleAt || toDateTimeLocal(selectedDayKey)}
-                      @input=${(e: Event) => props.onFormChange({ scheduleKind: "at", scheduleAt: (e.target as HTMLInputElement).value })}
-                    />
-                  </div>
-                  <div class="cron-quick-create__actions">
-                    <button class="btn" @click=${() => props.onOpenDayModal(selectedDayKey)}>More options</button>
-                    <button class="btn primary" @click=${() => {
-                      props.onFormChange({
-                        name: props.form.name.trim() || "New scheduled task",
-                        scheduleKind: "at",
-                        scheduleAt: props.form.scheduleAt || toDateTimeLocal(selectedDayKey),
-                        payloadText: props.form.payloadText.trim() || "Reminder",
-                      });
-                      props.onAdd();
-                    }}>Save</button>
-                  </div>
-                </section>`
-              : html``
-          }
-          ${
-            viewMode === "month"
-              ? html`
-                <div class="cron-master-weekdays">
-                  ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => html`<span>${d}</span>`)}
-                </div>
-                <div class="cron-master-calendar cron-master-calendar--large">
-                  ${calendarCells.map((cell) => {
-                    if (!cell.inMonth) {
-                      return html`
-                        <span class="cron-master-day cron-master-day--pad"></span>
-                      `;
-                    }
-                    const dayJobs = jobsByDay.get(cell.key) ?? [];
-                    return html`<button class="cron-master-day ${cell.key === selectedDayKey ? "is-selected" : ""} ${cell.key === todayKey ? "is-today" : ""} ${dayJobs.length > 0 ? "has-jobs" : ""}" @click=${() => {
-                      props.onFormChange({
-                        scheduleKind: "at",
-                        scheduleAt: toDateTimeLocal(cell.key),
-                        name: props.form.name || "New scheduled task",
-                      });
-                      props.onOpenDayModal(cell.key);
-                    }} @dblclick=${() => {
-                      props.onFormChange({
-                        scheduleKind: "at",
-                        scheduleAt: toDateTimeLocal(cell.key),
-                        name: props.form.name || "New scheduled task",
-                      });
-                      props.onOpenDayModal(cell.key);
-                    }}>
-                      <span class="cron-master-day-num">${cell.day}</span>
-                      ${dayJobs.slice(0, 2).map((job) => html`<span class="cron-master-day-badge">${job.name.slice(0, 10)}</span>`)}
-                    </button>`;
-                  })}
-                </div>
-              `
-              : viewMode === "day"
-                ? html`
-                  <div class="cron-google-week-header">
-                    <div class="cron-google-weekday-head is-selected">${selectedDayKey}</div>
-                  </div>
-                  <div class="cron-google-week-grid cron-google-week-grid--day">
-                    <div class="cron-time-rail">
-                      ${hours.map((hour) => html`<div class="cron-time-rail__tick">${hour}:00</div>`)}
-                    </div>
-                    <div class="cron-google-week-col is-selected" @dblclick=${() => props.onOpenDayModal(selectedDayKey)}>
-                      ${hours.map((hour) => {
-                        const slotEvents = (jobsByDay.get(selectedDayKey) ?? []).filter(
-                          (job) =>
-                            typeof job.state?.nextRunAtMs === "number" &&
-                            new Date(job.state.nextRunAtMs).getHours() === hour,
-                        );
-                        return html`<div class="cron-time-slot" @dragover=${(e: DragEvent) => e.preventDefault()} @drop=${(
-                          e: DragEvent,
-                        ) => {
-                          e.preventDefault();
-                          const id = e.dataTransfer?.getData("text/plain");
-                          const job = jobsFilteredByAgent.find((j) => j.id === id);
-                          props.onFormChange({
-                            ...(job ? toCronFormPatchFromJob(job) : {}),
-                            scheduleKind: "at",
-                            scheduleAt: toDateTimeLocal(selectedDayKey, hour, 0),
-                            name: job?.name ?? (props.form.name || "New scheduled task"),
-                          });
-                        }} @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(selectedDayKey, hour, 0), name: props.form.name || "New scheduled task" })}>
-                          <div class="cron-time-slot__events">
-                            ${slotEvents.map(
-                              (job) => html`<button class="cron-google-event" @click=${(
-                                e: Event,
-                              ) => {
-                                e.stopPropagation();
-                                props.onFormChange(toCronFormPatchFromJob(job));
-                              }}>
-                              <span class="cron-google-event__title">${job.name}</span>
-                              <span class="cron-google-event__meta">${job.agentId || "main"}</span>
-                            </button>`,
-                            )}
-                          </div>
-                        </div>`;
-                      })}
-                    </div>
-                  </div>
-                `
-                : html`
-                  <div class="cron-google-week-header">
-                    ${weekKeys.map((key) => html`<div class="cron-google-weekday-head ${key === selectedDayKey ? "is-selected" : ""}">${key}</div>`)}
-                  </div>
-                  <div class="cron-google-week-grid">
-                    <div class="cron-time-rail">
-                      ${hours.map((hour) => html`<div class="cron-time-rail__tick">${hour}:00</div>`)}
-                    </div>
-                    ${weekKeys.map((key) => {
-                      const dayJobs = jobsByDay.get(key) ?? [];
-                      return html`<div class="cron-google-week-col ${key === selectedDayKey ? "is-selected" : ""}" @dblclick=${() => {
-                        props.onFormChange({
-                          scheduleKind: "at",
-                          scheduleAt: toDateTimeLocal(key),
-                          name: props.form.name || "New scheduled task",
-                        });
-                        props.onOpenDayModal(key);
-                      }}>
-                        ${hours.map((hour) => {
-                          const slotEvents = dayJobs.filter(
-                            (job) =>
-                              typeof job.state?.nextRunAtMs === "number" &&
-                              new Date(job.state.nextRunAtMs).getHours() === hour,
-                          );
-                          return html`<div class="cron-time-slot" @dragover=${(e: DragEvent) => e.preventDefault()} @drop=${(
-                            e: DragEvent,
-                          ) => {
-                            e.preventDefault();
-                            const id = e.dataTransfer?.getData("text/plain");
-                            const job = jobsFilteredByAgent.find((j) => j.id === id);
-                            props.onFormChange({
-                              ...(job ? toCronFormPatchFromJob(job) : {}),
-                              scheduleKind: "at",
-                              scheduleAt: toDateTimeLocal(key, hour, 0),
-                              name: job?.name ?? (props.form.name || "New scheduled task"),
-                            });
-                          }} @click=${() => props.onFormChange({ scheduleKind: "at", scheduleAt: toDateTimeLocal(key, hour, 0), name: props.form.name || "New scheduled task" })}>
-                            <div class="cron-time-slot__events">
-                              ${slotEvents.map(
-                                (
-                                  job,
-                                ) => html`<button class="cron-google-event" draggable="true" @dragstart=${(e: DragEvent) => e.dataTransfer?.setData("text/plain", job.id)} @click=${(
-                                  e: Event,
-                                ) => {
-                                  e.stopPropagation();
-                                  props.onFormChange(toCronFormPatchFromJob(job));
-                                }}>
-                                <span class="cron-google-event__title">${job.name}</span>
-                                <span class="cron-google-event__meta">${job.agentId || "main"}</span>
-                              </button>`,
-                              )}
-                            </div>
-                          </div>`;
-                        })}
-                      </div>`;
-                    })}
-                  </div>
-                `
-          }
-
-
-        </div>
-      </div>
+    <section class="card cron-google" style="padding:0; overflow:hidden;">
+      <react-calendar-host
+        .data=${calendarData}
+        .onSelectDay=${(day: Date) => {
+          const key = toDayKey(day.getTime());
+          props.onFormChange({
+            scheduleKind: "at",
+            scheduleAt: toDateTimeLocal(key),
+            name: props.form.name || "New scheduled task",
+          });
+          props.onOpenDayModal(key);
+        }}
+        .onNewEvent=${() => {
+          props.onFormChange({
+            name: props.form.name || "New scheduled task",
+            scheduleKind: "at",
+            scheduleAt: toDateTimeLocal(selectedDayKey),
+            payloadText: props.form.payloadText.trim() || "Reminder",
+          });
+          props.onAdd();
+        }}
+      ></react-calendar-host>
     </section>
 
     ${

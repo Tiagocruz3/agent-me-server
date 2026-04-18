@@ -1,3 +1,4 @@
+import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -24,6 +25,12 @@ export default defineConfig(() => {
   return {
     base,
     publicDir: path.resolve(here, "public"),
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(here, "./src"),
+      },
+    },
     optimizeDeps: {
       include: ["lit/directives/repeat.js"],
     },
