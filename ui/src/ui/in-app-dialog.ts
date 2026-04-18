@@ -21,7 +21,7 @@ function ensureStyles() {
 .agentme-dialog__input{width:100%;border:1px solid #2f3745;background:#0f131a;color:#e6edf3;border-radius:10px;padding:10px;margin-bottom:12px}
 .agentme-dialog__actions{display:flex;justify-content:flex-end;gap:8px}
 .agentme-dialog__btn{border:1px solid #3b4556;background:#202734;color:#e6edf3;padding:8px 12px;border-radius:10px;cursor:pointer}
-.agentme-dialog__btn.primary{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#22c55e;color:#fff}
+.agentme-dialog__btn.primary{background:linear-gradient(135deg,#0ea5e9,#0284c7);border-color:#0ea5e9;color:#fff}
 `;
   document.head.appendChild(style);
 }

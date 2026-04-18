@@ -43,7 +43,7 @@ function getAgentStatusColor(status: string): string {
   switch (status.toLowerCase()) {
     case "active":
     case "running":
-      return "#22c55e";
+      return "#0ea5e9";
     case "idle":
     case "ready":
       return "#3b82f6";

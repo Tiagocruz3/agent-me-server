@@ -78,16 +78,16 @@ export function renderCron(props: CronProps) {
       typeof job.state?.nextRunAtMs === "number" && toDayKey(job.state.nextRunAtMs) === modalDayKey,
   );
   const anchor = new Date(`${selectedDayKey}T00:00:00`);
-  const calendarCells = monthGrid(anchor);
+  const _calendarCells = monthGrid(anchor);
   const weekAnchor = new Date(anchor);
   const dayOfWeek = weekAnchor.getDay();
   weekAnchor.setDate(weekAnchor.getDate() - dayOfWeek);
-  const weekKeys = Array.from({ length: 7 }, (_, i) => {
+  const _weekKeys = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekAnchor);
     d.setDate(weekAnchor.getDate() + i);
     return toDayKey(d.getTime());
   });
-  const hours = Array.from({ length: 11 }, (_, i) => 8 + i);
+  const _hours = Array.from({ length: 11 }, (_, i) => 8 + i);
   const jobsByDay = new Map<string, CronJob[]>();
   for (const job of jobsFilteredByAgent) {
     if (typeof job.state?.nextRunAtMs !== "number") {

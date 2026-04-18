@@ -69,7 +69,6 @@ const debouncedLoadUsage = (state: UsageState) => {
   usageDateDebounceTimeout = window.setTimeout(() => void loadUsage(state), 400);
 };
 import { confirmInApp, promptInApp } from "./in-app-dialog.ts";
-import { renderAgentsDashboard } from "./views/agents-dashboard.ts";
 import { renderAgents } from "./views/agents.ts";
 import { renderAutopilot } from "./views/autopilot.ts";
 import { renderChannels } from "./views/channels.ts";

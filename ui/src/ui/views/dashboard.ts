@@ -112,7 +112,7 @@ export function renderDashboard(props: DashboardProps) {
                 const accentColor = [
                   "#06b6d4",
                   "#8b5cf6",
-                  "#22c55e",
+                  "#0ea5e9",
                   "#f59e0b",
                   "#ef4444",
                   "#3b82f6",

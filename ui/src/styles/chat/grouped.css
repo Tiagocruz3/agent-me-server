@@ -94,8 +94,8 @@ img.chat-avatar {
   display: block;
   width: fit-content;
   min-width: 0;
-  border: 1px solid rgba(61, 220, 151, 0.35);
-  background: linear-gradient(145deg, rgba(61, 220, 151, 0.18), rgba(61, 220, 151, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.08));
   border-radius: 20px;
   padding: 10px 16px;
   max-width: min(100%, 520px);
@@ -106,8 +106,8 @@ img.chat-avatar {
 }
 
 :root[data-theme="light"] .chat-bubble {
-  border-color: rgba(16, 185, 129, 0.28);
-  background: linear-gradient(145deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.06));
+  border-color: rgba(14, 165, 233, 0.28);
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.14), rgba(14, 165, 233, 0.06));
 }
 
 /* Tool/terminal message bubble */

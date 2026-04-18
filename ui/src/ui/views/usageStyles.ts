@@ -938,7 +938,7 @@ export const usageStylesString = `
     background: #f59e0b;
   }
   .cost-segment.cache-write {
-    background: #10b981;
+    background: #0ea5e9;
   }
   .cost-segment.cache-read {
     background: #06b6d4;
@@ -975,7 +975,7 @@ export const usageStylesString = `
     background: #f59e0b;
   }
   .legend-dot.cache-write {
-    background: #10b981;
+    background: #0ea5e9;
   }
   .legend-dot.cache-read {
     background: #06b6d4;
@@ -1154,7 +1154,7 @@ export const usageStylesString = `
   }
   .timeseries-svg .ts-bar.output { fill: #ef4444; }
   .timeseries-svg .ts-bar.input { fill: #f59e0b; }
-  .timeseries-svg .ts-bar.cache-write { fill: #10b981; }
+  .timeseries-svg .ts-bar.cache-write { fill: #0ea5e9; }
   .timeseries-svg .ts-bar.cache-read { fill: #06b6d4; }
   .timeseries-summary {
     margin-top: 12px;
