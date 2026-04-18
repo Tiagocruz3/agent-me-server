@@ -88,6 +88,7 @@ import { renderOverview } from "./views/overview.ts";
 import { renderResults } from "./views/results.ts";
 import { renderSessions } from "./views/sessions.ts";
 import { renderSkills } from "./views/skills.ts";
+import { renderThemes } from "./views/themes.ts";
 import { renderUsage } from "./views/usage.ts";
 
 const AVATAR_DATA_RE = /^data:/i;
@@ -597,7 +598,7 @@ export function renderApp(state: AppViewState) {
                         ? a.identity?.name || a.name || state.assistantName || "Main Agent"
                         : a.identity?.name || a.name || a.id || "Agent",
                     role: `Agent ID: ${a.id || "unknown"}`,
-                    accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#22c55e"][idx % 4],
+                    accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#0ea5e9"][idx % 4],
                     icon: a.identity?.emoji || "🤖",
                     avatar: a.identity?.avatar || a.identity?.avatarUrl,
                   })),
@@ -2182,6 +2183,15 @@ export function renderApp(state: AppViewState) {
                   state.memoryContent = template;
                   state.memoryDirty = true;
                 },
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "themes"
+            ? renderThemes({
+                theme: state.theme,
+                onThemeChange: (theme, context) => state.setTheme(theme, context),
               })
             : nothing
         }

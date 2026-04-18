@@ -17,7 +17,7 @@ export const TAB_GROUPS = [
     ],
   },
   { label: "Agent", tabs: ["skills", "nodes"] },
-  { label: "Settings", tabs: ["memory", "config", "restore", "debug", "logs"] },
+  { label: "Settings", tabs: ["themes", "memory", "config", "restore", "debug", "logs"] },
 ] as const;
 
 export type Tab =
@@ -38,7 +38,8 @@ export type Tab =
   | "config"
   | "debug"
   | "logs"
-  | "restore";
+  | "restore"
+  | "themes";
 
 const TAB_PATHS: Record<Tab, string> = {
   agents: "/agents",
@@ -59,6 +60,7 @@ const TAB_PATHS: Record<Tab, string> = {
   debug: "/debug",
   logs: "/logs",
   restore: "/restore",
+  themes: "/themes",
 };
 
 const PATH_TO_TAB = new Map(Object.entries(TAB_PATHS).map(([tab, path]) => [path, tab as Tab]));
@@ -176,6 +178,8 @@ export function iconForTab(tab: Tab): IconName {
       return "scrollText";
     case "restore":
       return "settings";
+    case "themes":
+      return "palette";
     default:
       return "folder";
   }
@@ -215,6 +219,8 @@ export function titleForTab(tab: Tab) {
       return "Logs";
     case "restore":
       return "Restore";
+    case "themes":
+      return "Themes";
     default:
       return "Control";
   }
@@ -254,6 +260,8 @@ export function subtitleForTab(tab: Tab) {
       return "Live tail of the gateway file logs.";
     case "restore":
       return "Import a backup file and apply server config.";
+    case "themes":
+      return "Choose your preferred color scheme.";
     default:
       return "";
   }
