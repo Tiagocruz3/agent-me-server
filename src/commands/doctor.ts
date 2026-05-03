@@ -143,6 +143,7 @@ export async function doctorCommand(
               });
       if (shouldSetToken) {
         const nextToken = randomToken();
+        const bind = cfg.gateway?.bind ?? "loopback";
         cfg = {
           ...cfg,
           gateway: {
@@ -152,6 +153,13 @@ export async function doctorCommand(
               mode: "token",
               token: nextToken,
             },
+            controlUi: {
+              ...cfg.gateway?.controlUi,
+              enabled: cfg.gateway?.controlUi?.enabled ?? true,
+            },
+            ...(bind === "loopback" && !cfg.gateway?.trustedProxies?.length
+              ? { trustedProxies: ["127.0.0.1"] }
+              : {}),
           },
         };
         note("Gateway token configured.", "Gateway auth");

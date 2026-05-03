@@ -150,6 +150,10 @@ export async function promptRemoteGatewayConfig(
         url,
         token: token || undefined,
       },
+      controlUi: {
+        ...cfg.gateway?.controlUi,
+        enabled: false,
+      },
     },
   };
 }

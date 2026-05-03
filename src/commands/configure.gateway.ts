@@ -217,6 +217,13 @@ export async function promptGatewayConfig(
         mode: tailscaleMode,
         resetOnExit: tailscaleResetOnExit,
       },
+      controlUi: {
+        ...next.gateway?.controlUi,
+        enabled: next.gateway?.controlUi?.enabled ?? true,
+      },
+      ...(bind === "loopback" && !next.gateway?.trustedProxies?.length
+        ? { trustedProxies: ["127.0.0.1"] }
+        : {}),
     },
   };
 

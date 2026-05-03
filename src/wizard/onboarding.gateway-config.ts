@@ -247,6 +247,13 @@ export async function configureGatewayForOnboarding(
         mode: tailscaleMode as GatewayTailscaleMode,
         resetOnExit: tailscaleResetOnExit,
       },
+      controlUi: {
+        ...nextConfig.gateway?.controlUi,
+        enabled: nextConfig.gateway?.controlUi?.enabled ?? true,
+      },
+      ...(bind === "loopback" && !nextConfig.gateway?.trustedProxies?.length
+        ? { trustedProxies: ["127.0.0.1"] }
+        : {}),
     },
   };
 

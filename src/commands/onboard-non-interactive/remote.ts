@@ -30,6 +30,10 @@ export async function runNonInteractiveOnboardingRemote(params: {
         url: remoteUrl,
         token: opts.remoteToken?.trim() || undefined,
       },
+      controlUi: {
+        ...baseConfig.gateway?.controlUi,
+        enabled: false,
+      },
     },
   };
   nextConfig = applyWizardMetadata(nextConfig, { command: "onboard", mode });

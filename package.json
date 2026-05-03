@@ -169,6 +169,7 @@
     "@types/ws": "^8.18.1",
     "@typescript/native-preview": "7.0.0-dev.20260209.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "agentme": "^0.3.3",
     "lit": "^3.3.2",
     "ollama": "^0.6.3",
     "oxfmt": "0.28.0",
@@ -178,7 +179,8 @@
     "tsdown": "^0.20.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "xdrs-core": "^0.14.5"
   },
   "peerDependencies": {
     "@napi-rs/canvas": "^0.1.89",

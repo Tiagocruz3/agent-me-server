@@ -182,6 +182,12 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     expect(cfg?.agents?.defaults?.workspace).toBe(workspace);
     expect(cfg?.gateway?.auth?.mode).toBe("token");
     expect(cfg?.gateway?.auth?.token).toBe(token);
+    expect(
+      (cfg as { gateway?: { controlUi?: { enabled?: boolean } } }).gateway?.controlUi?.enabled,
+    ).toBe(true);
+    expect((cfg as { gateway?: { trustedProxies?: string[] } }).gateway?.trustedProxies).toEqual([
+      "127.0.0.1",
+    ]);
 
     const { authorizeGatewayConnect, resolveGatewayAuth } = await import("../gateway/auth.js");
     const auth = resolveGatewayAuth({ authConfig: cfg.gateway?.auth, env: process.env });
@@ -279,6 +285,12 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     expect(cfg.gateway?.bind).toBe("lan");
     expect(cfg.gateway?.port).toBe(port);
     expect(cfg.gateway?.auth?.mode).toBe("token");
+    expect(
+      (cfg as { gateway?: { controlUi?: { enabled?: boolean } } }).gateway?.controlUi?.enabled,
+    ).toBe(true);
+    expect(
+      (cfg as { gateway?: { trustedProxies?: string[] } }).gateway?.trustedProxies,
+    ).toBeUndefined();
     const token = cfg.gateway?.auth?.token ?? "";
     expect(token.length).toBeGreaterThan(8);
 

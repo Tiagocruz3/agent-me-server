@@ -64,6 +64,8 @@ describe("configureGatewayForOnboarding", () => {
     });
 
     expect(result.settings.gatewayToken).toBe("generated-token");
+    expect(result.nextConfig.gateway?.controlUi?.enabled).toBe(true);
+    expect(result.nextConfig.gateway?.trustedProxies).toEqual(["127.0.0.1"]);
     expect(result.nextConfig.gateway?.nodes?.denyCommands).toEqual([
       "camera.snap",
       "camera.clip",
